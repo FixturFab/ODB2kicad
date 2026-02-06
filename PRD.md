@@ -511,7 +511,7 @@ After each stage, verify:
 
 - [x] **Stage 1**: `kicad-cli version` works, DRC produces output
 - [x] **Stage 2**: Simple WASM runs in Node.js and browser
-- [ ] **Stage 3**: DEPENDENCY_ANALYSIS.md complete with wxWidgets touch points
+- [x] **Stage 3**: DEPENDENCY_ANALYSIS.md complete with wxWidgets touch points
 - [ ] **Stage 4**: Isolated DRC compiles and runs natively
 - [ ] **Stage 5**: DRC runs in browser via WASM
 - [ ] **Stage 6**: STEP export works via opencascade.js

@@ -40,3 +40,41 @@
 - All Stage 2 success criteria met
 
 ### Next: Stage 3 - Analyze KiCad Dependencies
+
+## 2026-02-06: Stage 3 - Analyze KiCad Dependencies COMPLETE
+
+### What was done:
+- Task 3.1: Analyzed kicad-cli entry point (kicad_cli.cpp)
+  - Documented APP_KICAD_CLI class, PGM_KICAD, and KIWAY module loading
+  - Mapped command dispatch: argparse → COMMAND_ENTRY tree → KIWAY::ProcessJob()
+  - Identified all wxWidgets includes and dependencies
+- Task 3.2: Analyzed DRC command (command_pcb_drc.cpp)
+  - Documented JOB_PCB_DRC creation and KIWAY dispatch to pcbnew kiface
+  - Mapped full DRC invocation chain from CLI to engine
+- Task 3.3: Mapped DRC engine dependencies (pcbnew/drc/)
+  - Listed all 30+ DRC files and 27 test providers
+  - Documented DRC_ENGINE, DRC_TEST_PROVIDER, DRC_RULE class hierarchies
+  - Found DRC code is relatively clean: 0 PGM_BASE refs, 0 SETTINGS_MANAGER refs, 0 wxLog calls
+- Task 3.4: Analyzed BOARD data structure
+  - Documented BOARD class, containers (TRACKS, FOOTPRINTS, ZONES, etc.)
+  - Mapped BOARD_DESIGN_SETTINGS and its role in DRC
+  - Cataloged all board item types needed
+- Task 3.5: Analyzed S-expression parser
+  - Documented parser chain: LINE_READER → DSNLEXER → PCB_LEXER → PCB_IO_KICAD_SEXPR_PARSER
+  - Found STRING_LINE_READER exists for in-memory parsing (key for WASM)
+  - Mapped richio.h I/O abstraction classes
+- Task 3.6: Created comprehensive DEPENDENCY_ANALYSIS.md report
+
+### Key findings:
+- DRC engine code is clean of direct wxWidgets app/GUI dependencies
+- wxString is the main challenge: pervasive but replaceable with compatibility class
+- KIWAY dynamic loading won't work in WASM; must statically link pcbnew code
+- DRC accesses settings only through BOARD_DESIGN_SETTINGS (no global state)
+- STRING_LINE_READER already exists for in-memory PCB parsing
+- Estimated ~120 source files needed for WASM DRC build
+- External deps: Clipper2 (polygon ops), kimath (geometry), fmtlib (formatting)
+- STEP export is deeply integrated with OCCT (183 references) - needs opencascade.js
+- REPORTER interface is designed to be wx-free (noted in header comments)
+- All Stage 3 success criteria met
+
+### Next: Stage 4 - Create Isolated DRC Library
