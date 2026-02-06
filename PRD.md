@@ -598,7 +598,7 @@ After each stage, verify:
 - [x] **Stage 3**: DEPENDENCY_ANALYSIS.md complete with wxWidgets touch points
 - [x] **Stage 4**: Isolated DRC compiles and runs natively
 - [x] **Stage 5a**: WASM cmake configures without errors
-- [ ] **Stage 5b**: Thirdparty + core libraries compile (7 `.a` files)
+- [x] **Stage 5b**: Thirdparty + core libraries compile (7 `.a` files)
 - [ ] **Stage 5c**: kiplatform_stubs + kicommon_wasm compile
 - [ ] **Stage 5d**: gal_wasm compiles
 - [ ] **Stage 5e**: pcbcommon_wasm + drc_providers compile

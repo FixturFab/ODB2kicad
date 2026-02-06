@@ -168,3 +168,29 @@
 - All Stage 5a success criteria met
 
 ### Next: Stage 5b - Compile Thirdparty + Core Libraries
+
+## 2026-02-06: Stage 5b - Compile Thirdparty + Core Libraries COMPLETE
+
+### What was done:
+- Built all 7 thirdparty + core static library targets with Emscripten:
+  1. clipper2 (176KB) - polygon clipping library
+  2. fmt_lib (185KB) - string formatting library
+  3. delaunator (19KB) - Delaunay triangulation
+  4. json_schema_validator (1.0MB) - JSON schema validation
+  5. core (34KB) - KiCad core utilities (base64, utf8, observable, etc.)
+  6. sexpr (42KB) - S-expression parser
+  7. kimath (916KB) - math/geometry library (shapes, polygons, vectors)
+- Fixed Boost header dependency: `config_params.h` includes `<boost/ptr_container/ptr_vector.hpp>`
+  - Cannot add `/usr/include` to include path (native libc headers conflict with Emscripten sysroot)
+  - Solution: symlinked `/usr/include/boost` → `stubs/boost` so Boost headers are found via stubs dir
+    without exposing native system headers
+
+### Key findings:
+- clipper2, fmt_lib, delaunator, json_schema_validator compiled clean (no changes needed)
+- core compiled with only va_start warnings from wx stub (non-fatal)
+- kimath needed Boost headers for `shape_poly_set.cpp` → `polygon_triangulation.h` → `advanced_config.h` → `config_params.h`
+- Boost ptr_container is header-only and does not pull in native libc, so the symlink approach works
+- All 7 .a files confirmed in build-wasm/
+- All Stage 5b success criteria met
+
+### Next: Stage 5c - Compile kiplatform_stubs + kicommon_wasm

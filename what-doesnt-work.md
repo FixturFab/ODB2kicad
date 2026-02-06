@@ -63,3 +63,22 @@
 - DRC test provider .o files must be explicitly linked from pcbnew_kiface_objects
 
 ### No blocking issues. All Stage 4 success criteria are met.
+
+## Stage 5a: Configure WASM Build System
+
+### No issues. All Stage 5a success criteria are met.
+
+## Stage 5b: Compile Thirdparty + Core Libraries
+
+### Boost header dependency (resolved):
+- `shape_poly_set.cpp` → `polygon_triangulation.h` → `advanced_config.h` → `config_params.h` includes `<boost/ptr_container/ptr_vector.hpp>`
+- Cannot add `/usr/include` to the Emscripten include path because native libc headers (bits/wordsize.h, bits/libc-header-start.h) conflict with Emscripten's sysroot
+- Solution: symlinked `/usr/include/boost` to `stubs/boost` so Boost headers are found via the wx stubs include directory without exposing native system headers
+- This works because `boost/ptr_container` is header-only and doesn't transitively pull in native libc
+
+### wxString::Format va_start warning (non-blocking):
+- Every file including the wxString stub produces a warning about passing a reference type to va_start
+- This is undefined behavior per the C++ standard, but the Format/Printf methods are stubs that don't actually format anything
+- Would need to refactor the stub to take `const char*` instead to silence, but it's harmless
+
+### No blocking issues. All Stage 5b success criteria are met.
