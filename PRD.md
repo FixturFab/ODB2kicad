@@ -600,7 +600,7 @@ After each stage, verify:
 - [x] **Stage 5a**: WASM cmake configures without errors
 - [x] **Stage 5b**: Thirdparty + core libraries compile (7 `.a` files)
 - [x] **Stage 5c**: kiplatform_stubs + kicommon_wasm compile
-- [ ] **Stage 5d**: gal_wasm compiles
+- [x] **Stage 5d**: gal_wasm compiles
 - [ ] **Stage 5e**: pcbcommon_wasm + drc_providers compile
 - [ ] **Stage 5f**: WASM executable links successfully
 - [ ] **Stage 5g**: DRC runs in Node.js via WASM

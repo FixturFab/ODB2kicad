@@ -160,6 +160,7 @@ public:
     const char* char_str() const { return m_str.c_str(); }
     wxCharBuffer utf8_str() const { return wxCharBuffer(m_str.c_str()); }
     wxCharBuffer mb_str() const { return wxCharBuffer(m_str.c_str()); }
+    wxCharBuffer mb_str(const wxMBConv&) const { return wxCharBuffer(m_str.c_str()); }
     const char* wc_str() const { return m_str.c_str(); }
     wxCharBuffer fn_str() const { return wxCharBuffer(m_str.c_str()); }
     wxCStrData GetData() const { return wxCStrData(this); }
@@ -612,6 +613,7 @@ public:
     void Add(const wxString& s) { push_back(s); }
     void Add(const wxString& s, size_t count) { for(size_t i = 0; i < count; i++) push_back(s); }
     size_t GetCount() const { return size(); }
+    size_t Count() const { return size(); }
     bool IsEmpty() const { return empty(); }
     void Clear() { clear(); }
     void Empty() { clear(); }

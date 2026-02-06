@@ -230,3 +230,52 @@
 - All Stage 5c success criteria met
 
 ### Next: Stage 5d - Compile gal_wasm
+
+## 2026-02-06: Stage 5d - Compile gal_wasm COMPLETE
+
+### What was done:
+- Built gal_wasm target (16 source files: GAL core, view, font subsystem) → libgal_wasm.a (392KB)
+- Created comprehensive FreeType stub (stubs/freetype2/ft2build.h):
+  - Full FT_FaceRec struct (not void*) so ->style_flags access works
+  - FT_Vector, FT_Outline, FT_Matrix, FT_Bitmap, FT_GlyphSlot structs
+  - FT_Orientation enum, FT_Encoding enum
+  - FT_Outline_Funcs callback struct
+  - TT_OS2 table struct for font embedding permissions
+  - All FT_ constants (FT_STYLE_FLAG_BOLD, FT_LOAD_NO_BITMAP, etc.)
+  - Stub functions for all used FreeType APIs (return error/no-op)
+  - Sub-headers: ftoutln.h, ftsnames.h, tttables.h, ftglyph.h, ftbbox.h
+  - Top-level ft2build.h redirect (for #include <ft2build.h> without freetype2/ prefix)
+- Created HarfBuzz stubs (stubs/harfbuzz/hb.h, hb-ft.h):
+  - hb_buffer_t, hb_font_t types
+  - hb_glyph_info_t, hb_glyph_position_t structs
+  - hb_codepoint_t, hb_position_t types
+  - All used hb_ functions as no-op stubs
+  - HB_VERSION_STRING macro (needed by kicommon_wasm's version_info.cpp)
+- Fixed wxArrayString: added Count() method (alias for size())
+- Fixed wxString: added mb_str(const wxMBConv&) overload
+
+### Key findings:
+- 10/16 gal_wasm files compiled without any changes (painter, gal_display_options,
+  graphics_abstraction_layer, callback_gal, view/*.cpp, glyph.cpp, stroke_font.cpp)
+- Font files (font.cpp, outline_font.cpp, outline_decomposer.cpp, text_attributes.cpp) needed
+  FreeType/HarfBuzz stubs to compile
+- outline_font.cpp uses #include <ft2build.h> (no freetype2/ prefix) requiring a top-level redirect
+- The HarfBuzz stub creation unexpectedly broke kicommon_wasm (version_info.cpp uses HB_VERSION_STRING)
+  - Previously compiled because no harfbuzz header existed (macro was provided elsewhere)
+  - Fixed by adding HB_VERSION_STRING to the hb.h stub
+- All font functions are stub-only (return errors/no-op) - no actual font rendering in WASM
+  This is fine for DRC which only needs text measurement via the stroke font
+
+### Library inventory after Stage 5d (10 .a files):
+1. libclipper2.a (172KB)
+2. libfmt_lib.a (181KB)
+3. libdelaunator.a (19KB)
+4. libjson_schema_validator.a (1.1MB)
+5. libcore.a (34KB)
+6. libsexpr.a (42KB)
+7. libkimath.a (895KB)
+8. libkiplatform_stubs.a (9.7KB)
+9. libkicommon_wasm.a (12MB)
+10. libgal_wasm.a (392KB)
+
+### Next: Stage 5e - Compile pcbcommon_wasm + drc_providers
