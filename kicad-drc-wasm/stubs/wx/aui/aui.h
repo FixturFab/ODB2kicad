@@ -1,18 +1,9 @@
 #pragma once
 #include "../window.h"
 #include "../frame.h"
+#include "../checkbox.h"
+#include "../choice.h"
 #include "auibar.h"
-
-class wxAuiManager {
-public:
-    wxAuiManager(wxWindow* = nullptr, unsigned int = 0) {}
-    void SetManagedWindow(wxWindow*) {}
-    void Update() {}
-    void UnInit() {}
-    bool AddPane(wxWindow*, int = 0) { return true; }
-    bool AddPane(wxWindow*, const wxString&) { return true; }
-    void DetachPane(wxWindow*) {}
-};
 
 class wxAuiPaneInfo {
 public:
@@ -78,6 +69,19 @@ public:
     wxAuiPaneInfo& Defaults() { return *this; }
     wxAuiPaneInfo& SetFlag(int, bool) { return *this; }
     bool IsShown() const { return false; }
+};
+
+class wxAuiManager {
+public:
+    wxAuiManager(wxWindow* = nullptr, unsigned int = 0) {}
+    void SetManagedWindow(wxWindow*) {}
+    void Update() {}
+    void UnInit() {}
+    bool AddPane(wxWindow*, int = 0) { return true; }
+    bool AddPane(wxWindow*, const wxString&) { return true; }
+    void DetachPane(wxWindow*) {}
+    wxAuiPaneInfo& GetPane(const wxString&) { static wxAuiPaneInfo dummy; return dummy; }
+    wxAuiPaneInfo& GetPane(wxWindow*) { static wxAuiPaneInfo dummy; return dummy; }
 };
 
 class wxAuiNotebook : public wxWindow {

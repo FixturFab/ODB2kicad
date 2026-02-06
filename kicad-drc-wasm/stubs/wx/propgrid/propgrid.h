@@ -22,7 +22,9 @@ public:
         m_entries.push_back(wxPGChoiceEntry(label, value));
     }
     size_t GetCount() const { return m_entries.size(); }
+    wxPGChoiceEntry& operator[](size_t i) { return m_entries[i]; }
     const wxPGChoiceEntry& operator[](size_t i) const { return m_entries[i]; }
+    wxPGChoiceEntry& Item(size_t i) { return m_entries[i]; }
     const wxPGChoiceEntry& Item(size_t i) const { return m_entries[i]; }
     bool IsOk() const { return !m_entries.empty(); }
     void Clear() { m_entries.clear(); }

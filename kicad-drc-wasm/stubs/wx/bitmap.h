@@ -1,3 +1,4 @@
 #pragma once
 #include "gdicmn.h"
-// Already defined in gdicmn.h
+#include "stream.h"
+// wxBitmap etc already defined in gdicmn.h

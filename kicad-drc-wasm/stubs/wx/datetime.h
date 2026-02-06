@@ -35,7 +35,7 @@ public:
 
     wxDateTime() : m_time(0) {}
     wxDateTime(time_t t) : m_time(t) {}
-    wxDateTime(int day, Month month, int year, int hour = 0, int min = 0, int sec = 0) {
+    wxDateTime(int day, Month month, int year, int hour = 0, int min = 0, int sec = 0, int ms = 0) {
         struct tm t = {};
         t.tm_year = year - 1900;
         t.tm_mon = month;
@@ -50,6 +50,13 @@ public:
     static wxDateTime Today() { return Now(); }
     static wxDateTime UNow() { return Now(); }
 
+    static int GetNumberOfDays(Month month, int year) {
+        static const int days[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        if (month == Feb && ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0))
+            return 29;
+        return days[month];
+    }
+
     bool IsValid() const { return m_time != 0; }
     time_t GetTicks() const { return m_time; }
 
@@ -61,6 +68,7 @@ public:
         return wxString(buf);
     }
 
+    wxString FormatDate() const { return Format("%x"); }
     wxString FormatISODate() const { return Format("%Y-%m-%d"); }
     wxString FormatISOTime() const { return Format("%H:%M:%S"); }
     wxString FormatISOCombined(char sep = 'T') const {

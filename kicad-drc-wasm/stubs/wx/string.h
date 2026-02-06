@@ -320,6 +320,7 @@ public:
     wxString& Append(const wxString& s) { m_str += s.m_str; return *this; }
     wxString& Append(const char* s) { if(s) m_str += s; return *this; }
     wxString& Append(char c, size_t count = 1) { m_str.append(count, c); return *this; }
+    wxString& Append(wxUniChar c) { m_str += (char)c; return *this; }
     wxString& Prepend(const wxString& s) { m_str.insert(0, s.m_str); return *this; }
     wxString& insert(size_t pos, const wxString& s) { m_str.insert(pos, s.m_str); return *this; }
     wxString& insert(size_t pos, size_t count, char c) { m_str.insert(pos, count, c); return *this; }
@@ -410,9 +411,14 @@ public:
         return wxString(m_str.substr(from, to - from + 1));
     }
 
-    wxString BeforeFirst(char c) const {
+    wxString BeforeFirst(char c, wxString* rest = nullptr) const {
         auto pos = m_str.find(c);
-        return pos == std::string::npos ? *this : wxString(m_str.substr(0, pos));
+        if(pos == std::string::npos) {
+            if(rest) *rest = wxString();
+            return *this;
+        }
+        if(rest) *rest = wxString(m_str.substr(pos + 1));
+        return wxString(m_str.substr(0, pos));
     }
     wxString BeforeLast(char c) const {
         auto pos = m_str.rfind(c);
@@ -474,6 +480,29 @@ public:
     }
     bool StartsWith(char c) const {
         return !m_str.empty() && m_str.front() == c;
+    }
+    // C++20-style starts_with/ends_with (wxWidgets 3.2+)
+    bool starts_with(const wxString& prefix) const {
+        return m_str.size() >= prefix.m_str.size() &&
+               m_str.compare(0, prefix.m_str.size(), prefix.m_str) == 0;
+    }
+    bool starts_with(const char* prefix) const {
+        size_t len = strlen(prefix);
+        return m_str.size() >= len && m_str.compare(0, len, prefix) == 0;
+    }
+    bool starts_with(char c) const {
+        return !m_str.empty() && m_str.front() == c;
+    }
+    bool ends_with(const wxString& suffix) const {
+        return m_str.size() >= suffix.m_str.size() &&
+               m_str.compare(m_str.size() - suffix.m_str.size(), suffix.m_str.size(), suffix.m_str) == 0;
+    }
+    bool ends_with(const char* suffix) const {
+        size_t len = strlen(suffix);
+        return m_str.size() >= len && m_str.compare(m_str.size() - len, len, suffix) == 0;
+    }
+    bool ends_with(char c) const {
+        return !m_str.empty() && m_str.back() == c;
     }
     // Glob-style pattern matching (simple: * and ? wildcards)
     bool Matches(const wxString& pattern) const {
@@ -639,6 +668,8 @@ public:
     void RemoveAt(size_t i) { erase(begin() + i); }
     void Insert(const wxString& s, size_t i) { insert(begin() + i, s); }
     void Sort() { std::sort(begin(), end()); }
+    typedef int (*CompareFunction)(const wxString&, const wxString&);
+    void Sort(CompareFunction fn) { std::sort(begin(), end(), [fn](const wxString& a, const wxString& b){ return fn(a, b) < 0; }); }
 };
 
 // wxSplit / wxJoin (also in tokenzr.h but needed early)
@@ -679,6 +710,12 @@ inline wxString::wxString(const wxCStrData& s) : m_str(s.AsChar()) {}
 #define wxEmptyString wxString()
 #define wxSTRING_MAXLEN std::string::npos
 
+// wxAtoi/wxAtol/wxAtof (normally in wx/wxcrt.h)
+#include <cstdlib>
+inline int wxAtoi(const wxString& str) { return std::atoi(str.c_str().AsChar()); }
+inline long wxAtol(const wxString& str) { return std::atol(str.c_str().AsChar()); }
+inline double wxAtof(const wxString& str) { return std::atof(str.c_str().AsChar()); }
+
 // wxSafeConvertWX2MB - convert wxString to multibyte (trivial in our UTF8 build)
 inline std::string wxSafeConvertWX2MB(const char* s) { return s ? std::string(s) : std::string(); }
 inline std::string wxSafeConvertWX2MB(const wxString& s) { return std::string(s.c_str()); }
@@ -711,3 +748,15 @@ template<typename... Args>
 inline int wxSnprintf(char* buf, size_t len, const wxString& fmt, Args... args) {
     return snprintf(buf, len, fmt.c_str(), args...);
 }
+
+// Translation macros - placed here so they are available wherever wxString is used
+#ifndef wxTRANSLATE
+#define wxTRANSLATE(s) s
+#endif
+#ifndef wxGetTranslation
+#define wxGetTranslation(s, ...) (s)
+#endif
+
+// Include filefn.h so wxFopen/wxRemove/wxRename are available transitively
+// (real wxWidgets provides these via wx/wx.h → wx/filefn.h)
+#include "filefn.h"

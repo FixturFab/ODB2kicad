@@ -150,6 +150,33 @@ private:
     unsigned char m_r, m_g, m_b, m_a;
 };
 
+// wxColor is an alias for wxColour (American spelling)
+#define wxColor wxColour
+
+// Bitmap type enum
+enum wxBitmapType
+{
+    wxBITMAP_TYPE_INVALID = 0,
+    wxBITMAP_TYPE_BMP,
+    wxBITMAP_TYPE_ICO,
+    wxBITMAP_TYPE_CUR,
+    wxBITMAP_TYPE_XBM,
+    wxBITMAP_TYPE_XPM,
+    wxBITMAP_TYPE_TIFF,
+    wxBITMAP_TYPE_GIF,
+    wxBITMAP_TYPE_PNG,
+    wxBITMAP_TYPE_JPEG,
+    wxBITMAP_TYPE_PNM,
+    wxBITMAP_TYPE_PCX,
+    wxBITMAP_TYPE_PICT,
+    wxBITMAP_TYPE_ICON,
+    wxBITMAP_TYPE_ANI,
+    wxBITMAP_TYPE_IFF,
+    wxBITMAP_TYPE_TGA,
+    wxBITMAP_TYPE_MACCURSOR,
+    wxBITMAP_TYPE_ANY = 50
+};
+
 // Bitmap stub
 class wxBitmap
 {
@@ -180,7 +207,11 @@ class wxIcon : public wxBitmap
 {
 public:
     wxIcon() = default;
+    void CopyFromBitmap(const wxBitmap&) {}
 };
+
+// wxStaticBitmap forward-declared here, defined after wxWindow is complete
+class wxStaticBitmap;
 
 // Pen/Brush stubs
 class wxPen

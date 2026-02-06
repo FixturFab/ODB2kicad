@@ -279,3 +279,36 @@
 10. libgal_wasm.a (392KB)
 
 ### Next: Stage 5e - Compile pcbcommon_wasm + drc_providers
+
+## 2026-02-06: Stage 5e - Compile pcbcommon_wasm + drc_providers IN PROGRESS
+
+### 5e.1-5e.5: pcbcommon_wasm COMPLETE
+- Only 1 error in entire pcbcommon_wasm build (all ~75 source files):
+  - pcb_io_kicad_legacy.cpp:3325: `wxRemove` undeclared
+  - Fix: Added wxRemove() and wxRename() to stubs/wx/filefn.h, included filefn.h from ffile.h
+- libpcbcommon_wasm.a produced (8.1MB) - covers board data model, connectivity, ratsnest,
+  teardrop, DRC core, expression evaluator, PCB I/O, parsers, component classes, settings,
+  length/delay, router meander
+- All PRD substages 5e.1 through 5e.5 complete in one pass
+- Added wxString::starts_with/ends_with stubs for drc_test_provider_schematic_parity.cpp
+
+### 5e.6: drc_providers COMPLETE
+- Only 1 error in entire drc_providers build (34 source files):
+  - drc_test_provider_schematic_parity.cpp:292: wxString missing `starts_with` method
+  - Fix: Added starts_with(wxString&), starts_with(const char*), starts_with(char),
+    ends_with(wxString&), ends_with(const char*), ends_with(char) to stubs/wx/string.h
+- libdrc_providers.a produced (2.5MB)
+- All 12 WASM static libraries now built:
+  1. libclipper2.a (172KB)
+  2. libfmt_lib.a (181KB)
+  3. libdelaunator.a (19KB)
+  4. libjson_schema_validator.a (1.0MB)
+  5. libcore.a (34KB)
+  6. libsexpr.a (42KB)
+  7. libkimath.a (895KB)
+  8. libkiplatform_stubs.a (10KB)
+  9. libkicommon_wasm.a (12MB)
+  10. libgal_wasm.a (392KB)
+  11. libpcbcommon_wasm.a (8.5MB)
+  12. libdrc_providers.a (2.5MB)
+- Stage 5e COMPLETE (all substages 5e.1-5e.6 done)

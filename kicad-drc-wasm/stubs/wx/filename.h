@@ -223,6 +223,7 @@ public:
     // Minimal wxDateTime-like wrapper for GetModificationTime
     struct DateTime {
         struct Value { long long GetValue() const { return val; } long long val = 0; };
+        bool IsValid() const { return val.val != 0; }
         Value GetValue() const { return val; }
         Value val;
     };

@@ -56,6 +56,8 @@ private:
     size_t m_lastRead = 0;
 };
 
+class wxStreamBuffer;
+
 class wxMemoryOutputStream : public wxOutputStream
 {
 public:
@@ -70,6 +72,7 @@ public:
         memcpy(buffer, m_data.data(), toCopy);
         return toCopy;
     }
+    inline wxStreamBuffer* GetOutputStreamBuffer() const;
 private:
     std::string m_data;
 };
@@ -215,6 +218,12 @@ public:
     bool FillBuffer() { return false; }
     bool FlushBuffer() { return false; }
 };
+
+// Out-of-line definition for wxMemoryOutputStream::GetOutputStreamBuffer
+inline wxStreamBuffer* wxMemoryOutputStream::GetOutputStreamBuffer() const {
+    // Return nullptr - stub only; DRC code paths should not depend on the actual buffer
+    return nullptr;
+}
 
 // wxStdInputStream - C++ std::istream wrapper around wxInputStream
 // Used by nlohmann::json::parse() in json_settings.cpp

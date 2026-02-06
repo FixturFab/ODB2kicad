@@ -372,23 +372,66 @@ emmake make gal_wasm
 ## Stage 5e: Compile pcbcommon_wasm + drc_providers
 
 ### Objective
-Build the PCB data model, DRC engine, and test providers.
+Build the PCB data model, DRC engine, and test providers. This is broken into substages because there are ~117 source files that each may need stub additions.
+
+### Approach
+For each substage, try `emmake make pcbcommon_wasm` (or `drc_providers` for 5e.6). Fix compilation errors by adding missing methods/types to stub headers in `stubs/`. After fixing each error, record what you changed in progress.txt immediately. Don't wait until the end.
 
 ### Tasks
 
-#### 5e.1 Build pcbcommon_wasm
-```bash
-emmake make pcbcommon_wasm
-```
+#### 5e.1 Board data model files
+Compile the board data model files in pcbcommon_wasm. These are the core PCB object files:
+- board.cpp, board_commit.cpp, board_connected_item.cpp, board_design_settings.cpp, board_item.cpp
+- footprint.cpp, fix_board_shape.cpp, layer_utils.cpp
+- netinfo_item.cpp, netinfo_list.cpp
+- pad.cpp, pad_utils.cpp, padstack.cpp
+- pcb_point.cpp, pcb_target.cpp, pcb_reference_image.cpp, pcb_field.cpp
+- pcb_table.cpp, pcb_tablecell.cpp, pcb_text.cpp, pcb_textbox.cpp, pcb_barcode.cpp
+- pcb_dimension.cpp, pcb_shape.cpp, pcb_group.cpp, pcb_marker.cpp, pcb_track.cpp
+- pcb_generator.cpp, zone.cpp, zone_settings.cpp
+- project_pcb.cpp, collectors.cpp, convert_shape_list_to_polygon.cpp
+- generators_mgr.cpp, pcb_origin_transforms.cpp, pcb_plot_params.cpp
+- pcb_screen.cpp, pcbnew_settings.cpp, pcb_board_outline.cpp
+- board_stackup_manager/board_stackup.cpp
 
-#### 5e.2 Build drc_providers
+**Success Criteria**: All board data model .cpp.o files compile
+
+#### 5e.2 Connectivity, ratsnest, and teardrop
+- connectivity/connectivity_algo.cpp, connectivity_data.cpp, connectivity_items.cpp, from_to_cache.cpp, topo_match.cpp
+- ratsnest/ratsnest_data.cpp
+- teardrop/teardrop.cpp, teardrop_parameters.cpp, teardrop_utils.cpp
+
+**Success Criteria**: All connectivity/ratsnest/teardrop .cpp.o files compile
+
+#### 5e.3 DRC core + expression evaluator
+- drc/drc_engine.cpp, drc_cache_generator.cpp, drc_item.cpp, drc_rule.cpp
+- drc/drc_rule_condition.cpp, drc_rule_parser.cpp, drc_test_provider.cpp
+- pcbexpr_evaluator.cpp, pcbexpr_functions.cpp
+
+**Success Criteria**: All DRC core .cpp.o files compile
+
+#### 5e.4 PCB I/O and parsers
+- pcb_io/pcb_io.cpp, pcb_io_mgr.cpp
+- pcb_io/kicad_sexpr/pcb_io_kicad_sexpr.cpp, pcb_io_kicad_sexpr_parser.cpp
+- pcb_io/kicad_legacy/pcb_io_kicad_legacy.cpp
+
+**Success Criteria**: All PCB I/O .cpp.o files compile
+
+#### 5e.5 Component classes, settings, length/delay, router
+- component_classes/component_class.cpp, component_class_assignment_rule.cpp, component_class_cache_proxy.cpp, component_class_manager.cpp
+- footprint_editor_settings.cpp
+- length_delay_calculation/length_delay_calculation.cpp, length_delay_calculation_item.cpp, tuning_profile_parameters_user_defined.cpp
+- router/pns_meander.cpp
+
+**Success Criteria**: All remaining pcbcommon_wasm .cpp.o files compile. Running `emmake make pcbcommon_wasm` produces libpcbcommon_wasm.a
+
+#### 5e.6 DRC test providers
+Build the drc_providers target containing ~30 DRC test providers plus zone_filler and stackup_predefined_prms:
 ```bash
 emmake make drc_providers
 ```
 
-#### 5e.3 Fix any compilation errors
-
-**Success Criteria**: Both targets produce `.a` files
+**Success Criteria**: `drc_providers` produces libdrc_providers.a
 
 ---
 
@@ -601,7 +644,12 @@ After each stage, verify:
 - [x] **Stage 5b**: Thirdparty + core libraries compile (7 `.a` files)
 - [x] **Stage 5c**: kiplatform_stubs + kicommon_wasm compile
 - [x] **Stage 5d**: gal_wasm compiles
-- [ ] **Stage 5e**: pcbcommon_wasm + drc_providers compile
+- [x] **Stage 5e.1**: Board data model files compile
+- [x] **Stage 5e.2**: Connectivity/ratsnest/teardrop files compile
+- [x] **Stage 5e.3**: DRC core + expression evaluator files compile
+- [x] **Stage 5e.4**: PCB I/O and parser files compile
+- [x] **Stage 5e.5**: Remaining pcbcommon_wasm files compile (libpcbcommon_wasm.a produced)
+- [x] **Stage 5e.6**: DRC providers compile (libdrc_providers.a produced)
 - [ ] **Stage 5f**: WASM executable links successfully
 - [ ] **Stage 5g**: DRC runs in Node.js via WASM
 - [ ] **Stage 6**: STEP export works via opencascade.js

@@ -5,8 +5,9 @@
 #include <cstdint>
 #include <cstddef>
 
-// WXUNUSED macro - marks unused parameters
-#define WXUNUSED(identifier) identifier
+// WXUNUSED macro - matches real wx: comments out the identifier
+// This allows it to work both in parameter lists and as standalone statements
+#define WXUNUSED(identifier) /* identifier */
 
 // Basic wx types
 typedef int wxCoord;
@@ -57,6 +58,7 @@ enum { wxSTRETCH_NOT = 0, wxSHRINK = 0x1000, wxGROW = 0x2000, wxEXPAND = wxGROW 
 
 // Return values
 enum { wxYES = 0x00000002, wxOK = 0x00000004, wxNO = 0x00000008, wxCANCEL = 0x00000010 };
+#define wxYES_NO (wxYES | wxNO)
 
 // Stock cursor IDs
 enum wxStockCursor { wxCURSOR_NONE = 0, wxCURSOR_ARROW, wxCURSOR_HAND, wxCURSOR_CROSS, wxCURSOR_BULLSEYE, wxCURSOR_SIZING, wxCURSOR_IBEAM, wxCURSOR_MAX };

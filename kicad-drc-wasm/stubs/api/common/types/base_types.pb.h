@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <google/protobuf/message.h>
+#include <google/protobuf/any.pb.h>
 #include <api/common/types/enums.pb.h>
 
 #ifndef KIAPI_IMPORTEXPORT
@@ -18,6 +19,9 @@ public:
     Distance() = default;
     int64_t value_nm() const { return value_nm_; }
     void set_value_nm(int64_t v) { value_nm_ = v; }
+    // Delay values (used by pad_to_die_delay)
+    double value_as() const { return 0; }
+    void set_value_as(double) {}
 private:
     int64_t value_nm_ = 0;
 };
@@ -34,6 +38,7 @@ public:
     Ratio() = default;
     double value() const { return 0; }
     void set_value(double) {}
+    operator double() const { return 0; }
 };
 
 class Vector2 {
@@ -98,6 +103,8 @@ public:
     KIID() = default;
     const std::string& value() const { static std::string s; return s; }
     void set_value(const std::string&) {}
+    int id() const { return 0; }
+    void set_id(int) {}
 };
 
 class LibraryIdentifier {
@@ -107,6 +114,7 @@ public:
     const std::string& entry_name() const { static std::string s; return s; }
     void set_library_name(const std::string&) {}
     void set_entry_name(const std::string&) {}
+    void CopyFrom(const LibraryIdentifier&) {}
 };
 
 class PolyLineNode {
@@ -167,26 +175,171 @@ public:
 class StrokeAttributes {
 public:
     StrokeAttributes() = default;
+    Distance* mutable_width() { return &width_; }
+    const Distance& width() const { return width_; }
+    void set_style(StrokeLineStyle) {}
+    StrokeLineStyle style() const { return SLS_DEFAULT; }
+    Color* mutable_color() { return &color_; }
+    const Color& color() const { return color_; }
+private:
+    Distance width_;
+    Color color_;
 };
 
-class TextAttributes {
+class TextAttributes : public google::protobuf::Message {
 public:
     TextAttributes() = default;
+    // Font
+    void set_font_name(const std::string&) {}
+    const std::string& font_name() const { static std::string s; return s; }
+    // Size
+    Vector2* mutable_size() { return &size_; }
+    const Vector2& size() const { return size_; }
+    // Stroke width
+    Distance* mutable_stroke_width() { return &stroke_; }
+    const Distance& stroke_width() const { return stroke_; }
+    // Angle
+    Angle* mutable_angle() { return &angle_; }
+    const Angle& angle() const { return angle_; }
+    // Line spacing
+    void set_line_spacing(double) {}
+    double line_spacing() const { return 1.0; }
+    // Bold/italic/etc
+    void set_bold(bool) {}
+    bool bold() const { return false; }
+    void set_italic(bool) {}
+    bool italic() const { return false; }
+    void set_underlined(bool) {}
+    bool underlined() const { return false; }
+    void set_mirrored(bool) {}
+    bool mirrored() const { return false; }
+    void set_multiline(bool) {}
+    bool multiline() const { return false; }
+    void set_keep_upright(bool) {}
+    bool keep_upright() const { return false; }
+    void set_visible(bool) {}
+    bool visible() const { return true; }
+    // Alignment
+    void set_horizontal_alignment(HorizontalAlignment) {}
+    HorizontalAlignment horizontal_alignment() const { return HA_LEFT; }
+    void set_vertical_alignment(VerticalAlignment) {}
+    VerticalAlignment vertical_alignment() const { return VA_TOP; }
+    // Color
+    Color* mutable_color() { return &color_; }
+    const Color& color() const { return color_; }
+    bool has_color() const { return false; }
+private:
+    Vector2 size_;
+    Distance stroke_;
+    Angle angle_;
+    Color color_;
 };
 
-class Text {
+class Text : public google::protobuf::Message {
 public:
     Text() = default;
+    // Position
+    Vector2* mutable_position() { return &pos_; }
+    const Vector2& position() const { return pos_; }
+    // Text content
+    void set_text(const std::string&) {}
+    const std::string& text() const { static std::string s; return s; }
+    // Attributes
+    TextAttributes* mutable_attributes() { return &attrs_; }
+    const TextAttributes& attributes() const { return attrs_; }
+    bool has_attributes() const { return false; }
+    // Layer (used by BoardText serialization)
+    void set_layer(int) {}
+    int layer() const { return 0; }
+    // Hyperlink
+    void set_hyperlink(const std::string&) {}
+    const std::string& hyperlink() const { static std::string s; return s; }
+private:
+    Vector2 pos_;
+    TextAttributes attrs_;
+};
+
+class TextBox : public google::protobuf::Message {
+public:
+    TextBox() = default;
+    // Corners
+    Vector2* mutable_top_left() { return &tl_; }
+    Vector2* mutable_bottom_right() { return &br_; }
+    const Vector2& top_left() const { return tl_; }
+    const Vector2& bottom_right() const { return br_; }
+    // Text
+    void set_text(const std::string&) {}
+    const std::string& text() const { static std::string s; return s; }
+    // Attributes
+    TextAttributes* mutable_attributes() { return &attrs_; }
+    const TextAttributes& attributes() const { return attrs_; }
+    bool has_attributes() const { return false; }
+    // Stroke
+    StrokeAttributes* mutable_border_stroke() { return &stroke_; }
+    const StrokeAttributes& border_stroke() const { return stroke_; }
+    bool has_border_stroke() const { return false; }
+    // Margins
+    Distance* mutable_margin_left() { return &margin_; }
+    Distance* mutable_margin_top() { return &margin_; }
+    Distance* mutable_margin_right() { return &margin_; }
+    Distance* mutable_margin_bottom() { return &margin_; }
+    const Distance& margin_left() const { return margin_; }
+    const Distance& margin_top() const { return margin_; }
+    const Distance& margin_right() const { return margin_; }
+    const Distance& margin_bottom() const { return margin_; }
+private:
+    Vector2 tl_, br_;
+    TextAttributes attrs_;
+    StrokeAttributes stroke_;
+    Distance margin_;
 };
 
 class GraphicAttributes {
 public:
     GraphicAttributes() = default;
+    StrokeAttributes* mutable_stroke() { return &stroke_; }
+    const StrokeAttributes& stroke() const { return stroke_; }
+    void set_fill(GraphicFillType) {}
+    GraphicFillType fill() const { return GFT_NONE; }
+private:
+    StrokeAttributes stroke_;
 };
 
-class GraphicShape {
+class GraphicShape : public google::protobuf::Message {
 public:
     GraphicShape() = default;
+    GraphicAttributes* mutable_attributes() { return &attrs_; }
+    const GraphicAttributes& attributes() const { return attrs_; }
+    bool has_attributes() const { return false; }
+    // Segment
+    Vector2* mutable_start() { return &start_; }
+    Vector2* mutable_end() { return &end_; }
+    const Vector2& start() const { return start_; }
+    const Vector2& end() const { return end_; }
+    // Other shape types
+    Vector2* mutable_center() { return &start_; }
+    const Vector2& center() const { return start_; }
+    Vector2* mutable_top_left() { return &start_; }
+    Vector2* mutable_bottom_right() { return &end_; }
+    const Vector2& top_left() const { return start_; }
+    const Vector2& bottom_right() const { return end_; }
+    // Radius
+    Distance* mutable_radius() { return &width_; }
+    const Distance& radius() const { return width_; }
+    // Polygon
+    PolyLine* mutable_polygon() { return &poly_; }
+    const PolyLine& polygon() const { return poly_; }
+    // Bezier
+    Vector2* mutable_control1() { return &start_; }
+    Vector2* mutable_control2() { return &end_; }
+    // Type
+    void set_type(int) {}
+    int type() const { return 0; }
+private:
+    GraphicAttributes attrs_;
+    Vector2 start_, end_;
+    Distance width_;
+    PolyLine poly_;
 };
 
 class ItemHeader {
@@ -222,11 +375,6 @@ public:
 class TitleBlockInfo {
 public:
     TitleBlockInfo() = default;
-};
-
-class TextBox {
-public:
-    TextBox() = default;
 };
 
 class CompoundShape {
@@ -267,6 +415,17 @@ public:
 class ArcStartMidEnd {
 public:
     ArcStartMidEnd() = default;
+};
+
+class SymbolPinId {
+public:
+    SymbolPinId() = default;
+    const std::string& name() const { static std::string s; return s; }
+    void set_name(const std::string&) {}
+    int type() const { return 0; }
+    void set_type(int) {}
+    bool no_connect() const { return false; }
+    void set_no_connect(bool) {}
 };
 
 }  // namespace types

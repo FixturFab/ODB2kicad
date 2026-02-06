@@ -164,6 +164,4 @@ private:
     FILE* m_fp;
 };
 
-inline FILE* wxFopen(const wxString& path, const wxString& mode) {
-    return fopen(path.c_str(), mode.c_str());
-}
+// wxFopen moved to filefn.h (included transitively via string.h)

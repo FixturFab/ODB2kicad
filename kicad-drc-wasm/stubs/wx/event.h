@@ -103,9 +103,16 @@ public:
     virtual bool ProcessEvent(wxEvent& event) { return false; }
     void Bind(wxEventType, std::function<void(wxCommandEvent&)>, int = wxID_ANY) {}
     void Bind(wxEventType, std::function<void(wxEvent&)>, int = wxID_ANY) {}
+    // Member function pointer variants
+    template<typename EventType, typename Class, typename EventArg>
+    void Bind(EventType, void(Class::*)(EventArg&), Class*, int = wxID_ANY, int = wxID_ANY) {}
+    template<typename EventType, typename Class, typename EventArg>
+    void Unbind(EventType, void(Class::*)(EventArg&), Class*, int = wxID_ANY, int = wxID_ANY) {}
     virtual void QueueEvent(wxEvent* event) { delete event; }
     void AddPendingEvent(const wxEvent& event) {}
     bool ProcessEventLocally(wxEvent& event) { return false; }
+    virtual bool TryBefore(wxEvent& event) { return false; }
+    virtual bool TryAfter(wxEvent& event) { return false; }
 };
 
 // Event table macros
@@ -349,6 +356,18 @@ private:
     bool m_iconized;
 };
 
+class wxActivateEvent : public wxEvent
+{
+public:
+    enum Reason { Reason_Mouse, Reason_Unknown };
+    wxActivateEvent(wxEventType type = wxEVT_ACTIVATE, bool active = true, int id = 0)
+        : wxEvent(id, type), m_active(active) {}
+    wxEvent* Clone() const override { return new wxActivateEvent(*this); }
+    bool GetActive() const { return m_active; }
+private:
+    bool m_active;
+};
+
 class wxDropFilesEvent : public wxEvent
 {
 public:
@@ -370,3 +389,23 @@ private:
 
 // wxPostEvent
 inline void wxPostEvent(wxEvtHandler* handler, const wxEvent& event) {}
+
+// Missing event types needed by various KiCad headers
+class wxSpinEvent : public wxCommandEvent {
+public:
+    wxSpinEvent(wxEventType type = 0, int id = 0) : wxCommandEvent(type, id) {}
+    wxEvent* Clone() const override { return new wxSpinEvent(*this); }
+    int GetValue() const { return 0; }
+    void SetValue(int) {}
+    int GetPosition() const { return 0; }
+    void SetPosition(int) {}
+};
+
+class wxScrollEvent : public wxCommandEvent {
+public:
+    wxScrollEvent(wxEventType type = 0, int id = 0) : wxCommandEvent(type, id) {}
+    wxEvent* Clone() const override { return new wxScrollEvent(*this); }
+    int GetPosition() const { return 0; }
+    void SetPosition(int) {}
+    int GetOrientation() const { return 0; }
+};

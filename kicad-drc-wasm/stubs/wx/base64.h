@@ -1,5 +1,6 @@
 #pragma once
 #include "string.h"
+#include "buffer.h"
 #include <cstddef>
 #include <cstring>
 
@@ -36,3 +37,4 @@ inline wxString wxBase64Encode(const void* src, size_t srcLen) {
 inline wxString wxBase64Encode(const wxString&) { return wxString(); }
 inline size_t wxBase64DecodedSize(size_t) { return 0; }
 inline size_t wxBase64Decode(void*, size_t, const wxString&) { return 0; }
+inline wxMemoryBuffer wxBase64Decode(const wxString&) { return wxMemoryBuffer(); }

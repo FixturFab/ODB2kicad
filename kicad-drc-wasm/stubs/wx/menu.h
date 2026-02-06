@@ -11,10 +11,14 @@ public:
     bool IsChecked() const { return false; }
     void SetBitmap(const wxBitmap&) {}
     wxString GetItemLabelText() const { return wxString(); }
+    wxString GetItemLabel() const { return wxString(); }
+    wxString GetHelp() const { return wxString(); }
+    int GetKind() const { return 0; }
 };
 class wxMenu : public wxEvtHandler {
 public:
     wxMenu(const wxString& = wxString(), long = 0) {}
+    virtual void SetTitle(const wxString&) {}
     wxMenuItem* Append(int, const wxString&, const wxString& = wxString(), int = 0) { return nullptr; }
     wxMenuItem* Append(wxMenuItem*) { return nullptr; }
     wxMenuItem* AppendSeparator() { return nullptr; }

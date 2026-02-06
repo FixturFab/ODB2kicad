@@ -69,6 +69,34 @@ public:
         return false;
     }
 
+    static size_t GetAllFiles(const wxString& dirname, wxArrayString* files,
+                              const wxString& filespec = wxString(),
+                              int flags = wxDIR_DEFAULT) {
+        if (!files) return 0;
+        wxDir dir(dirname);
+        if (!dir.IsOpened()) return 0;
+        size_t count = 0;
+        struct dirent* entry;
+        rewinddir(dir.m_dir);
+        while ((entry = readdir(dir.m_dir))) {
+            if (entry->d_name[0] == '.' && (entry->d_name[1] == '\0' ||
+                (entry->d_name[1] == '.' && entry->d_name[2] == '\0')))
+                continue;
+            wxString fullpath = dirname + "/" + wxString(entry->d_name);
+            struct stat st;
+            if (stat(fullpath.c_str(), &st) != 0) continue;
+            if (S_ISDIR(st.st_mode)) {
+                if (flags & wxDIR_DIRS) {
+                    count += GetAllFiles(fullpath, files, filespec, flags);
+                }
+            } else if (flags & wxDIR_FILES) {
+                files->Add(fullpath);
+                count++;
+            }
+        }
+        return count;
+    }
+
     size_t Traverse(wxDirTraverser& sink, const wxString& filespec = wxString(), int flags = wxDIR_DEFAULT) const {
         if(!m_dir) return 0;
         size_t count = 0;

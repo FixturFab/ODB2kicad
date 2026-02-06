@@ -41,10 +41,12 @@ public:
 
     wxWindow* GetParent() const { return nullptr; }
     void SetToolTip(const wxString&) {}
+    virtual void DoSetToolTipText(const wxString&) {}
     void SetCursor(const wxCursor&) {}
 
     void Freeze() {}
     void Thaw() {}
+    bool IsFrozen() const { return false; }
 
     int GetDPI() const { return 96; }
     double GetDPIScaleFactor() const { return 1.0; }
@@ -55,10 +57,17 @@ public:
 
     virtual wxSize DoGetBestSize() const { return wxSize(0, 0); }
     virtual wxSize DoGetBestClientSize() const { return wxSize(0, 0); }
+    virtual bool TransferDataToWindow() { return true; }
+    virtual bool TransferDataFromWindow() { return true; }
+    virtual bool Validate() { return true; }
 
     virtual bool Destroy() { return true; }
     bool Close(bool force = false) { return true; }
     virtual void Raise() {}
+    void Center(int direction = 0) {}
+    void Centre(int direction = 0) {}
+    wxSize ConvertDialogToPixels(const wxSize& sz) const { return sz; }
+    wxPoint ConvertDialogToPixels(const wxPoint& pt) const { return pt; }
     void Disable() { Enable(false); }
     void SetForegroundColour(const wxColour&) {}
     void SetBackgroundColour(const wxColour&) {}
@@ -90,6 +99,16 @@ class wxControl : public wxWindow
 public:
     wxControl() = default;
     wxControl(wxWindow* parent, wxWindowID id = wxID_ANY) : wxWindow(parent, id) {}
+};
+
+class wxStaticBitmap : public wxWindow
+{
+public:
+    wxStaticBitmap() = default;
+    wxStaticBitmap(wxWindow*, wxWindowID, const wxBitmap&, const wxPoint& = wxPoint(),
+                   const wxSize& = wxSize(), long = 0) {}
+    void SetBitmap(const wxBitmap&) {}
+    wxBitmap GetBitmap() const { return wxBitmap(); }
 };
 
 #include "dc.h"

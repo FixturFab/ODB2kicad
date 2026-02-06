@@ -1,6 +1,11 @@
 #pragma once
 #include "filename.h"
 #include "string.h"
+#include <cstdio>
+
+inline int wxRemove(const wxString& path) { return remove(path.c_str()); }
+inline int wxRename(const wxString& oldpath, const wxString& newpath) { return rename(oldpath.c_str(), newpath.c_str()); }
+inline FILE* wxFopen(const wxString& path, const wxString& mode) { return fopen(path.c_str(), mode.c_str()); }
 
 // System info functions
 inline wxString wxGetUserId() { return wxString("wasm_user"); }

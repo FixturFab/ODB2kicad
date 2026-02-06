@@ -35,6 +35,18 @@ public:
         return val;
     }
 
+    long ReadLong(const wxString& key, long defaultVal = 0) const {
+        long val = defaultVal;
+        Read(key, &val, defaultVal);
+        return val;
+    }
+
+    double ReadDouble(const wxString& key, double defaultVal = 0.0) const {
+        double val = defaultVal;
+        Read(key, &val, defaultVal);
+        return val;
+    }
+
     virtual bool Write(const wxString&, const wxString&) { return false; }
     virtual bool Write(const wxString&, int) { return false; }
     virtual bool Write(const wxString&, long) { return false; }

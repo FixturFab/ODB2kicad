@@ -399,7 +399,6 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/pcbnew/teardrop/teardrop_utils.cpp
         # Ratsnest
         ${KICAD_SRC}/pcbnew/ratsnest/ratsnest_data.cpp
-        ${KICAD_SRC}/pcbnew/ratsnest/ratsnest_view_item.cpp
         # Connectivity
         ${KICAD_SRC}/pcbnew/connectivity/connectivity_algo.cpp
         ${KICAD_SRC}/pcbnew/connectivity/connectivity_data.cpp
@@ -423,18 +422,11 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/pcbnew/pcb_io/kicad_sexpr/pcb_io_kicad_sexpr.cpp
         ${KICAD_SRC}/pcbnew/pcb_io/kicad_sexpr/pcb_io_kicad_sexpr_parser.cpp
         ${KICAD_SRC}/pcbnew/pcb_io/kicad_legacy/pcb_io_kicad_legacy.cpp
-        ${KICAD_SRC}/pcbnew/pcb_io/eagle/pcb_io_eagle.cpp
-        ${KICAD_SRC}/pcbnew/pcb_io/geda/pcb_io_geda.cpp
         # Component classes
         ${KICAD_SRC}/pcbnew/component_classes/component_class.cpp
         ${KICAD_SRC}/pcbnew/component_classes/component_class_assignment_rule.cpp
         ${KICAD_SRC}/pcbnew/component_classes/component_class_cache_proxy.cpp
         ${KICAD_SRC}/pcbnew/component_classes/component_class_manager.cpp
-        # Netlist
-        ${KICAD_SRC}/pcbnew/netlist_reader/kicad_netlist_reader.cpp
-        ${KICAD_SRC}/pcbnew/netlist_reader/legacy_netlist_reader.cpp
-        ${KICAD_SRC}/pcbnew/netlist_reader/netlist_reader.cpp
-        ${KICAD_SRC}/pcbnew/netlist_reader/pcb_netlist.cpp
         # Settings
         ${KICAD_SRC}/pcbnew/footprint_editor_settings.cpp
         # Length/delay
@@ -443,29 +435,6 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/pcbnew/length_delay_calculation/tuning_profile_parameters_user_defined.cpp
         # Router meander (needed by board_design_settings)
         ${KICAD_SRC}/pcbnew/router/pns_meander.cpp
-        # API
-        ${KICAD_SRC}/pcbnew/api/api_pcb_enums.cpp
-        ${KICAD_SRC}/pcbnew/api/api_pcb_utils.cpp
-        # PCB painter, view, draw panel
-        ${KICAD_SRC}/pcbnew/pcb_painter.cpp
-        ${KICAD_SRC}/pcbnew/pcb_view.cpp
-        ${KICAD_SRC}/pcbnew/pcb_draw_panel_gal.cpp
-        ${KICAD_SRC}/pcbnew/pcb_base_frame.cpp
-        # Clipboard
-        ${KICAD_SRC}/pcbnew/kicad_clipboard.cpp
-        # Selection layer
-        ${KICAD_SRC}/pcbnew/sel_layer.cpp
-        # Tools subset
-        ${KICAD_SRC}/pcbnew/tools/pcb_grid_helper.cpp
-        ${KICAD_SRC}/pcbnew/tools/pcb_actions.cpp
-        ${KICAD_SRC}/pcbnew/tools/pcb_editor_conditions.cpp
-        ${KICAD_SRC}/pcbnew/tools/pcb_viewer_tools.cpp
-        # Footprint library adapter
-        ${KICAD_SRC}/pcbnew/footprint_library_adapter.cpp
-        # Widgets needed by pcbcommon
-        ${KICAD_SRC}/common/widgets/net_selector.cpp
-        ${KICAD_SRC}/common/widgets/netclass_selector.cpp
-        ${KICAD_SRC}/common/widgets/area_selector.cpp
     )
     target_include_directories(pcbcommon_wasm PUBLIC ${KICAD_INCLUDE_DIRS})
     target_link_libraries(pcbcommon_wasm PUBLIC kicommon_wasm gal_wasm clipper2)

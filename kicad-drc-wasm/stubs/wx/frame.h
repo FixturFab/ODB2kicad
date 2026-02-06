@@ -41,6 +41,8 @@ public:
     wxStatusBar* GetStatusBar() const { return nullptr; }
     void SetToolBar(void*) {}
     wxStatusBar* CreateStatusBar(int = 1) { return nullptr; }
+    virtual wxStatusBar* OnCreateStatusBar(int, long, wxWindowID, const wxString&) { return nullptr; }
+    virtual void UpdateStatusBar() {}
     void SetStatusText(const wxString&, int = 0) {}
     void SendSizeEvent(int = 0) {}
 };

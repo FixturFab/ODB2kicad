@@ -92,6 +92,18 @@ public:
     virtual void SetValueAsLong(int, int, long) {}
     virtual void SetColAttr(wxGridCellAttr* attr, int col) { if(attr) attr->DecRef(); }
     virtual void Clear() {}
+    class wxGrid* GetView() const { return nullptr; }
+};
+
+#define wxGRIDTABLE_NOTIFY_ROWS_APPENDED 1
+#define wxGRIDTABLE_NOTIFY_ROWS_DELETED 2
+#define wxGRIDTABLE_NOTIFY_COLS_APPENDED 3
+#define wxGRIDTABLE_NOTIFY_COLS_DELETED 4
+
+class wxGridTableMessage {
+public:
+    wxGridTableMessage() = default;
+    wxGridTableMessage(wxGridTableBase*, int, int = 0, int = 0) {}
 };
 
 class wxGridUpdateLocker {
@@ -145,6 +157,7 @@ public:
     void SetSelectionMode(int) {}
     void SetTable(wxGridTableBase*, bool = false, int = 0) {}
     wxGridTableBase* GetTable() const { return nullptr; }
+    bool ProcessTableMessage(wxGridTableMessage&) { return true; }
     void SetCellRenderer(int, int, wxGridCellRenderer*) {}
     void SetCellEditor(int, int, wxGridCellEditor*) {}
     void SetReadOnly(int, int, bool = true) {}
