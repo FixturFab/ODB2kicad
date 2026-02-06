@@ -10,3 +10,10 @@
 3. **Git describe fails**: `git describe returned error 128: fatal: No names found, cannot describe anything` during cmake configure. This is because the shallow clone (`--depth 1`) has no tags. Results in version showing as "9.99.0" instead of a tagged release version. Non-blocking.
 
 ### No blocking issues. All Stage 1 success criteria are met.
+
+## Stage 2: Emscripten Toolchain Validation
+
+### Minor Issues (non-blocking):
+1. **EXPORT_ES6 requires .mjs extension**: When compiling with `-s EXPORT_ES6=1`, the output must use a `.mjs` extension (not `.js`) for Node.js to recognize it as an ES module. With a `.js` extension, Node 18 fails with `SyntaxError: Cannot use 'import.meta' outside a module`. Alternatively, a `package.json` with `"type": "module"` in the directory would also work, but `.mjs` is simpler.
+
+### No blocking issues. All Stage 2 success criteria are met.

@@ -24,6 +24,13 @@ fp-info-cache
 gerber/
 output/
 
+# Emscripten SDK (large, downloaded)
+emsdk/
+
+# Emscripten compiled output (generated)
+emscripten-test/test.mjs
+emscripten-test/test.wasm
+
 # Build artifacts
 build/
 *.o

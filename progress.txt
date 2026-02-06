@@ -19,3 +19,24 @@
 - All Stage 1 success criteria met
 
 ### Next: Stage 2 - Emscripten Toolchain Validation
+
+## 2026-02-06: Stage 2 - Emscripten Toolchain Validation COMPLETE
+
+### What was done:
+- Task 2.1: Installed Emscripten SDK 5.0.0 (with bundled Node.js 22.16.0) at /root/kicad-test/emsdk
+- Task 2.2: Created test directory at /root/kicad-test/emscripten-test
+- Task 2.3: Created test.cpp with exported C functions (add, greet) and main()
+- Task 2.4: Compiled with em++ using MODULARIZE=1 and EXPORT_ES6=1, output as .mjs
+- Task 2.5: Created test-node.mjs importing the ES module and calling exported functions
+- Task 2.6: Verified in Node.js - both system Node 18.19.1 and emsdk Node 22.16.0 produce correct output
+
+### Key findings:
+- Emscripten 5.0.0 (latest) compiles C++ to WASM without issues
+- EXPORT_ES6=1 requires .mjs output extension for Node.js compatibility (not .js)
+  - With .js extension, Node 18 fails with "Cannot use 'import.meta' outside a module"
+  - Using .mjs extension resolves this without needing package.json type:module
+- Generated output: test.mjs (158KB JS glue) + test.wasm (191KB binary)
+- All exported functions callable via Module._add() and Module.ccall()
+- All Stage 2 success criteria met
+
+### Next: Stage 3 - Analyze KiCad Dependencies
