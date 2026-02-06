@@ -3,6 +3,10 @@
 #include "../event.h"
 #include "../gdicmn.h"
 #include "../bmpbndl.h"
+#include "../sizer.h"
+#include "../timer.h"
+#include "../button.h"
+#include "../menu.h"
 
 class wxAuiToolBarItem
 {

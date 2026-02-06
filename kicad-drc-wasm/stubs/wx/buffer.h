@@ -18,6 +18,11 @@ public:
         if(s) memcpy(m_data, s, m_len + 1);
         else m_data[0] = '\0';
     }
+    wxCharBuffer(const std::string& s) {
+        m_len = s.size();
+        m_data = new char[m_len + 1];
+        memcpy(m_data, s.c_str(), m_len + 1);
+    }
     wxCharBuffer(const wxCharBuffer& o) {
         m_len = o.m_len;
         m_data = new char[m_len + 1];
@@ -52,6 +57,8 @@ private:
     char* m_data;
     size_t m_len;
 };
+
+typedef wxCharBuffer wxScopedCharBuffer;
 
 class wxWCharBuffer
 {

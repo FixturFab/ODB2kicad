@@ -1,5 +1,8 @@
 #pragma once
 #include "window.h"
+#include "button.h"
+#include "sizer.h"
+#include "timer.h"
 
 class wxInfoBarGeneric : public wxWindow
 {

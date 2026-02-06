@@ -16,6 +16,11 @@ public:
     virtual bool OnCmdLineParsed(class wxCmdLineParser&) { return true; }
     static wxAppConsole* GetInstance() { return s_instance; }
     static void SetInstance(wxAppConsole* app) { s_instance = app; }
+    bool IsGUI() const { return false; }
+    wxString GetAppName() const { return wxString("kicad"); }
+    void SetAppName(const wxString&) {}
+    wxString GetVendorName() const { return wxString("KiCad"); }
+    void SetVendorName(const wxString&) {}
     int argc = 0;
     char** argv = nullptr;
 private:

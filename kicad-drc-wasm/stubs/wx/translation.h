@@ -30,6 +30,11 @@ public:
     void AddCatalogLookupPathPrefix(const wxString&) {}
     bool AddCatalog(const wxString&) { return true; }
     const wxString& GetDecimalPoint() const { static wxString s("."); return s; }
+    static wxString GetSystemEncodingName() { return wxString("UTF-8"); }
+    wxString GetInfo(int info, int cat = 0) const {
+        if(info == 0) return wxString(","); // thousands sep
+        return wxString("."); // decimal point
+    }
 };
 
 // Language IDs
@@ -38,3 +43,11 @@ enum {
     wxLANGUAGE_ENGLISH = 1,
     wxLANGUAGE_ENGLISH_US = 2
 };
+
+// Locale info enum
+enum wxLocaleInfo {
+    wxLOCALE_THOUSANDS_SEP = 0,
+    wxLOCALE_DECIMAL_POINT = 1
+};
+
+inline wxLocale* wxGetLocale() { return nullptr; }

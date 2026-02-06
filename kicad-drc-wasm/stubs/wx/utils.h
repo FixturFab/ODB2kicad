@@ -1,11 +1,9 @@
 #pragma once
 
 #include "string.h"
+#include "filefn.h"
 #include <cstdlib>
 #include <unistd.h>
-
-inline wxString wxGetHostName() { return wxString("wasm"); }
-inline wxString wxGetUserName() { return wxString("wasm"); }
 inline wxString wxGetHomeDir() { return wxString("/"); }
 inline wxString wxGetCwd() { return wxString("/"); }
 inline bool wxSetWorkingDirectory(const wxString&) { return true; }

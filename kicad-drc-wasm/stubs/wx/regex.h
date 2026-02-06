@@ -7,6 +7,7 @@ enum {
     wxRE_DEFAULT = 0,
     wxRE_EXTENDED = 0,
     wxRE_BASIC = 0,
+    wxRE_ADVANCED = 0,
     wxRE_ICASE = 1,
     wxRE_NOSUB = 2,
     wxRE_NEWLINE = 4

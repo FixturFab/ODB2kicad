@@ -1,5 +1,6 @@
 #pragma once
 #include "event.h"
+#include "stream.h"
 class wxProcess : public wxEvtHandler {
 public:
     wxProcess(wxEvtHandler* = nullptr, int = wxID_ANY) {}

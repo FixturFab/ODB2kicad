@@ -1,5 +1,6 @@
 #pragma once
 #include "../window.h"
+#include "../frame.h"
 #include "auibar.h"
 
 class wxAuiManager {
@@ -20,8 +21,24 @@ public:
         optionToolbar = 1 << 0,
     };
 
-    wxAuiPaneInfo& Name(const wxString&) { return *this; }
-    wxAuiPaneInfo& Caption(const wxString&) { return *this; }
+    // Public data members accessed by aui_settings.cpp serialization
+    wxString     name;
+    wxString     caption;
+    int          state = 0;
+    unsigned int dock_direction = 0;
+    int          dock_layer = 0;
+    int          dock_row = 0;
+    int          dock_pos = 0;
+    int          dock_proportion = 0;
+    wxSize       best_size;
+    wxSize       min_size;
+    wxSize       max_size;
+    wxPoint      floating_pos;
+    wxSize       floating_size;
+    wxRect       rect;
+
+    wxAuiPaneInfo& Name(const wxString& n) { name = n; return *this; }
+    wxAuiPaneInfo& Caption(const wxString& c) { caption = c; return *this; }
     wxAuiPaneInfo& Left() { return *this; }
     wxAuiPaneInfo& Right() { return *this; }
     wxAuiPaneInfo& Top() { return *this; }

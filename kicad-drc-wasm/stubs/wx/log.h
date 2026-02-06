@@ -1,6 +1,7 @@
 #pragma once
 
 #include "string.h"
+#include "strconv.h"
 #include <cstdio>
 
 // wxLog stub - redirect to stderr
@@ -38,6 +39,23 @@ public:
     wxLogStderr(FILE* = nullptr) {}
 };
 
+typedef unsigned long wxLogLevel;
+
+struct wxLogRecordInfo {
+    const char* filename = "";
+    int line = 0;
+    const char* func = "";
+    const char* component = "";
+};
+
+class wxLogInterposerTemp : public wxLog
+{
+public:
+    wxLogInterposerTemp() {}
+protected:
+    virtual void DoLogRecord(wxLogLevel, const wxString&, const wxLogRecordInfo&) {}
+};
+
 // Log level constants
 enum {
     wxLOG_FatalError = 0,
@@ -63,15 +81,20 @@ inline void wxVLogError(const char*, va_list) {}
 inline void wxVLogDebug(const char*, va_list) {}
 inline void wxVLogTrace(const char*, va_list) {}
 
+// Helper to convert wxString or const char* to const char* for fprintf
+inline const char* _wxLogStr(const wxString& s) { return s.c_str(); }
+inline const char* _wxLogStr(const char* s) { return s; }
+
 // Logging macros - no-ops or stderr
-#define wxLogError(...) do { fprintf(stderr, "Error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while(0)
-#define wxLogWarning(...) do {} while(0)
-#define wxLogMessage(...) do {} while(0)
-#define wxLogVerbose(...) do {} while(0)
-#define wxLogDebug(...) do {} while(0)
-#define wxLogTrace(...) do {} while(0)
-#define wxLogInfo(...) do {} while(0)
-#define wxLogStatus(...) do {} while(0)
-#define wxLogSysError(...) do {} while(0)
-#define wxLogGeneric(...) do {} while(0)
-#define wxLogFatalError(...) do {} while(0)
+// Use inline function overloads to handle both wxString and const char* args
+#define wxLogError(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogWarning(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogMessage(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogVerbose(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogDebug(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogTrace(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogInfo(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogStatus(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogSysError(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogGeneric(fmt, ...) do { (void)(fmt); } while(0)
+#define wxLogFatalError(fmt, ...) do { (void)(fmt); } while(0)

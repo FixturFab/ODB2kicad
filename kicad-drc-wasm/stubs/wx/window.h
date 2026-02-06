@@ -50,16 +50,36 @@ public:
     double GetDPIScaleFactor() const { return 1.0; }
     double GetContentScaleFactor() const { return 1.0; }
 
-    void SetFocus() {}
+    virtual void SetFocus() {}
     bool HasFocus() const { return false; }
 
-    virtual void Destroy() { delete this; }
+    virtual wxSize DoGetBestSize() const { return wxSize(0, 0); }
+    virtual wxSize DoGetBestClientSize() const { return wxSize(0, 0); }
+
+    virtual bool Destroy() { return true; }
     bool Close(bool force = false) { return true; }
+    virtual void Raise() {}
+    void Disable() { Enable(false); }
+    void SetForegroundColour(const wxColour&) {}
+    void SetBackgroundColour(const wxColour&) {}
 
     void CallAfter(std::function<void()> fn) { fn(); }
 
     void SetSizer(class wxSizer*, bool deleteOld = true) {}
     class wxSizer* GetSizer() const { return nullptr; }
+
+    static wxWindow* FindWindowById(long id, const wxWindow* parent = nullptr) { return nullptr; }
+    wxEvtHandler* GetEventHandler() const { return nullptr; }
+    void PushEventHandler(wxEvtHandler*) {}
+    wxEvtHandler* PopEventHandler(bool deleteHandler = false) { return nullptr; }
+
+    void SetClientSize(int w, int h) {}
+    void SetClientSize(const wxSize& s) {}
+
+    void ClientToScreen(int* x, int* y) const {}
+    void ScreenToClient(int* x, int* y) const {}
+    wxPoint ClientToScreen(const wxPoint& pt) const { return pt; }
+    wxPoint ScreenToClient(const wxPoint& pt) const { return pt; }
 
 private:
     wxWindowID m_id = wxID_ANY;
@@ -72,22 +92,36 @@ public:
     wxControl(wxWindow* parent, wxWindowID id = wxID_ANY) : wxWindow(parent, id) {}
 };
 
-class wxDC
-{
-public:
-    virtual ~wxDC() = default;
-    void SetPen(const wxPen&) {}
-    void SetBrush(const wxBrush&) {}
-    void SetFont(const wxFont&) {}
-    void DrawText(const wxString&, int, int) {}
-    void DrawLine(int, int, int, int) {}
-    void DrawRectangle(int, int, int, int) {}
-    void DrawCircle(int, int, int) {}
-    wxSize GetTextExtent(const wxString&) const { return wxSize(); }
-};
-
+#include "dc.h"
 #include "bmpbndl.h"
+#include "scrolwin.h"
 
 extern const wxPoint wxDefaultPosition;
 extern const wxSize wxDefaultSize;
 // wxEmptyString is defined as a macro in string.h
+
+// Window list
+#include <list>
+typedef std::list<wxWindow*> wxWindowList;
+
+// Window style constants
+#define wxDEFAULT_FRAME_STYLE 0x0001
+#define wxRESIZE_BORDER 0x0040
+#define wxFRAME_FLOAT_ON_PARENT 0x0008
+#define wxFRAME_NO_TASKBAR 0x0002
+#define wxFRAME_TOOL_WINDOW 0x0004
+#define wxSTAY_ON_TOP 0x8000
+#define wxSYSTEM_MENU 0x0800
+#define wxMINIMIZE_BOX 0x0400
+#define wxMAXIMIZE_BOX 0x0200
+#define wxCLOSE_BOX 0x1000
+#define wxCAPTION 0x2000
+#ifndef wxCLIP_CHILDREN
+#define wxCLIP_CHILDREN 0x4000
+#endif
+#define wxDEFAULT_DIALOG_STYLE (wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX)
+
+// Note: wxPanelNameStr is defined in wx/event.h as wxString
+// wxDialogNameStr and wxFrameNameStr are defined here
+inline const wxString wxDialogNameStr("dialog");
+inline const wxString wxFrameNameStr("frame");

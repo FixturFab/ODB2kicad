@@ -27,3 +27,4 @@
 #include "confbase.h"
 #include "app.h"
 #include "translation.h"
+#include "platinfo.h"

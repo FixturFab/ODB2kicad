@@ -53,6 +53,8 @@ public:
     void SetHeight(int h) { height = h; }
     void SetX(int x_) { x = x_; }
     void SetY(int y_) { y = y_; }
+    void SetPosition(const wxPoint& p) { x = p.x; y = p.y; }
+    void SetSize(const wxSize& s) { width = s.GetWidth(); height = s.GetHeight(); }
 
     bool Contains(int x_, int y_) const {
         return x_ >= x && x_ < x + width && y_ >= y && y_ < y + height;
@@ -96,20 +98,48 @@ public:
     wxCursor(int cursorId) {}
 };
 
+// Colour constants
+#define wxALPHA_OPAQUE 255
+#define wxALPHA_TRANSPARENT 0
+
+// Colour base class
+class wxColourBase {
+public:
+    typedef unsigned char ChannelType;
+};
+
 // Colour stub
-class wxColour
+class wxColour : public wxColourBase
 {
 public:
     wxColour() : m_r(0), m_g(0), m_b(0), m_a(255) {}
-    wxColour(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255)
+    wxColour(unsigned char r, unsigned char g, unsigned char b, unsigned char a = wxALPHA_OPAQUE)
         : m_r(r), m_g(g), m_b(b), m_a(a) {}
     wxColour(const wxString& name) : m_r(0), m_g(0), m_b(0), m_a(255) {}
+    wxColour(unsigned long colRGB) {
+        m_r = (unsigned char)(colRGB & 0xFF);
+        m_g = (unsigned char)((colRGB >> 8) & 0xFF);
+        m_b = (unsigned char)((colRGB >> 16) & 0xFF);
+        m_a = 255;
+    }
 
     unsigned char Red() const { return m_r; }
     unsigned char Green() const { return m_g; }
     unsigned char Blue() const { return m_b; }
     unsigned char Alpha() const { return m_a; }
     bool IsOk() const { return true; }
+
+    void Set(unsigned char r, unsigned char g, unsigned char b, unsigned char a = wxALPHA_OPAQUE) {
+        m_r = r; m_g = g; m_b = b; m_a = a;
+    }
+    void Set(unsigned long colRGB) {
+        m_r = (unsigned char)(colRGB & 0xFF);
+        m_g = (unsigned char)((colRGB >> 8) & 0xFF);
+        m_b = (unsigned char)((colRGB >> 16) & 0xFF);
+        m_a = 255;
+    }
+    bool Set(const wxString&) { return false; }
+
     bool operator==(const wxColour& o) const {
         return m_r == o.m_r && m_g == o.m_g && m_b == o.m_b && m_a == o.m_a;
     }

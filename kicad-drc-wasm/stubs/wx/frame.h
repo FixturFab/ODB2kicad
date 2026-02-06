@@ -8,7 +8,23 @@ class wxStatusBar;
 
 #define wxDEFAULT_FRAME_STYLE (0x00000020L | 0x00000040L | 0x00000200L | 0x00000400L | 0x00000800L | 0x00001000L)
 
-class wxFrame : public wxWindow
+class wxTopLevelWindow : public wxWindow
+{
+public:
+    wxTopLevelWindow() = default;
+    virtual ~wxTopLevelWindow() = default;
+    void Maximize(bool = true) {}
+    void Iconize(bool = true) {}
+    bool IsMaximized() const { return false; }
+    bool IsIconized() const { return false; }
+    bool IsFullScreen() const { return false; }
+    void SetTitle(const wxString&) {}
+    wxString GetTitle() const { return wxString(); }
+    void Centre(int = wxBOTH) {}
+    void Center(int d = wxBOTH) { Centre(d); }
+};
+
+class wxFrame : public wxTopLevelWindow
 {
 public:
     wxFrame() = default;
@@ -26,14 +42,5 @@ public:
     void SetToolBar(void*) {}
     wxStatusBar* CreateStatusBar(int = 1) { return nullptr; }
     void SetStatusText(const wxString&, int = 0) {}
-    void SetTitle(const wxString&) {}
-    wxString GetTitle() const { return wxString(); }
-    void Centre(int = wxBOTH) {}
-    void Center(int d = wxBOTH) { Centre(d); }
-    void Maximize(bool = true) {}
-    void Iconize(bool = true) {}
-    bool IsMaximized() const { return false; }
-    bool IsIconized() const { return false; }
-    bool IsFullScreen() const { return false; }
     void SendSizeEvent(int = 0) {}
 };

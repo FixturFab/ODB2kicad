@@ -1,6 +1,7 @@
 #pragma once
 
 #include "string.h"
+#include "utils.h"
 #include <vector>
 #include <sstream>
 
@@ -69,18 +70,4 @@ private:
     wxStringTokenizerMode m_mode = wxTOKEN_DEFAULT;
 };
 
-inline wxArrayString wxSplit(const wxString& str, wxChar sep, wxChar escape = 0) {
-    wxArrayString result;
-    wxStringTokenizer tok(str, wxString(1, sep), wxTOKEN_RET_EMPTY_ALL);
-    while(tok.HasMoreTokens()) result.Add(tok.GetNextToken());
-    return result;
-}
-
-inline wxString wxJoin(const wxArrayString& arr, wxChar sep) {
-    wxString result;
-    for(size_t i = 0; i < arr.size(); i++) {
-        if(i > 0) result += sep;
-        result += arr[i];
-    }
-    return result;
-}
+// wxSplit and wxJoin are defined in string.h to be available early

@@ -55,6 +55,19 @@ public:
     }
     bool Eof() const { return !m_fp || feof(m_fp); }
 
+    bool ReadAll(wxString* str) {
+        if(!m_fp || !str) return false;
+        long len = Length();
+        if(len <= 0) { *str = wxString(); return len == 0; }
+        std::string buf(len, '\0');
+        fseek(m_fp, 0, SEEK_SET);
+        size_t read = fread(&buf[0], 1, len, m_fp);
+        buf.resize(read);
+        *str = wxString(buf);
+        return true;
+    }
+    bool ReadAll(wxString* str, const wxMBConv&) { return ReadAll(str); }
+
     static bool Exists(const wxString& name) {
         FILE* f = fopen(name.c_str(), "r");
         if(f) { fclose(f); return true; }

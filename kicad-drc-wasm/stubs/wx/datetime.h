@@ -3,6 +3,29 @@
 #include "string.h"
 #include <ctime>
 
+// Forward declare
+class wxTimeSpan;
+
+class wxTimeSpan
+{
+public:
+    wxTimeSpan() : m_ms(0) {}
+    wxTimeSpan(long hours, long mins = 0, long secs = 0, long ms = 0)
+        : m_ms(hours*3600000LL + mins*60000LL + secs*1000LL + ms) {}
+    static wxTimeSpan Seconds(long s) { return wxTimeSpan(0, 0, s); }
+    static wxTimeSpan Minutes(long m) { return wxTimeSpan(0, m); }
+    static wxTimeSpan Hours(long h) { return wxTimeSpan(h); }
+    long GetMilliseconds() const { return m_ms; }
+    long GetSeconds() const { return m_ms / 1000; }
+    bool IsShorterThan(const wxTimeSpan& other) const { return m_ms < other.m_ms; }
+    bool IsLongerThan(const wxTimeSpan& other) const { return m_ms > other.m_ms; }
+    bool IsNegative() const { return m_ms < 0; }
+    bool IsPositive() const { return m_ms > 0; }
+    wxTimeSpan Abs() const { return wxTimeSpan(0, 0, 0, m_ms >= 0 ? m_ms : -m_ms); }
+private:
+    long long m_ms;
+};
+
 class wxDateTime
 {
 public:
@@ -33,7 +56,8 @@ public:
     wxString Format(const wxString& fmt = wxString("%c")) const {
         char buf[256];
         struct tm* t = localtime(&m_time);
-        strftime(buf, sizeof(buf), fmt.c_str(), t);
+        if(t) strftime(buf, sizeof(buf), fmt.c_str(), t);
+        else buf[0] = '\0';
         return wxString(buf);
     }
 
@@ -43,33 +67,47 @@ public:
         return FormatISODate() + wxString(1, sep) + FormatISOTime();
     }
 
-    int GetYear() const { struct tm* t = localtime(&m_time); return t->tm_year + 1900; }
-    Month GetMonth() const { struct tm* t = localtime(&m_time); return (Month)t->tm_mon; }
-    int GetDay() const { struct tm* t = localtime(&m_time); return t->tm_mday; }
-    int GetHour() const { struct tm* t = localtime(&m_time); return t->tm_hour; }
-    int GetMinute() const { struct tm* t = localtime(&m_time); return t->tm_min; }
-    int GetSecond() const { struct tm* t = localtime(&m_time); return t->tm_sec; }
+    int GetYear() const { struct tm* t = localtime(&m_time); return t ? t->tm_year + 1900 : 0; }
+    Month GetMonth() const { struct tm* t = localtime(&m_time); return t ? (Month)t->tm_mon : Jan; }
+    int GetDay() const { struct tm* t = localtime(&m_time); return t ? t->tm_mday : 0; }
+    int GetHour() const { struct tm* t = localtime(&m_time); return t ? t->tm_hour : 0; }
+    int GetMinute() const { struct tm* t = localtime(&m_time); return t ? t->tm_min : 0; }
+    int GetSecond() const { struct tm* t = localtime(&m_time); return t ? t->tm_sec : 0; }
 
     bool operator<(const wxDateTime& o) const { return m_time < o.m_time; }
     bool operator>(const wxDateTime& o) const { return m_time > o.m_time; }
+    bool operator<=(const wxDateTime& o) const { return m_time <= o.m_time; }
+    bool operator>=(const wxDateTime& o) const { return m_time >= o.m_time; }
     bool operator==(const wxDateTime& o) const { return m_time == o.m_time; }
     bool operator!=(const wxDateTime& o) const { return m_time != o.m_time; }
 
+    wxTimeSpan operator-(const wxDateTime& o) const {
+        long diff = (long)difftime(m_time, o.m_time);
+        return wxTimeSpan::Seconds(diff);
+    }
+
+    wxDateTime operator-(const wxTimeSpan& span) const {
+        return wxDateTime(m_time - span.GetSeconds());
+    }
+    wxDateTime operator+(const wxTimeSpan& span) const {
+        return wxDateTime(m_time + span.GetSeconds());
+    }
+
+    bool IsSameDate(const wxDateTime& o) const {
+        struct tm a_tm, b_tm;
+        struct tm* a = localtime_r(&m_time, &a_tm);
+        struct tm* b = localtime_r(&o.m_time, &b_tm);
+        if(!a || !b) return false;
+        return a->tm_year == b->tm_year && a->tm_mon == b->tm_mon && a->tm_mday == b->tm_mday;
+    }
+
+    const char* ParseFormat(const wxString& str, const wxString& format = wxString("%c")) {
+        struct tm t = {};
+        const char* result = strptime(str.c_str(), format.c_str(), &t);
+        if(result) m_time = mktime(&t);
+        return result;
+    }
+
 private:
     time_t m_time;
-};
-
-class wxTimeSpan
-{
-public:
-    wxTimeSpan() : m_ms(0) {}
-    wxTimeSpan(long hours, long mins = 0, long secs = 0, long ms = 0)
-        : m_ms(hours*3600000LL + mins*60000LL + secs*1000LL + ms) {}
-    static wxTimeSpan Seconds(long s) { return wxTimeSpan(0, 0, s); }
-    static wxTimeSpan Minutes(long m) { return wxTimeSpan(0, m); }
-    static wxTimeSpan Hours(long h) { return wxTimeSpan(h); }
-    long GetMilliseconds() const { return m_ms; }
-    long GetSeconds() const { return m_ms / 1000; }
-private:
-    long long m_ms;
 };

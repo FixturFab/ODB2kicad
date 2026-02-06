@@ -1,5 +1,7 @@
 #pragma once
 #include "dialog.h"
+
+inline const wxString wxFileSelectorDefaultWildcardStr("*.*");
 class wxFileDialog : public wxDialog {
 public:
     wxFileDialog(wxWindow* = nullptr, const wxString& = wxString(), const wxString& = wxString(),

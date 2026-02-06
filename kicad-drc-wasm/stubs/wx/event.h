@@ -3,7 +3,11 @@
 #include "defs.h"
 #include "string.h"
 #include "gdicmn.h"
+#include "datetime.h"
 #include <functional>
+
+// Forward declarations needed by kiway.h and others
+class wxFrame;
 
 // Event type
 typedef int wxEventType;
@@ -20,6 +24,28 @@ typedef int wxEventType;
 #define wxEVT_KEY_UP 8
 #define wxEVT_IDLE 9
 #define wxEVT_THREAD 10
+#define wxEVT_CHAR_HOOK 11
+#define wxEVT_UPDATE_UI 13
+#define wxEVT_ACTIVATE 14
+#define wxEVT_SHOW 15
+#define wxEVT_MAXIMIZE 16
+#define wxEVT_ICONIZE 17
+#define wxEVT_MOVE 18
+#define wxEVT_SET_FOCUS 19
+#define wxEVT_KILL_FOCUS 20
+#define wxEVT_SCROLL_TOP 21
+#define wxEVT_SCROLL_BOTTOM 22
+#define wxEVT_SCROLL_LINEUP 23
+#define wxEVT_SCROLL_LINEDOWN 24
+#define wxEVT_SCROLL_PAGEUP 25
+#define wxEVT_SCROLL_PAGEDOWN 26
+#define wxEVT_SCROLL_THUMBTRACK 27
+#define wxEVT_SCROLL_THUMBRELEASE 28
+#define wxEVT_ERASE_BACKGROUND 29
+#define wxEVT_ENTER_WINDOW 30
+#define wxEVT_LEAVE_WINDOW 31
+#define wxEVT_DROP_FILES 32
+#define wxEVT_DPI_CHANGED 33
 
 class wxEvent
 {
@@ -77,7 +103,7 @@ public:
     virtual bool ProcessEvent(wxEvent& event) { return false; }
     void Bind(wxEventType, std::function<void(wxCommandEvent&)>, int = wxID_ANY) {}
     void Bind(wxEventType, std::function<void(wxEvent&)>, int = wxID_ANY) {}
-    void QueueEvent(wxEvent* event) { delete event; }
+    virtual void QueueEvent(wxEvent* event) { delete event; }
     void AddPendingEvent(const wxEvent& event) {}
     bool ProcessEventLocally(wxEvent& event) { return false; }
 };
@@ -132,7 +158,13 @@ public:
     bool ShiftDown() const { return false; }
     bool ControlDown() const { return false; }
     bool AltDown() const { return false; }
+    bool MetaDown() const { return false; }
+    bool RawControlDown() const { return false; }
     bool HasModifiers() const { return false; }
+    bool HasAnyModifiers() const { return false; }
+    int GetX() const { return 0; }
+    int GetY() const { return 0; }
+    wxPoint GetPosition() const { return wxPoint(); }
 };
 
 class wxSizeEvent : public wxEvent
@@ -161,9 +193,8 @@ public:
 #define wxEVT_MOTION 26
 #define wxEVT_MOUSEWHEEL 27
 #define wxEVT_LEFT_DCLICK 28
-#define wxEVT_ENTER_WINDOW 29
-#define wxEVT_LEAVE_WINDOW 30
-#define wxEVT_SYS_COLOUR_CHANGED 31
+// wxEVT_ENTER_WINDOW and wxEVT_LEAVE_WINDOW defined above
+#define wxEVT_SYS_COLOUR_CHANGED 50
 
 class wxTimerEvent : public wxEvent
 {
@@ -171,6 +202,76 @@ public:
     wxTimerEvent() : wxEvent(0, wxEVT_NULL) {}
     wxEvent* Clone() const override { return new wxTimerEvent(*this); }
 };
+
+class wxPaintEvent : public wxEvent
+{
+public:
+    wxPaintEvent(int id = 0) : wxEvent(id, wxEVT_PAINT) {}
+    wxEvent* Clone() const override { return new wxPaintEvent(*this); }
+};
+
+class wxFocusEvent : public wxEvent
+{
+public:
+    wxFocusEvent(wxEventType type = wxEVT_SET_FOCUS, int id = 0) : wxEvent(id, type) {}
+    wxEvent* Clone() const override { return new wxFocusEvent(*this); }
+};
+
+class wxIdleEvent : public wxEvent
+{
+public:
+    wxIdleEvent() : wxEvent(0, wxEVT_IDLE) {}
+    wxEvent* Clone() const override { return new wxIdleEvent(*this); }
+    void RequestMore(bool needMore = true) {}
+};
+
+class wxShowEvent : public wxEvent
+{
+public:
+    wxShowEvent(int id = 0, bool show = true) : wxEvent(id, wxEVT_SHOW) {}
+    wxEvent* Clone() const override { return new wxShowEvent(*this); }
+    bool IsShown() const { return true; }
+};
+
+class wxDPIChangedEvent : public wxEvent
+{
+public:
+    wxDPIChangedEvent() : wxEvent(0, wxEVT_DPI_CHANGED) {}
+    wxEvent* Clone() const override { return new wxDPIChangedEvent(*this); }
+};
+
+// wxLongLong - wrapper for 64-bit integer
+class wxLongLong
+{
+public:
+    wxLongLong() : m_val(0) {}
+    wxLongLong(long long v) : m_val(v) {}
+    long long GetValue() const { return m_val; }
+    long ToLong() const { return (long)m_val; }
+    operator long long() const { return m_val; }
+private:
+    long long m_val;
+};
+
+class wxULongLong
+{
+public:
+    wxULongLong() : m_val(0) {}
+    wxULongLong(unsigned long long v) : m_val(v) {}
+    unsigned long long GetValue() const { return m_val; }
+    unsigned long ToULong() const { return (unsigned long)m_val; }
+    operator unsigned long long() const { return m_val; }
+    wxULongLong& operator+=(const wxULongLong& o) { m_val += o.m_val; return *this; }
+    wxULongLong& operator-=(const wxULongLong& o) { m_val -= o.m_val; return *this; }
+    bool operator>(const wxULongLong& o) const { return m_val > o.m_val; }
+    bool operator<(const wxULongLong& o) const { return m_val < o.m_val; }
+    bool operator==(const wxULongLong& o) const { return m_val == o.m_val; }
+private:
+    unsigned long long m_val;
+};
+
+// wxPanelNameStr
+inline const wxString wxPanelNameStr("panel");
 
 class wxMenu;  // forward declaration
 

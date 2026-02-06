@@ -193,4 +193,40 @@
 - All 7 .a files confirmed in build-wasm/
 - All Stage 5b success criteria met
 
-### Next: Stage 5c - Compile kiplatform_stubs + kicommon_wasm
+## 2026-02-06: Stage 5c - Compile kiplatform_stubs + kicommon_wasm COMPLETE
+
+### What was done:
+- Cleaned build-wasm directory and rebuilt from scratch with emcmake cmake + emmake make
+- Built kiplatform_stubs (1 source file: platform/kiplatform_wasm.cpp) → libkiplatform_stubs.a (9.7KB)
+- Built kicommon_wasm (~87 object files from ~87 source files) → libkicommon_wasm.a (12MB)
+- Both targets compile with warnings only (no errors):
+  - va_start warning in wxString::Format stub (known harmless)
+  - wxCStrData format warning in wxFileName::CreateTempFileName stub (harmless)
+- Also rebuilt json_schema_validator → libjson_schema_validator.a (rebuilt after clean)
+
+### Library inventory after Stage 5c (9 .a files):
+1. libclipper2.a (172KB)
+2. libfmt_lib.a (181KB)
+3. libdelaunator.a (19KB)
+4. libjson_schema_validator.a (1.0MB)
+5. libcore.a (34KB)
+6. libsexpr.a (42KB)
+7. libkimath.a (895KB)
+8. libkiplatform_stubs.a (9.7KB)
+9. libkicommon_wasm.a (12MB)
+
+### Key findings:
+- kicommon_wasm is by far the largest library (12MB) - ~87 compilation units covering:
+  - Core utilities (string_utils, richio, kiid, etc.)
+  - Settings system (json_settings, settings_manager, etc.)
+  - Project management (project_file, net_settings, etc.)
+  - I/O subsystem (kicad_io_utils, io_base, etc.)
+  - Font subsystem (fontconfig, version_info)
+  - Jobs framework (job, job_pcb_drc, job_registry, etc.)
+  - GAL color, widgets stubs, kiway, build_version, etc.
+- All wx stub headers (224 files in stubs/wx/) from prior iterations worked correctly
+- Platform stubs (kiplatform_wasm.cpp) provide WASM implementations for app/environment functions
+- pgm_base_wasm.cpp provides minimal PGM_BASE for WASM (in kicommon_wasm)
+- All Stage 5c success criteria met
+
+### Next: Stage 5d - Compile gal_wasm

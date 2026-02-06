@@ -78,6 +78,10 @@ if(EMSCRIPTEN)
         JSON_HAS_FILESYSTEM=0
         _FILE_OFFSET_BITS=64
         KICAD_WASM=1
+        # kiway.h requires LIB_ENV_VAR to be defined for the platform.
+        # We define __linux__ to satisfy the #if chain in kiway.h.
+        # Emscripten is POSIX-compatible so this is safe for compile purposes.
+        __linux__
         # Don't define WXUSINGDLL or __WXGTK__ - we use our own stubs
     )
 
@@ -91,6 +95,7 @@ if(EMSCRIPTEN)
         -Wno-sign-compare
         -Wno-missing-field-initializers
         -Wno-deprecated-copy
+        -Wno-non-pod-varargs
         -pthread
     )
 
@@ -215,7 +220,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/common/richio.cpp
         ${KICAD_SRC}/common/kiid.cpp
         ${KICAD_SRC}/common/singleton.cpp
-        ${KICAD_SRC}/common/pgm_base.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/pgm_base_wasm.cpp
         ${KICAD_SRC}/common/thread_pool.cpp
         ${KICAD_SRC}/common/advanced_config.cpp
         ${KICAD_SRC}/common/dsnlexer.cpp
@@ -254,7 +259,6 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/common/io/io_utils.cpp
         # API
         ${KICAD_SRC}/common/api/serializable.cpp
-        ${KICAD_SRC}/common/api/api_utils.cpp
         # Settings
         ${KICAD_SRC}/common/settings/app_settings.cpp
         ${KICAD_SRC}/common/settings/aui_settings.cpp
@@ -278,7 +282,6 @@ if(EMSCRIPTEN)
         # Libraries
         ${KICAD_SRC}/common/libraries/library_table.cpp
         ${KICAD_SRC}/common/libraries/library_table_parser.cpp
-        ${KICAD_SRC}/common/libraries/library_manager.cpp
         # Font
         ${KICAD_SRC}/common/newstroke_font.cpp
         ${KICAD_SRC}/common/font/fontconfig.cpp
@@ -291,64 +294,34 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/common/jobs/job_pcb_drc.cpp
         ${KICAD_SRC}/common/jobs/job_registry.cpp
         ${KICAD_SRC}/common/jobs/job_dispatcher.cpp
-        # Widgets stubs
+        # Widgets stubs (non-UI)
         ${KICAD_SRC}/common/widgets/progress_reporter_base.cpp
         ${KICAD_SRC}/common/widgets/report_severity.cpp
-        ${KICAD_SRC}/common/widgets/ui_common.cpp
         # JSON schema
         ${KICAD_SRC}/common/json_schema_validator.cpp
-        # Dialog shim (stub)
-        ${KICAD_SRC}/common/confirm.cpp
-        ${KICAD_SRC}/common/dialog_shim.cpp
-        ${KICAD_SRC}/common/dpi_scaling.cpp
-        ${KICAD_SRC}/common/dpi_scaling_common.cpp
         # DRC needs these
         ${KICAD_SRC}/common/kiway.cpp
         ${KICAD_SRC}/common/kiway_holder.cpp
-        ${KICAD_SRC}/common/kiway_mail.cpp
         # CLI progress
         ${KICAD_SRC}/common/cli_progress_reporter.cpp
-        # Bitmap (for PCB_REFERENCE_IMAGE)
-        ${KICAD_SRC}/common/bitmap.cpp
+        # Bitmap info (metadata only, no GUI)
         ${KICAD_SRC}/common/bitmap_info.cpp
-        ${KICAD_SRC}/common/bitmap_store.cpp
-        # Design block
+        # Design block (data model only)
         ${KICAD_SRC}/common/design_block.cpp
-        ${KICAD_SRC}/common/design_block_io.cpp
-        ${KICAD_SRC}/common/design_block_library_adapter.cpp
-        # Other needed
-        ${KICAD_SRC}/common/gestfich.cpp
-        ${KICAD_SRC}/common/eda_doc.cpp
-        ${KICAD_SRC}/common/systemdirsappend.cpp
-        ${KICAD_SRC}/common/searchhelpfilefullpath.cpp
-        ${KICAD_SRC}/common/launch_ext.cpp
-        ${KICAD_SRC}/common/notifications_manager.cpp
-        ${KICAD_SRC}/common/app_monitor.cpp
-        # Scripting stub
-        ${KICAD_SRC}/scripting/python_scripting.cpp
-        # Text eval
-        ${KICAD_SRC}/common/text_eval/text_eval_wrapper.cpp
+        # Text eval (math parser only)
         ${KICAD_SRC}/common/text_eval/text_eval_parser.cpp
-        # History
-        ${KICAD_SRC}/common/local_history.cpp
-        ${KICAD_SRC}/common/history_lock.cpp
-        # Background jobs
-        ${KICAD_SRC}/common/background_jobs_monitor.cpp
-        # Tool / toolbar
-        ${KICAD_SRC}/common/tool/ui/toolbar_configuration.cpp
-        ${KICAD_SRC}/common/tool/ui/toolbar_context_menu_registry.cpp
-        # Database
+        # DPI scaling (no-UI path)
+        ${KICAD_SRC}/common/dpi_scaling.cpp
+        # Database settings
         ${KICAD_SRC}/common/database/database_lib_settings.cpp
-        # Asset archive
-        ${KICAD_SRC}/common/asset_archive.cpp
-        # scintilla_tricks stub
-        ${KICAD_SRC}/common/scintilla_tricks.cpp
-        # grid_tricks
-        ${KICAD_SRC}/common/grid_tricks.cpp
-        # ui_events
+        # Searchhelpfile
+        ${KICAD_SRC}/common/searchhelpfilefullpath.cpp
+        # Launch ext (stub needed)
+        ${KICAD_SRC}/common/launch_ext.cpp
+        # UI events (event definitions only)
         ${KICAD_SRC}/common/ui_events.cpp
-        # kidialog
-        ${KICAD_SRC}/common/kidialog.cpp
+        # App monitor (can be minimal)
+        ${KICAD_SRC}/common/app_monitor.cpp
     )
     target_include_directories(kicommon_wasm PUBLIC ${KICAD_INCLUDE_DIRS})
     target_link_libraries(kicommon_wasm PUBLIC core kimath sexpr fmt_lib kiplatform_stubs delaunator)
@@ -358,7 +331,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/common/gal/painter.cpp
         ${KICAD_SRC}/common/gal/gal_display_options.cpp
         ${KICAD_SRC}/common/gal/graphics_abstraction_layer.cpp
-        ${KICAD_SRC}/common/gal/cursors.cpp
+        # cursors.cpp excluded - heavy GUI deps (wxImage XPM), not needed for DRC
         ${KICAD_SRC}/common/callback_gal.cpp
         ${KICAD_SRC}/common/view/view_item.cpp
         ${KICAD_SRC}/common/view/view.cpp
