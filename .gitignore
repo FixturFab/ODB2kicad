@@ -1,0 +1,35 @@
+# KiCad source tree (vendored/reference)
+kicad-src/
+
+# KiCad backup and autosave files
+*-backups/
+*.kicad_pro.lck
+*.kicad_pcb.lck
+*.kicad_sch.lck
+_autosave-*
+*~
+
+# KiCad generated files
+*-cache.lib
+*.dsn
+*.ses
+fp-info-cache
+
+# 3D models
+*.step
+*.stp
+*.wrl
+
+# Gerber/fabrication outputs
+gerber/
+output/
+
+# Build artifacts
+build/
+*.o
+*.so
+*.a
+
+# OS junk
+.DS_Store
+Thumbs.db
