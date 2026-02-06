@@ -509,7 +509,7 @@ Full type definitions for all exported functions.
 
 After each stage, verify:
 
-- [ ] **Stage 1**: `kicad-cli version` works, DRC produces output
+- [x] **Stage 1**: `kicad-cli version` works, DRC produces output
 - [ ] **Stage 2**: Simple WASM runs in Node.js and browser
 - [ ] **Stage 3**: DEPENDENCY_ANALYSIS.md complete with wxWidgets touch points
 - [ ] **Stage 4**: Isolated DRC compiles and runs natively
