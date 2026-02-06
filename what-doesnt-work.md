@@ -32,3 +32,34 @@
 5. **STEP export deeply coupled to OCCT**: 183 references to OpenCASCADE classes in step_pcb_model.cpp. Cannot reuse KiCad's STEP exporter directly; must rewrite using opencascade.js API.
 
 ### No blocking issues. All Stage 3 success criteria are met.
+
+## Stage 4: Isolated DRC Library
+
+### Violation count difference (expected):
+- **kicad-cli** reports 6 violations on the sample PCB (4 silkscreen + 2 library warnings)
+- **Isolated DRC library** reports 4 violations (4 silkscreen warnings only)
+- The 2 library warnings require footprint library access and schematic parity checking,
+  which is disabled (`testFootprints=false`) since we have no schematic data.
+
+### Not yet portable to WASM (expected - that's Stage 5):
+- Current build links against native KiCad shared libraries (libkicommon.so, libkigal.so,
+  libkiapi.so) and system libraries (wxWidgets, GTK, GL, Python, etc.)
+- For WASM, all code must be statically compiled with Emscripten
+- wxWidgets dependency needs to be stubbed or replaced
+- GAL/OpenGL dependencies need to be eliminated or stubbed
+
+### PGM_BASE initialization workaround:
+- KICAD_SINGLETON::Init() is not exported from libkicommon.so (local linkage)
+- Workaround: directly allocate BS::priority_thread_pool on m_singleton.m_ThreadPool
+- Fragile - could break if KICAD_SINGLETON internal layout changes in future KiCad versions
+
+### DRC report uses temp files:
+- DRC_REPORT::WriteJsonReport() writes to a temporary file, which we read back into memory
+- For WASM, this works via Emscripten MEMFS but a direct-to-string writer would be cleaner
+
+### Build requires pre-built KiCad libraries:
+- The isolated library links against pre-built .a and .so files from the KiCad native build
+- Compile definitions must exactly match KiCad's build (KICAD_IPC_API critical for class layout)
+- DRC test provider .o files must be explicitly linked from pcbnew_kiface_objects
+
+### No blocking issues. All Stage 4 success criteria are met.

@@ -78,3 +78,55 @@
 - All Stage 3 success criteria met
 
 ### Next: Stage 4 - Create Isolated DRC Library
+
+## 2026-02-06: Stage 4 - Create Isolated DRC Library COMPLETE
+
+### What was done:
+- Task 4.1: Created project structure at /root/kicad-test/kicad-drc-wasm/{src,include,test}
+- Task 4.2: Created C API header (include/kicad_drc_api.h) with 4 functions:
+  - kicad_load_pcb() - Load PCB from memory buffer
+  - kicad_run_drc() - Run DRC checks, returns violation count
+  - kicad_get_drc_results() - Get JSON report string
+  - kicad_cleanup() - Free resources
+- Task 4.3: Implemented API wrapper (src/api.cpp):
+  - Uses STRING_LINE_READER for in-memory PCB parsing (no file I/O)
+  - Uses PCB_IO_KICAD_SEXPR::DoLoad() to parse the board
+  - Builds connectivity data for unconnected items checking
+  - Creates DRC_ENGINE with InitEngine() for rule loading + test provider registration
+  - Uses DRC_REPORT::WriteJsonReport() for JSON output
+  - Provides PGM_DRC_STANDALONE (minimal PGM_BASE subclass with thread pool)
+  - Provides Kiface() stub for transitive library dependencies
+- Task 4.4: Created CMakeLists.txt linking against KiCad's pre-built static/shared libraries:
+  - Links DRC test provider .o files from pcbnew_kiface_objects (self-registering)
+  - Uses --start-group/--end-group for circular static library dependencies
+  - Matches KiCad build compile definitions (KICAD_IPC_API, PCBNEW, USINGZ, etc.)
+- Task 4.5: Created test program (test/test_drc.cpp):
+  - Initializes wxWidgets (required by KiCad libraries)
+  - Reads PCB file from disk, calls API, prints JSON results
+- Task 4.6: Built and tested - produces 4 DRC violations (silkscreen warnings)
+
+### Key findings and bugs fixed:
+- DRC test providers use static self-registration and must be explicitly linked as .o files
+  from pcbnew_kiface_objects (not in libpcbcommon.a)
+- Circular link dependencies between KiCad static libraries require --start-group/--end-group
+- KICAD_IPC_API define is critical: changes PGM_BASE class layout (adds 2 unique_ptr members)
+  Without it, heap corruption occurs due to class layout mismatch with pre-built libraries
+- All compile definitions must match KiCad's build (PCBNEW, USINGZ, WXUSINGDLL, __WXGTK__, etc.)
+- PGM_BASE thread pool must be initialized: KICAD_SINGLETON::Init() is not exported from
+  libkicommon.so, so we directly allocate BS::priority_thread_pool on m_singleton.m_ThreadPool
+  Without it, GetKiCadThreadPool() dereferences null m_ThreadPool via PGM_BASE::GetThreadPool()
+- PGM_BASE is required by GAL (graphics abstraction layer) which is transitively needed by
+  some DRC test providers. Without Pgm(), GAL::GAL() asserts.
+- InitEngine(wxFileName()) must be called before RunTests() to register test providers
+- testFootprints=false skips schematic parity checks (we have no schematic)
+- Output matches kicad-cli format: same JSON schema, same violation types
+- kicad-cli reports 6 violations (includes 2 library warnings), our lib reports 4
+  (silkscreen-only, since library checks require schematic data)
+
+### Files created:
+- /root/kicad-test/kicad-drc-wasm/CMakeLists.txt
+- /root/kicad-test/kicad-drc-wasm/include/kicad_drc_api.h
+- /root/kicad-test/kicad-drc-wasm/src/api.cpp
+- /root/kicad-test/kicad-drc-wasm/test/test_drc.cpp
+
+### Next: Stage 5 - Compile DRC to WebAssembly
