@@ -130,3 +130,41 @@
 - /root/kicad-test/kicad-drc-wasm/test/test_drc.cpp
 
 ### Next: Stage 5 - Compile DRC to WebAssembly
+
+## 2026-02-06: Stage 5 - Partial Progress (loop stalled, restarting)
+
+### Existing work from prior iterations:
+- 224 wx stub headers created in `stubs/wx/` (covering wxString, wxPoint, wxSize, wxArrayString, wxFileName, wxLog, wxApp, wxFrame, wxDialog, wxPanel, wxWindow, wxEvent hierarchy, wxDC, wxColour, wxBrush, wxPen, wxFont, wxBitmap, wxImage, wxTimer, wxThread, wxMutex, wxCriticalSection, wxConfig, wxRegEx, wxStream hierarchy, wxDateTime, wxVariant, wxAny, wxPGProperty, wxStyledTextCtrl, wxDataViewCtrl, wxAuiManager, wxHtmlWindow, wxWebView, and many more)
+- CMakeLists.wasm.txt fully configured with all WASM build targets (clipper2, fmt_lib, delaunator, core, kimath, sexpr, kiplatform_stubs, kicommon_wasm, gal_wasm, pcbcommon_wasm, drc_providers, json_schema_validator, kicad_drc)
+- Platform stubs implemented in platform/kiplatform_wasm.cpp and platform/wx_stubs.cpp
+- kicommon_wasm had ~20 remaining compile errors when the loop died (mostly missing wx stub methods)
+
+### Root causes of loop stall:
+1. Permission stalls: --permission-mode acceptEdits didn't auto-approve Bash commands
+2. Plan mode deadlock: non-interactive -p mode can't approve ExitPlanMode
+3. Subagent timeout: compilation command in a subagent hung indefinitely
+
+### Fix applied:
+- ralph.sh updated: --dangerously-skip-permissions, "DO NOT enter plan mode" instruction, timeout 1800s
+- PRD updated: Stage 5 broken into 5a-5g subtasks for incremental progress
+- CMakeLists.txt merged: native + WASM configs in single file with if(EMSCRIPTEN) guard
+
+## 2026-02-06: Stage 5a - Configure WASM Build System COMPLETE
+
+### What was done:
+- Cleaned stale build-wasm directory and re-ran emcmake cmake
+- Command: `emcmake cmake -B build-wasm -S . -DCMAKE_BUILD_TYPE=Release`
+- CMake configured successfully in 0.9s with Emscripten toolchain
+- Verified EMSCRIPTEN=1 set in CMakeCache.txt, confirming if(EMSCRIPTEN) path selected
+- All expected WASM targets available: clipper2, fmt_lib, delaunator, core, kimath, sexpr,
+  json_schema_validator, kiplatform_stubs, kicommon_wasm, gal_wasm, pcbcommon_wasm,
+  drc_providers, kicad_drc_api, kicad_drc
+- PRD checkpoint updated
+
+### Key findings:
+- Emscripten SDK 5.0.0 cmake toolchain integrates cleanly
+- The unified CMakeLists.txt with if(EMSCRIPTEN) guard works correctly for both native and WASM
+- No cmake errors or warnings during configuration
+- All Stage 5a success criteria met
+
+### Next: Stage 5b - Compile Thirdparty + Core Libraries

@@ -288,62 +288,146 @@ make
 
 ---
 
-## Stage 5: Compile DRC to WebAssembly
+## Stage 5a: Configure WASM Build System
 
 ### Objective
-Compile the isolated DRC library with Emscripten.
+Ensure the unified CMakeLists.txt works for both native and WASM builds via `if(EMSCRIPTEN)`.
 
 ### Tasks
 
-#### 5.1 Create Emscripten Build Configuration
-Update CMakeLists.txt with Emscripten-specific settings.
-
-#### 5.2 Handle Filesystem
-Configure Emscripten virtual filesystem:
-- Use MEMFS for in-memory operation
-- Expose file loading via JavaScript
-
-#### 5.3 Build for WASM
+#### 5a.1 Verify cmake configures successfully with emcmake
 ```bash
 cd /root/kicad-test/kicad-drc-wasm
 source /root/kicad-test/emsdk/emsdk_env.sh
-emcmake cmake -B build-wasm \
-    -DCMAKE_BUILD_TYPE=Release
-cmake --build build-wasm
+emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
 ```
 
-#### 5.4 Create JavaScript Wrapper
-Create `/root/kicad-test/kicad-drc-wasm/wrapper/kicad-drc.ts`:
-```typescript
-interface DRCResult {
-    violations: Array<{
-        type: string;
-        message: string;
-        location: { x: number; y: number };
-        severity: 'error' | 'warning';
-    }>;
-}
+**Success Criteria**: `cmake` completes without errors
 
-export async function runDRC(pcbContent: string): Promise<DRCResult> {
-    // Load WASM module
-    // Call C API
-    // Parse and return results
-}
-```
+---
 
-#### 5.5 Test in Node.js
+## Stage 5b: Compile Thirdparty + Core Libraries
+
+### Objective
+Build the pure C++ libraries that have minimal/no wx dependencies.
+
+### Tasks
+
+#### 5b.1 Build thirdparty and core targets
+Build targets: `clipper2`, `fmt_lib`, `delaunator`, `core`, `kimath`, `sexpr`, `json_schema_validator`
+
 ```bash
-cd /root/kicad-test/kicad-drc-wasm
-node test/test-wasm.mjs
+cd /root/kicad-test/kicad-drc-wasm/build-wasm
+emmake make clipper2 fmt_lib delaunator core kimath sexpr json_schema_validator
 ```
 
-#### 5.6 Test in Browser
-Create HTML test page and verify in browser.
+#### 5b.2 Fix any compilation errors in these targets
 
-**Success Criteria**:
-- WASM module loads in Node.js and browser
-- Can parse KiCad PCB files
-- Returns DRC results as JSON
+**Success Criteria**: All 7 targets produce `.a` files
+
+---
+
+## Stage 5c: Compile kiplatform_stubs + kicommon_wasm
+
+### Objective
+Build the platform stubs and the large kicommon_wasm library (selected subset of libkicommon.so).
+
+### Tasks
+
+#### 5c.1 Build kiplatform_stubs
+```bash
+emmake make kiplatform_stubs
+```
+
+#### 5c.2 Build kicommon_wasm
+```bash
+emmake make kicommon_wasm
+```
+
+#### 5c.3 Fix wx stub compilation errors iteratively
+This is the hardest target (~140 source files with heavy wx usage). Add missing methods/classes to stubs in `stubs/wx/` as needed.
+
+**Success Criteria**: `kicommon_wasm` produces a `.a` file
+
+---
+
+## Stage 5d: Compile gal_wasm
+
+### Objective
+Build the GAL (Graphics Abstraction Layer) subset needed by DRC providers.
+
+### Tasks
+
+#### 5d.1 Build gal_wasm
+```bash
+emmake make gal_wasm
+```
+
+#### 5d.2 Fix any OpenGL stub issues or eliminate GL-specific code
+
+**Success Criteria**: `gal_wasm` produces a `.a` file
+
+---
+
+## Stage 5e: Compile pcbcommon_wasm + drc_providers
+
+### Objective
+Build the PCB data model, DRC engine, and test providers.
+
+### Tasks
+
+#### 5e.1 Build pcbcommon_wasm
+```bash
+emmake make pcbcommon_wasm
+```
+
+#### 5e.2 Build drc_providers
+```bash
+emmake make drc_providers
+```
+
+#### 5e.3 Fix any compilation errors
+
+**Success Criteria**: Both targets produce `.a` files
+
+---
+
+## Stage 5f: Link Final WASM Executable
+
+### Objective
+Link all compiled targets into a single WASM module.
+
+### Tasks
+
+#### 5f.1 Build final executable
+```bash
+emmake make kicad_drc
+```
+
+#### 5f.2 Fix any linker errors (undefined symbols, missing implementations)
+
+**Success Criteria**: `kicad_drc.mjs` + `kicad_drc.wasm` files are produced
+
+---
+
+## Stage 5g: Test WASM Module in Node.js
+
+### Objective
+Verify the WASM module works end-to-end.
+
+### Tasks
+
+#### 5g.1 Create test script
+Create `test/test-wasm.mjs` that loads the WASM module.
+
+#### 5g.2 Load sample PCB and run DRC
+```bash
+node test/test-wasm.mjs /root/kicad-test/samples/test.kicad_pcb
+```
+
+#### 5g.3 Verify JSON output matches native DRC results
+
+**Success Criteria**: DRC runs in Node.js via WASM and produces violations
 
 ---
 
@@ -513,7 +597,13 @@ After each stage, verify:
 - [x] **Stage 2**: Simple WASM runs in Node.js and browser
 - [x] **Stage 3**: DEPENDENCY_ANALYSIS.md complete with wxWidgets touch points
 - [x] **Stage 4**: Isolated DRC compiles and runs natively
-- [ ] **Stage 5**: DRC runs in browser via WASM
+- [x] **Stage 5a**: WASM cmake configures without errors
+- [ ] **Stage 5b**: Thirdparty + core libraries compile (7 `.a` files)
+- [ ] **Stage 5c**: kiplatform_stubs + kicommon_wasm compile
+- [ ] **Stage 5d**: gal_wasm compiles
+- [ ] **Stage 5e**: pcbcommon_wasm + drc_providers compile
+- [ ] **Stage 5f**: WASM executable links successfully
+- [ ] **Stage 5g**: DRC runs in Node.js via WASM
 - [ ] **Stage 6**: STEP export works via opencascade.js
 - [ ] **Stage 7**: npm package ready for distribution
 
