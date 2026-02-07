@@ -23,6 +23,7 @@ public:
     virtual bool Eof() const { return true; }
     virtual char GetC() { return 0; }
     virtual size_t OnSysRead(void*, size_t) { return 0; }
+    virtual wxFileOffset GetLength() const { return (wxFileOffset)GetSize(); }
 };
 
 class wxOutputStream : public wxStreamBase
@@ -33,12 +34,18 @@ public:
     virtual size_t LastWrite() const { return 0; }
     virtual void Sync() {}
     virtual size_t OnSysWrite(const void*, size_t) { return 0; }
+    void PutC(char c) { Write(&c, 1); }
 };
+
+class wxMemoryOutputStream;
 
 class wxMemoryInputStream : public wxInputStream
 {
 public:
     wxMemoryInputStream(const void* data, size_t len) : m_data((const char*)data), m_len(len), m_pos(0) {}
+    // Construct from wxMemoryOutputStream (copies data)
+    wxMemoryInputStream(wxMemoryOutputStream& stream);
+    wxMemoryInputStream(const wxMemoryOutputStream& stream);
     wxInputStream& Read(void* buffer, size_t size) override {
         size_t toRead = std::min(size, m_len - m_pos);
         memcpy(buffer, m_data + m_pos, toRead);
@@ -72,10 +79,33 @@ public:
         memcpy(buffer, m_data.data(), toCopy);
         return toCopy;
     }
+    const char* GetData() const { return m_data.data(); }
+    wxFileOffset GetLength() const { return (wxFileOffset)m_data.size(); }
     inline wxStreamBuffer* GetOutputStreamBuffer() const;
 private:
     std::string m_data;
+    friend class wxMemoryInputStream;
 };
+
+// Out-of-line constructors for wxMemoryInputStream from wxMemoryOutputStream
+inline wxMemoryInputStream::wxMemoryInputStream(wxMemoryOutputStream& stream)
+    : m_data(nullptr), m_len(0), m_pos(0) {
+    m_len = stream.GetSize();
+    if (m_len > 0) {
+        char* buf = new char[m_len];
+        stream.CopyTo(buf, m_len);
+        m_data = buf;
+    }
+}
+inline wxMemoryInputStream::wxMemoryInputStream(const wxMemoryOutputStream& stream)
+    : m_data(nullptr), m_len(0), m_pos(0) {
+    m_len = stream.GetSize();
+    if (m_len > 0) {
+        char* buf = new char[m_len];
+        stream.CopyTo(buf, m_len);
+        m_data = buf;
+    }
+}
 
 class wxFileInputStream : public wxInputStream
 {

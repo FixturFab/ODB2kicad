@@ -2,6 +2,7 @@
 
 #include "string.h"
 #include "translation.h"
+#include "file.h"
 #include <string>
 #include <cstdio>
 #include <cstdlib>
@@ -300,6 +301,8 @@ public:
     bool IsFileReadable() const { return FileExists(); }
     bool IsFileWritable() const { return FileExists(); }
     bool SameAs(const wxFileName& other) const { return GetFullPath() == other.GetFullPath(); }
+    bool operator==(const wxFileName& other) const { return SameAs(other); }
+    bool operator!=(const wxFileName& other) const { return !SameAs(other); }
 
     // GetLongPath (windows-only concept, identity on posix)
     wxString GetLongPath() const { return GetFullPath(); }

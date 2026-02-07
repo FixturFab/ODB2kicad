@@ -312,3 +312,103 @@
   11. libpcbcommon_wasm.a (8.5MB)
   12. libdrc_providers.a (2.5MB)
 - Stage 5e COMPLETE (all substages 5e.1-5e.6 done)
+
+## 2026-02-06: Stage 5f - Link Final WASM Executable IN PROGRESS
+
+### Changes:
+- Updated stubs/api/common/types/enums.pb.h: added SLS_DASHDOT, SLS_DASHDOTDOT, GFT_UNFILLED enum values
+- Updated stubs/api/common/types/base_types.pb.h: added mutable_fill() to GraphicAttributes, added members to GraphicFillAttributes, GraphicSegmentAttributes, GraphicCircleAttributes, GraphicArcAttributes, GraphicRectangleAttributes, GraphicBezierAttributes, updated GraphicShape with mutable_segment/rectangle/arc/circle/bezier/polygon accessors
+- Added mutable_radius_point()/radius_point() to GraphicCircleAttributes stub for eda_shape.cpp
+- Added #include "uri.h" to stubs/wx/string.h so eda_text.cpp can find wxURI
+- Added wxSystemSettings/wxSYS_COLOUR_* to stubs/wx/settings.h for rc_item.cpp
+- Added ChangeLightness() to wxColour in stubs/wx/gdicmn.h for rc_item.cpp
+- Added ItemsAdded/ItemsDeleted/ValueChanged to wxDataViewModel, GetCurrentItem/IsExpanded to wxDataViewCtrl in stubs/wx/dataview.h for rc_item.cpp
+- Added wxDataViewEvent 3-arg constructor (int, wxDataViewCtrl*, wxDataViewItem&) for rc_item.cpp
+- Added -include wx/string.h to compile options (mimics KiCad PCH, fixes reference_image.h needing wxString)
+- Added wxBitmap(const wxImage&) constructor and wxImage::LoadFile/SaveFile/GetOptionInt/SetOption stubs for bitmap_base.cpp
+- Added wxIMAGE_OPTION_* constants and wxIMAGE_RESOLUTION_* enum to gdicmn.h for bitmap_base.cpp
+- Added wxDC forward declaration to gdicmn.h so bitmap_base.h can compile
+- Added wxDC::GetUserScale/GetLogicalOrigin/DrawBitmap and more methods to dc.h for bitmap_base.cpp
+- Added wxInputStream::GetLength() to stream.h for bitmap_base.cpp
+- Added wxOutputStream::PutC() to stream.h for bitmap_base.cpp
+- Added wxMemoryInputStream(wxMemoryOutputStream&) constructors to stream.h for bitmap_base.cpp
+- Added wxMemoryOutputStream::GetData() and friend class for wxMemoryInputStream
+- Added wxAffineMatrix2D stub and wxDC::CanUseTransformMatrix/GetTransformMatrix/SetTransformMatrix for bitmap_base.cpp
+- Added wxBitmap::HasAlpha() stub for bitmap_base.cpp
+- Added wxImage::SetRGB/Paste/ConvertToGreyscale and wxIMAGE_ALPHA_BLEND_COMPOSE for bitmap_base.cpp
+- Added wxMemoryOutputStream::GetLength() for bitmap_base.cpp
+- Added wxString::FromDouble() for text_eval_wrapper.cpp
+- Added wxString::replace(pos, count, replacement) for text_eval_wrapper.cpp
+- Fixed wxString::ToStdString to accept optional wxMBConv argument for text_eval_wrapper.cpp
+- Added wxArrayString::RemoveAt(size_t, size_t) 2-arg overload for library_manager.cpp
+- Added wxFileName::operator==() and operator!=() for library_manager.cpp
+- Included wx/file.h from wx/filename.h so wxFile::Exists() is visible in library_manager.cpp
+- Added wxTextEntry complete class definition in stubs/wx/textentry.h for ui_common.cpp
+- Made wxTextCtrl inherit from wxTextEntry, added IsEditable/SetSelection/SetInsertionPoint
+- Added wxEllipsizeMode enum and wxControl::Ellipsize() to stubs/wx/control.h
+- Added wxWindow::FindFocus() to stubs/wx/window.h
+- Fixed stubs/wx/scrolbar.h to include scrollbar.h (wxWidgets spelling)
+
+## 2026-02-07: Stage 5f - Link Final WASM Executable COMPLETE
+
+### What was done:
+- Attempted initial link: only 3 undefined symbols remained (GRPoly, GRRect, DS_DRAW_ITEM_LIST::BuildFullText)
+- Added GRPoly() and GRRect() stub implementations to linker_stubs.cpp (no-op, DRC doesn't render)
+- Added DS_DRAW_ITEM_LIST::BuildFullText() stub to linker_stubs.cpp (returns input text unchanged)
+- Fixed enum forward-declaration conflict: replaced `enum GR_TEXT_H_ALIGN_T : int` / `enum GR_TEXT_V_ALIGN_T : int` forward decls with `#include <font/text_attributes.h>` (real enums don't have fixed underlying type)
+- WASM link completed successfully!
+
+### Output files:
+- kicad_drc.mjs (103KB) - ES6 module JS glue
+- kicad_drc.wasm (6.0MB) - WebAssembly binary
+
+### Notes:
+- Only 1 linker warning remains: `__libcpp_atomic_monitor` signature mismatch (int64 vs int32) between libc++-mt and our stub - harmless for single-threaded WASM
+- `-pthread + ALLOW_MEMORY_GROWTH` warning from Emscripten - known limitation, can optimize later
+- All Stage 5f success criteria met
+
+### Next: Stage 5g - Test WASM Module in Node.js
+
+## 2026-02-07: Stage 5g - Test WASM Module in Node.js COMPLETE
+
+### What was done:
+- Debugged and fixed WASM static constructor crash (unreachable in __wasm_call_ctors)
+- Root cause 1: drc_test_provider_library_parity.cpp has global UNITS_PROVIDER constructor that
+  crashes during WASM static init. Excluded from build (not needed - library parity requires
+  filesystem library access which isn't available in WASM)
+- Root cause 2: env_vars.cpp has static globals calling wxString::Format with wxString varargs,
+  which crashes because vsnprintf can't handle non-POD types. Excluded from build and stubs provided.
+- Root cause 3: wxString::Format used vsnprintf with varargs, which corrupts wxString arguments
+  passed through C-style "..." varargs (UB in C++ for non-trivially-copyable types).
+  Fix: Replaced variadic Format/Printf with C++17 template parameter pack versions that convert
+  wxString args to const char* via _fmtarg() helper before calling snprintf.
+- Added missing FromProtoEnum template specializations (reverse of ToProtoEnum) for all KiCad
+  enum types used by Deserialize() methods
+- Added missing kiapi::common::Unpack* function stubs (UnpackVector2, UnpackVector3D,
+  UnpackSheetPath, UnpackColor, UnpackPolySet, LibIdFromProto, TypeNameFromAny)
+- Added kiapi::board::UnpackLayerSet stub
+- Added wxConvUTF8/wxConvLocal/wxConvLibc global definitions
+- Added CreateItemForType stub
+- Enabled pthreads (-pthread compile and link flags, -sPTHREAD_POOL_SIZE=4) to support
+  BS::thread_pool used by KiCad connectivity and DRC algorithms
+- Split drc_providers into drc_test_providers (26 files, --whole-archive for self-registration)
+  and drc_support (5 files, regular link)
+
+### Test results:
+- WASM module loads successfully in Node.js (no static constructor crashes)
+- PCB file parsing works (2868 bytes test.kicad_pcb loaded via STRING_LINE_READER)
+- DRC engine runs: 4 violations detected (all silk_over_copper warnings)
+- JSON report output matches native DRC library (Stage 4) output exactly
+- Full schema-compliant JSON with coordinates, UUIDs, severity, description
+
+### Output files:
+- kicad_drc.wasm (34MB) - WebAssembly binary (debug build with -g2, ASSERTIONS=2)
+- kicad_drc.mjs (250KB) - ES6 module JS glue
+
+### Command to test:
+```
+node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/test.kicad_pcb
+```
+
+### All Stage 5g success criteria met
+### Stage 5 COMPLETE - DRC runs successfully in WebAssembly!

@@ -87,6 +87,9 @@ if(EMSCRIPTEN)
 
     # ── Compile options ─────────────────────────────────────────────────────
     add_compile_options(
+        -g2
+        -fexceptions
+        -pthread
         -Wno-attributes
         -Wno-ignored-attributes
         -Wno-deprecated-declarations
@@ -96,8 +99,11 @@ if(EMSCRIPTEN)
         -Wno-missing-field-initializers
         -Wno-deprecated-copy
         -Wno-non-pod-varargs
-        -pthread
     )
+
+    # Force-include wx/string.h for KiCad targets to mimic PCH
+    # (many KiCad headers assume wxString is available)
+    set(KICAD_FORCE_INCLUDE_FLAGS -include ${WX_STUB_DIR}/wx/string.h)
 
     # ── Thirdparty libraries ────────────────────────────────────────────────
 
@@ -136,6 +142,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/libs/core/include
         ${KICAD_INCLUDE_DIRS}
     )
+    target_compile_options(core PRIVATE ${KICAD_FORCE_INCLUDE_FLAGS})
 
     # ── Kimath library ──────────────────────────────────────────────────────
     add_library(kimath STATIC
@@ -180,6 +187,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/libs/kimath/include
         ${KICAD_INCLUDE_DIRS}
     )
+    target_compile_options(kimath PRIVATE ${KICAD_FORCE_INCLUDE_FLAGS})
     target_link_libraries(kimath PUBLIC clipper2 core)
 
     # ── Sexpr library ───────────────────────────────────────────────────────
@@ -191,6 +199,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/libs/sexpr/include
         ${KICAD_INCLUDE_DIRS}
     )
+    target_compile_options(sexpr PRIVATE ${KICAD_FORCE_INCLUDE_FLAGS})
 
     # ── Platform stubs ──────────────────────────────────────────────────────
     add_library(kiplatform_stubs STATIC
@@ -200,6 +209,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/libs/kiplatform/include
         ${KICAD_INCLUDE_DIRS}
     )
+    target_compile_options(kiplatform_stubs PRIVATE ${KICAD_FORCE_INCLUDE_FLAGS})
 
     # ── WASM API (our DRC wrapper) ──────────────────────────────────────────
     add_library(kicad_drc_api STATIC
@@ -209,6 +219,7 @@ if(EMSCRIPTEN)
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${KICAD_INCLUDE_DIRS}
     )
+    target_compile_options(kicad_drc_api PRIVATE ${KICAD_FORCE_INCLUDE_FLAGS})
 
     # ── Kicommon subset (selected files from what would be libkicommon.so) ──
     # We carefully select only files needed by DRC, avoiding UI-heavy code
@@ -238,7 +249,9 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/common/wildcards_and_files_ext.cpp
         ${KICAD_SRC}/common/wx_filename.cpp
         ${KICAD_SRC}/common/env_paths.cpp
-        ${KICAD_SRC}/common/env_vars.cpp
+        # env_vars.cpp excluded - static globals use wxString::Format with wxString varargs
+        # which crashes because our stub's vsnprintf can't handle non-POD varargs.
+        # Stubs provided in linker_stubs.cpp.
         ${KICAD_SRC}/common/paths.cpp
         ${KICAD_SRC}/common/project.cpp
         ${KICAD_SRC}/common/eda_pattern_match.cpp
@@ -322,6 +335,52 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/common/ui_events.cpp
         # App monitor (can be minimal)
         ${KICAD_SRC}/common/app_monitor.cpp
+        # Core data model (needed by DRC transitively)
+        ${KICAD_SRC}/common/eda_item.cpp
+        ${KICAD_SRC}/common/eda_shape.cpp
+        ${KICAD_SRC}/common/eda_text.cpp
+        ${KICAD_SRC}/common/marker_base.cpp
+        ${KICAD_SRC}/common/rc_item.cpp
+        ${KICAD_SRC}/common/properties/property_mgr.cpp
+        ${KICAD_SRC}/common/reference_image.cpp
+        ${KICAD_SRC}/common/stroke_params.cpp
+        ${KICAD_SRC}/common/bitmap_base.cpp
+        ${KICAD_SRC}/common/render_settings.cpp
+        ${KICAD_SRC}/common/origin_transforms.cpp
+        ${KICAD_SRC}/common/filter_reader.cpp
+        ${KICAD_SRC}/common/libeval_compiler/libeval_compiler.cpp
+        ${KICAD_SRC}/common/template_fieldnames.cpp
+        ${KICAD_SRC}/common/gr_text.cpp
+        ${KICAD_SRC}/common/text_eval/text_eval_wrapper.cpp
+        # Generated keyword files (from build dir)
+        ${KICAD_BUILD}/common/pcb_keywords.cpp
+        ${KICAD_BUILD}/common/drc_rules_keywords.cpp
+        ${KICAD_BUILD}/common/pcb_plot_params_keywords.cpp
+        ${KICAD_BUILD}/common/embedded_files_keywords.cpp
+        ${KICAD_BUILD}/common/stroke_params_keywords.cpp
+        ${KICAD_BUILD}/common/lib_table_keywords.cpp
+        ${KICAD_BUILD}/common/template_fieldnames_keywords.cpp
+        # Drawing sheet (needed by DRC report)
+        ${KICAD_SRC}/common/drawing_sheet/ds_draw_item.cpp
+        ${KICAD_SRC}/common/drawing_sheet/ds_data_model.cpp
+        ${KICAD_SRC}/common/drawing_sheet/ds_data_item.cpp
+        ${KICAD_SRC}/common/drawing_sheet/drawing_sheet_default_description.cpp
+        ${KICAD_SRC}/common/drawing_sheet/drawing_sheet_parser.cpp
+        ${KICAD_SRC}/common/drawing_sheet/ds_data_model_io.cpp
+        ${KICAD_BUILD}/common/drawing_sheet/drawing_sheet_keywords.cpp
+        # EDA group (used by eda_item)
+        ${KICAD_SRC}/common/eda_group.cpp
+        # Netlist reader (schematic parity DRC)
+        ${KICAD_SRC}/common/netlist_reader/netlist.cpp
+        # Library manager
+        ${KICAD_SRC}/common/libraries/library_manager.cpp
+        # ui_common.cpp removed - too many GUI deps; stubs in linker_stubs.cpp
+        # PCB render settings
+        ${KICAD_SRC}/pcbnew/pcb_painter.cpp
+        # Footprint library adapter
+        ${KICAD_SRC}/pcbnew/footprint_library_adapter.cpp
+        # Linker stubs for unneeded symbols (protobuf, kiapi, zint, etc.)
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/linker_stubs.cpp
     )
     target_include_directories(kicommon_wasm PUBLIC ${KICAD_INCLUDE_DIRS})
     target_link_libraries(kicommon_wasm PUBLIC core kimath sexpr fmt_lib kiplatform_stubs delaunator)
@@ -418,7 +477,7 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/pcbnew/pcbexpr_functions.cpp
         # PCB I/O
         ${KICAD_SRC}/pcbnew/pcb_io/pcb_io.cpp
-        ${KICAD_SRC}/pcbnew/pcb_io/pcb_io_mgr.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/pcb_io_mgr_wasm.cpp
         ${KICAD_SRC}/pcbnew/pcb_io/kicad_sexpr/pcb_io_kicad_sexpr.cpp
         ${KICAD_SRC}/pcbnew/pcb_io/kicad_sexpr/pcb_io_kicad_sexpr_parser.cpp
         ${KICAD_SRC}/pcbnew/pcb_io/kicad_legacy/pcb_io_kicad_legacy.cpp
@@ -439,11 +498,9 @@ if(EMSCRIPTEN)
     target_include_directories(pcbcommon_wasm PUBLIC ${KICAD_INCLUDE_DIRS})
     target_link_libraries(pcbcommon_wasm PUBLIC kicommon_wasm gal_wasm clipper2)
 
-    # ── DRC Test Providers (self-registering) ───────────────────────────────
-    add_library(drc_providers STATIC
-        ${KICAD_SRC}/pcbnew/drc/drc_report.cpp
-        ${KICAD_SRC}/pcbnew/drc/drc_creepage_utils.cpp
-        ${KICAD_SRC}/pcbnew/drc/drc_interactive_courtyard_clearance.cpp
+    # ── DRC Test Providers (self-registering, need --whole-archive) ─────────
+    # ALL providers EXCEPT library_parity (crashes in static init, not needed in WASM anyway)
+    add_library(drc_test_providers STATIC
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_annular_width.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_disallow.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_creepage.cpp
@@ -456,7 +513,6 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_footprint_checks.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_hole_to_hole.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_hole_size.cpp
-        ${KICAD_SRC}/pcbnew/drc/drc_test_provider_library_parity.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_schematic_parity.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_misc.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_text_dims.cpp
@@ -471,13 +527,20 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_diff_pair_coupling.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_sliver_checker.cpp
         ${KICAD_SRC}/pcbnew/drc/drc_test_provider_text_mirroring.cpp
-        # Zone filler needed by some DRC providers
+    )
+    target_include_directories(drc_test_providers PUBLIC ${KICAD_INCLUDE_DIRS})
+    target_link_libraries(drc_test_providers PUBLIC pcbcommon_wasm)
+
+    # ── DRC support files (regular link, no --whole-archive needed) ────────
+    add_library(drc_support STATIC
+        ${KICAD_SRC}/pcbnew/drc/drc_report.cpp
+        ${KICAD_SRC}/pcbnew/drc/drc_creepage_utils.cpp
+        ${KICAD_SRC}/pcbnew/drc/drc_interactive_courtyard_clearance.cpp
         ${KICAD_SRC}/pcbnew/zone_filler.cpp
-        # Board stackup predefined prms
         ${KICAD_SRC}/pcbnew/board_stackup_manager/stackup_predefined_prms.cpp
     )
-    target_include_directories(drc_providers PUBLIC ${KICAD_INCLUDE_DIRS})
-    target_link_libraries(drc_providers PUBLIC pcbcommon_wasm)
+    target_include_directories(drc_support PUBLIC ${KICAD_INCLUDE_DIRS})
+    target_link_libraries(drc_support PUBLIC pcbcommon_wasm)
 
     # ── JSON schema validator ───────────────────────────────────────────────
     add_library(json_schema_validator STATIC
@@ -492,9 +555,56 @@ if(EMSCRIPTEN)
         ${KICAD_SRC}/thirdparty/nlohmann_json
     )
 
+    # ── Minimal test executable (for bisecting static ctor crash) ────────
+    add_executable(minimal_test
+        src/minimal_test.cpp
+        src/api.cpp
+        src/diag_main.cpp
+    )
+    target_include_directories(minimal_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${KICAD_INCLUDE_DIRS}
+    )
+    # Test: split drc_providers
+    target_link_libraries(minimal_test PRIVATE
+        -Wl,--whole-archive
+        drc_test_providers
+        -Wl,--no-whole-archive
+        drc_support
+        pcbcommon_wasm
+        gal_wasm
+        kicommon_wasm
+        kiplatform_stubs
+        kimath
+        sexpr
+        core
+        clipper2
+        fmt_lib
+        delaunator
+        json_schema_validator
+    )
+    set_target_properties(minimal_test PROPERTIES
+        SUFFIX ".mjs"
+        LINK_FLAGS "\
+            -sEXPORT_ES6=1 \
+            -sMODULARIZE=1 \
+            -sEXPORT_NAME=createMinimalTest \
+            -sEXPORTED_FUNCTIONS=[\"_minimal_ping\",\"_malloc\",\"_free\"] \
+            -sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"UTF8ToString\"] \
+            -sALLOW_MEMORY_GROWTH=1 \
+            -sINITIAL_MEMORY=67108864 \
+            -sFILESYSTEM=1 \
+            -sENVIRONMENT=node \
+            -sNO_DISABLE_EXCEPTION_CATCHING \
+            -sASSERTIONS=2 \
+            -sABORTING_MALLOC=0 \
+        "
+    )
+
     # ── Final WASM executable ───────────────────────────────────────────────
     add_executable(kicad_drc
         src/api.cpp
+        src/diag_main.cpp
     )
 
     target_include_directories(kicad_drc PRIVATE
@@ -502,11 +612,12 @@ if(EMSCRIPTEN)
         ${KICAD_INCLUDE_DIRS}
     )
 
-    # Link everything - use whole-archive for drc_providers to preserve self-registration
+    # Link everything - use whole-archive for test providers to preserve self-registration
     target_link_libraries(kicad_drc PRIVATE
         -Wl,--whole-archive
-        drc_providers
+        drc_test_providers
         -Wl,--no-whole-archive
+        drc_support
         pcbcommon_wasm
         gal_wasm
         kicommon_wasm
@@ -527,17 +638,20 @@ if(EMSCRIPTEN)
             -sEXPORT_ES6=1 \
             -sMODULARIZE=1 \
             -sEXPORT_NAME=createKicadDRC \
-            -sEXPORTED_FUNCTIONS=[\"_kicad_load_pcb\",\"_kicad_run_drc\",\"_kicad_get_drc_results\",\"_kicad_cleanup\",\"_malloc\",\"_free\"] \
+            -sEXPORTED_FUNCTIONS=[\"_kicad_load_pcb\",\"_kicad_run_drc\",\"_kicad_get_drc_results\",\"_kicad_cleanup\",\"_diag_ping\",\"_malloc\",\"_free\"] \
             -sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"UTF8ToString\",\"stringToUTF8\",\"lengthBytesUTF8\"] \
             -sALLOW_MEMORY_GROWTH=1 \
-            -sINITIAL_MEMORY=67108864 \
-            -sSTACK_SIZE=1048576 \
+            -sINITIAL_MEMORY=134217728 \
+            -sSTACK_SIZE=16777216 \
             -sFILESYSTEM=1 \
             -sENVIRONMENT=node,web,worker \
-            -sPTHREAD_POOL_SIZE=0 \
             -sNO_DISABLE_EXCEPTION_CATCHING \
-            -lembind \
+            -sASSERTIONS=2 \
+            -sSTACK_OVERFLOW_CHECK=2 \
             -pthread \
+            -sPTHREAD_POOL_SIZE=4 \
+            --emit-symbol-map \
+            -g2 \
         "
     )
 

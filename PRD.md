@@ -650,7 +650,7 @@ After each stage, verify:
 - [x] **Stage 5e.4**: PCB I/O and parser files compile
 - [x] **Stage 5e.5**: Remaining pcbcommon_wasm files compile (libpcbcommon_wasm.a produced)
 - [x] **Stage 5e.6**: DRC providers compile (libdrc_providers.a produced)
-- [ ] **Stage 5f**: WASM executable links successfully
+- [x] **Stage 5f**: WASM executable links successfully
 - [ ] **Stage 5g**: DRC runs in Node.js via WASM
 - [ ] **Stage 6**: STEP export works via opencascade.js
 - [ ] **Stage 7**: npm package ready for distribution

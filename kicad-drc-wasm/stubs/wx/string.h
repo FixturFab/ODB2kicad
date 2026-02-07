@@ -165,6 +165,7 @@ public:
     wxCharBuffer fn_str() const { return wxCharBuffer(m_str.c_str()); }
     wxCStrData GetData() const { return wxCStrData(this); }
     std::string ToStdString() const { return m_str; }
+    std::string ToStdString(const wxMBConv&) const { return m_str; }
     const std::string& ToStdString_() const { return m_str; }
     operator const std::string&() const { return m_str; }
     wxCStrData wx_str() const { return wxCStrData(this); }
@@ -184,6 +185,9 @@ public:
     static wxString From8BitData(const char* s, size_t len) { return wxString(s, len); }
 
     // C locale double conversion
+    static wxString FromDouble(double val, int precision = -1) {
+        return FromCDouble(val, precision);
+    }
     static wxString FromCDouble(double val, int precision = -1) {
         char buf[64];
         if(precision >= 0)
@@ -378,6 +382,16 @@ public:
         return count;
     }
 
+    // std::string-style replace (pos, count, replacement)
+    wxString& replace(size_t pos, size_t count, const wxString& replacement) {
+        m_str.replace(pos, count, replacement.m_str);
+        return *this;
+    }
+    wxString& replace(size_t pos, size_t count, const char* replacement) {
+        m_str.replace(pos, count, replacement ? replacement : "");
+        return *this;
+    }
+
     void reserve(size_t n) { m_str.reserve(n); }
     bool Alloc(size_t n) { m_str.reserve(n); return true; }
     wxString& append(const wxString& s) { m_str.append(s.m_str); return *this; }
@@ -523,54 +537,56 @@ public:
         return true;
     }
 
-    // Printf
-    static wxString Format(const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
+    // Printf - helper to convert wxString args to const char* for snprintf safety.
+    // C++ prefers these template overloads over C-style variadic versions,
+    // so wxString::Format("text %s", someWxString) works correctly.
+    //
+    // wx_fmt_arg: identity for most types, extracts char* from wxString/wxCStrData.
+    template<typename T>
+    static auto _fmtarg(const T& val) { return val; }
+    static const char* _fmtarg(const wxString& s) { return s.char_str(); }
+    static const char* _fmtarg(const wxCStrData& s) { return s.AsChar(); }
+
+    // Template Format (preferred over variadic by overload resolution)
+    template<typename... Args>
+    static wxString Format(const char* fmt, Args&&... args) {
         char buf[4096];
-        vsnprintf(buf, sizeof(buf), fmt, args);
-        va_end(args);
+        snprintf(buf, sizeof(buf), fmt, _fmtarg(args)...);
         return wxString(buf);
     }
-    static wxString Format(const wxString& fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
+    template<typename... Args>
+    static wxString Format(const wxString& fmt, Args&&... args) {
         char buf[4096];
-        vsnprintf(buf, sizeof(buf), fmt.c_str(), args);
-        va_end(args);
+        snprintf(buf, sizeof(buf), fmt.char_str(), _fmtarg(args)...);
         return wxString(buf);
     }
-    int Printf(const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
+
+    // Template Printf (preferred over variadic)
+    template<typename... Args>
+    int Printf(const char* fmt, Args&&... args) {
         char buf[4096];
-        int n = vsnprintf(buf, sizeof(buf), fmt, args);
-        va_end(args);
+        int n = snprintf(buf, sizeof(buf), fmt, _fmtarg(args)...);
         m_str = buf;
         return n;
     }
-    int Printf(const wxString& fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
+    template<typename... Args>
+    int Printf(const wxString& fmt, Args&&... args) {
         char buf[4096];
-        int n = vsnprintf(buf, sizeof(buf), fmt.c_str(), args);
-        va_end(args);
+        int n = snprintf(buf, sizeof(buf), fmt.char_str(), _fmtarg(args)...);
         m_str = buf;
         return n;
     }
-    wxString& sprintf(const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
+    template<typename... Args>
+    wxString& sprintf(const char* fmt, Args&&... args) {
         char buf[4096];
-        vsnprintf(buf, sizeof(buf), fmt, args);
-        va_end(args);
+        snprintf(buf, sizeof(buf), fmt, _fmtarg(args)...);
         m_str = buf;
         return *this;
     }
 
     int PrintfV(const wxString& fmt, va_list args) {
         char buf[4096];
-        int n = vsnprintf(buf, sizeof(buf), fmt.c_str(), args);
+        int n = vsnprintf(buf, sizeof(buf), fmt.char_str(), args);
         m_str = buf;
         return n;
     }
@@ -666,6 +682,10 @@ public:
             if(*it == s) { erase(it); return; }
     }
     void RemoveAt(size_t i) { erase(begin() + i); }
+    void RemoveAt(size_t i, size_t count) {
+        if(i + count > size()) count = size() - i;
+        erase(begin() + i, begin() + i + count);
+    }
     void Insert(const wxString& s, size_t i) { insert(begin() + i, s); }
     void Sort() { std::sort(begin(), end()); }
     typedef int (*CompareFunction)(const wxString&, const wxString&);
@@ -760,3 +780,6 @@ inline int wxSnprintf(char* buf, size_t len, const wxString& fmt, Args... args) 
 // Include filefn.h so wxFopen/wxRemove/wxRename are available transitively
 // (real wxWidgets provides these via wx/wx.h → wx/filefn.h)
 #include "filefn.h"
+
+// Include uri.h so wxURI is available (real wxWidgets provides via various includes)
+#include "uri.h"

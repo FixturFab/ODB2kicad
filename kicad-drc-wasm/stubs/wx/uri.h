@@ -10,6 +10,7 @@ public:
     wxString GetPath() const { return m_uri; }
     wxString GetFragment() const { return wxString(); }
     wxString GetQuery() const { return wxString(); }
+    bool Create(const wxString& uri) { m_uri = uri; return true; }
     bool HasScheme() const { return false; }
     bool HasServer() const { return false; }
     bool IsReference() const { return false; }

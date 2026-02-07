@@ -22,9 +22,22 @@ class KICAD_API_SERVER { public: virtual ~KICAD_API_SERVER() = default; };
 // Global PGM_BASE pointer
 static PGM_BASE* s_pgm = nullptr;
 
+// Minimal concrete PGM_BASE subclass for the pre-initialization fallback.
+class PGM_BASE_FALLBACK : public PGM_BASE
+{
+public:
+    void MacOpenFile( const wxString& ) override {}
+};
+
 PGM_BASE& Pgm()
 {
-    wxASSERT( s_pgm );
+    // During static initialization, s_pgm may not yet be set.
+    // Rather than asserting (which traps in WASM), return a static fallback.
+    if( !s_pgm )
+    {
+        static PGM_BASE_FALLBACK s_fallback;
+        return s_fallback;
+    }
     return *s_pgm;
 }
 

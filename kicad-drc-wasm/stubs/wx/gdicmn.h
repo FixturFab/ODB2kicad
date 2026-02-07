@@ -145,6 +145,7 @@ public:
     }
     bool operator!=(const wxColour& o) const { return !(*this == o); }
     wxString GetAsString(long flags = 0) const { return wxString(); }
+    wxColour ChangeLightness(int iFactor) const { return wxColour(m_r, m_g, m_b, m_a); }
 
 private:
     unsigned char m_r, m_g, m_b, m_a;
@@ -177,6 +178,20 @@ enum wxBitmapType
     wxBITMAP_TYPE_ANY = 50
 };
 
+// Forward declarations
+class wxImage;
+class wxInputStream;
+class wxOutputStream;
+class wxDC;
+
+// wxImage option constants
+#define wxIMAGE_OPTION_RESOLUTIONX wxS("ResolutionX")
+#define wxIMAGE_OPTION_RESOLUTIONY wxS("ResolutionY")
+#define wxIMAGE_OPTION_RESOLUTIONUNIT wxS("ResolutionUnit")
+#define wxIMAGE_OPTION_QUALITY wxS("quality")
+enum { wxIMAGE_RESOLUTION_NONE = 0, wxIMAGE_RESOLUTION_INCHES = 1, wxIMAGE_RESOLUTION_CM = 2 };
+enum { wxIMAGE_ALPHA_BLEND_COMPOSE = 0, wxIMAGE_ALPHA_BLEND_OVER = 1 };
+
 // Bitmap stub
 class wxBitmap
 {
@@ -184,16 +199,20 @@ public:
     wxBitmap() = default;
     wxBitmap(int w, int h, int depth = -1) {}
     wxBitmap(const wxString& name, int type = 0) {}
+    wxBitmap(const wxImage& image, int depth = -1) {}
     bool IsOk() const { return false; }
     int GetWidth() const { return 0; }
     int GetHeight() const { return 0; }
+    bool HasAlpha() const { return false; }
+    wxImage ConvertToImage() const;
 };
 
 class wxImage
 {
 public:
     wxImage() = default;
-    wxImage(int w, int h) {}
+    wxImage(int w, int h, bool clear = true) {}
+    wxImage(const wxImage& other) = default;
     bool IsOk() const { return false; }
     int GetWidth() const { return 0; }
     int GetHeight() const { return 0; }
@@ -201,7 +220,28 @@ public:
     unsigned char* GetData() const { return nullptr; }
     bool HasAlpha() const { return false; }
     unsigned char* GetAlpha() const { return nullptr; }
+    void SetAlpha(unsigned char* = nullptr) {}
+    wxImage Copy() const { return wxImage(); }
+    wxImage Scale(int w, int h, int quality = 0) const { return wxImage(); }
+    wxImage Rescale(int w, int h, int quality = 0) { return *this; }
+    wxImage Mirror(bool horizontally = true) const { return wxImage(); }
+    wxImage Rotate90(bool clockwise = true) const { return wxImage(); }
+    void Replace(unsigned char, unsigned char, unsigned char, unsigned char, unsigned char, unsigned char) {}
+    bool LoadFile(wxInputStream& stream, int type = wxBITMAP_TYPE_ANY) { return false; }
+    bool LoadFile(const wxString& name, int type = wxBITMAP_TYPE_ANY) { return false; }
+    bool SaveFile(wxOutputStream& stream, int type) const { return false; }
+    bool SaveFile(const wxString& name, int type) const { return false; }
+    int GetOptionInt(const wxString& name) const { return 0; }
+    bool HasOption(const wxString& name) const { return false; }
+    void SetOption(const wxString& name, int value) {}
+    void SetOption(const wxString& name, const wxString& value) {}
+    void SetRGB(const wxRect& rect, unsigned char r, unsigned char g, unsigned char b) {}
+    void Paste(const wxImage& image, int x, int y, int alphaBlend = wxIMAGE_ALPHA_BLEND_OVER) {}
+    wxImage ConvertToGreyscale(double lr = 0.299, double lg = 0.587, double lb = 0.114) const { return wxImage(); }
 };
+
+// Out-of-line definition (wxImage now defined)
+inline wxImage wxBitmap::ConvertToImage() const { return wxImage(); }
 
 class wxIcon : public wxBitmap
 {

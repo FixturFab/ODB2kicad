@@ -294,15 +294,91 @@ private:
     Distance margin_;
 };
 
+class GraphicFillAttributes {
+public:
+    GraphicFillAttributes() = default;
+    void set_fill_type(GraphicFillType) {}
+    GraphicFillType fill_type() const { return GFT_NONE; }
+};
+
+class GraphicSegmentAttributes {
+public:
+    GraphicSegmentAttributes() = default;
+    Vector2* mutable_start() { return &start_; }
+    Vector2* mutable_end() { return &end_; }
+    const Vector2& start() const { return start_; }
+    const Vector2& end() const { return end_; }
+private:
+    Vector2 start_, end_;
+};
+
+class GraphicCircleAttributes {
+public:
+    GraphicCircleAttributes() = default;
+    Vector2* mutable_center() { return &center_; }
+    const Vector2& center() const { return center_; }
+    Vector2* mutable_radius_point() { return &radius_point_; }
+    const Vector2& radius_point() const { return radius_point_; }
+    Distance* mutable_radius() { return &radius_; }
+    const Distance& radius() const { return radius_; }
+private:
+    Vector2 center_, radius_point_;
+    Distance radius_;
+};
+
+class GraphicArcAttributes {
+public:
+    GraphicArcAttributes() = default;
+    Vector2* mutable_start() { return &start_; }
+    Vector2* mutable_mid() { return &mid_; }
+    Vector2* mutable_end() { return &end_; }
+    const Vector2& start() const { return start_; }
+    const Vector2& mid() const { return mid_; }
+    const Vector2& end() const { return end_; }
+private:
+    Vector2 start_, mid_, end_;
+};
+
+class GraphicRectangleAttributes {
+public:
+    GraphicRectangleAttributes() = default;
+    Vector2* mutable_top_left() { return &tl_; }
+    Vector2* mutable_bottom_right() { return &br_; }
+    const Vector2& top_left() const { return tl_; }
+    const Vector2& bottom_right() const { return br_; }
+    Distance* mutable_corner_radius() { return &radius_; }
+    const Distance& corner_radius() const { return radius_; }
+private:
+    Vector2 tl_, br_;
+    Distance radius_;
+};
+
+class GraphicBezierAttributes {
+public:
+    GraphicBezierAttributes() = default;
+    Vector2* mutable_start() { return &start_; }
+    Vector2* mutable_end() { return &end_; }
+    Vector2* mutable_control1() { return &ctrl1_; }
+    Vector2* mutable_control2() { return &ctrl2_; }
+    const Vector2& start() const { return start_; }
+    const Vector2& end() const { return end_; }
+    const Vector2& control1() const { return ctrl1_; }
+    const Vector2& control2() const { return ctrl2_; }
+private:
+    Vector2 start_, end_, ctrl1_, ctrl2_;
+};
+
 class GraphicAttributes {
 public:
     GraphicAttributes() = default;
     StrokeAttributes* mutable_stroke() { return &stroke_; }
     const StrokeAttributes& stroke() const { return stroke_; }
-    void set_fill(GraphicFillType) {}
-    GraphicFillType fill() const { return GFT_NONE; }
+    GraphicFillAttributes* mutable_fill() { return &fill_; }
+    const GraphicFillAttributes& fill() const { return fill_; }
+    bool has_fill() const { return false; }
 private:
     StrokeAttributes stroke_;
+    GraphicFillAttributes fill_;
 };
 
 class GraphicShape : public google::protobuf::Message {
@@ -311,25 +387,37 @@ public:
     GraphicAttributes* mutable_attributes() { return &attrs_; }
     const GraphicAttributes& attributes() const { return attrs_; }
     bool has_attributes() const { return false; }
-    // Segment
+    // Sub-shape accessors (protobuf oneof pattern)
+    GraphicSegmentAttributes* mutable_segment() { return &segment_; }
+    const GraphicSegmentAttributes& segment() const { return segment_; }
+    bool has_segment() const { return false; }
+    GraphicRectangleAttributes* mutable_rectangle() { return &rectangle_; }
+    const GraphicRectangleAttributes& rectangle() const { return rectangle_; }
+    bool has_rectangle() const { return false; }
+    GraphicArcAttributes* mutable_arc() { return &arc_; }
+    const GraphicArcAttributes& arc() const { return arc_; }
+    bool has_arc() const { return false; }
+    GraphicCircleAttributes* mutable_circle() { return &circle_; }
+    const GraphicCircleAttributes& circle() const { return circle_; }
+    bool has_circle() const { return false; }
+    GraphicBezierAttributes* mutable_bezier() { return &bezier_; }
+    const GraphicBezierAttributes& bezier() const { return bezier_; }
+    bool has_bezier() const { return false; }
+    // Polygon
+    PolySet* mutable_polygon() { return &polyset_; }
+    const PolySet& polygon() const { return polyset_; }
+    bool has_polygon() const { return false; }
+    // Legacy direct accessors (kept for backward compat)
     Vector2* mutable_start() { return &start_; }
     Vector2* mutable_end() { return &end_; }
     const Vector2& start() const { return start_; }
     const Vector2& end() const { return end_; }
-    // Other shape types
     Vector2* mutable_center() { return &start_; }
     const Vector2& center() const { return start_; }
     Vector2* mutable_top_left() { return &start_; }
     Vector2* mutable_bottom_right() { return &end_; }
-    const Vector2& top_left() const { return start_; }
-    const Vector2& bottom_right() const { return end_; }
-    // Radius
     Distance* mutable_radius() { return &width_; }
     const Distance& radius() const { return width_; }
-    // Polygon
-    PolyLine* mutable_polygon() { return &poly_; }
-    const PolyLine& polygon() const { return poly_; }
-    // Bezier
     Vector2* mutable_control1() { return &start_; }
     Vector2* mutable_control2() { return &end_; }
     // Type
@@ -337,9 +425,14 @@ public:
     int type() const { return 0; }
 private:
     GraphicAttributes attrs_;
+    GraphicSegmentAttributes segment_;
+    GraphicRectangleAttributes rectangle_;
+    GraphicArcAttributes arc_;
+    GraphicCircleAttributes circle_;
+    GraphicBezierAttributes bezier_;
+    PolySet polyset_;
     Vector2 start_, end_;
     Distance width_;
-    PolyLine poly_;
 };
 
 class ItemHeader {
@@ -380,36 +473,6 @@ public:
 class CompoundShape {
 public:
     CompoundShape() = default;
-};
-
-class GraphicFillAttributes {
-public:
-    GraphicFillAttributes() = default;
-};
-
-class GraphicSegmentAttributes {
-public:
-    GraphicSegmentAttributes() = default;
-};
-
-class GraphicCircleAttributes {
-public:
-    GraphicCircleAttributes() = default;
-};
-
-class GraphicArcAttributes {
-public:
-    GraphicArcAttributes() = default;
-};
-
-class GraphicRectangleAttributes {
-public:
-    GraphicRectangleAttributes() = default;
-};
-
-class GraphicBezierAttributes {
-public:
-    GraphicBezierAttributes() = default;
 };
 
 class ArcStartMidEnd {

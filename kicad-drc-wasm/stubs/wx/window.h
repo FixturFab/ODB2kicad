@@ -78,6 +78,7 @@ public:
     class wxSizer* GetSizer() const { return nullptr; }
 
     static wxWindow* FindWindowById(long id, const wxWindow* parent = nullptr) { return nullptr; }
+    static wxWindow* FindFocus() { return nullptr; }
     wxEvtHandler* GetEventHandler() const { return nullptr; }
     void PushEventHandler(wxEvtHandler*) {}
     wxEvtHandler* PopEventHandler(bool deleteHandler = false) { return nullptr; }

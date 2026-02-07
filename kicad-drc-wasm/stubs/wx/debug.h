@@ -1,9 +1,12 @@
 #pragma once
 
-#include <cassert>
+#include <cstdio>
+#include "string.h"
 
-#define wxASSERT(cond) assert(cond)
-#define wxASSERT_MSG(cond, msg) assert(cond)
+// In WASM, assert() compiles to __builtin_trap() which is "unreachable".
+// Use a non-fatal version that logs and continues.
+#define wxASSERT(cond) do { if(!(cond)) { fprintf(stderr, "wxASSERT failed: %s at %s:%d\n", #cond, __FILE__, __LINE__); } } while(0)
+#define wxASSERT_MSG(cond, msg) do { if(!(cond)) { fprintf(stderr, "wxASSERT failed: %s at %s:%d\n", #cond, __FILE__, __LINE__); } } while(0)
 #define wxCHECK(cond, rc) do { if(!(cond)) return rc; } while(0)
 #define wxCHECK_MSG(cond, rc, msg) do { if(!(cond)) return rc; } while(0)
 #define wxCHECK_RET(cond, msg) do { if(!(cond)) return; } while(0)

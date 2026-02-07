@@ -50,7 +50,12 @@ public:
     virtual ~wxDataViewModel() = default;
     void ItemAdded(const wxDataViewItem&, const wxDataViewItem&) {}
     void ItemDeleted(const wxDataViewItem&, const wxDataViewItem&) {}
+    void ItemsAdded(const wxDataViewItem&, const wxDataViewItemArray&) {}
+    void ItemsDeleted(const wxDataViewItem&, const wxDataViewItemArray&) {}
     void ItemChanged(const wxDataViewItem&) {}
+    bool ValueChanged(const wxDataViewItem&, unsigned int) { return true; }
+    void BeforeReset() {}
+    void AfterReset() {}
     void Cleared() {}
     virtual unsigned int GetChildren(const wxDataViewItem&, wxDataViewItemArray&) const { return 0; }
     virtual bool HasContainerColumns(const wxDataViewItem&) const { return false; }
@@ -88,10 +93,15 @@ public:
     void Unselect(const wxDataViewItem&) {}
     void UnselectAll() {}
     void AssociateModel(wxDataViewModel*) {}
+    void ClearColumns() {}
     wxDataViewColumn* AppendTextColumn(const wxString&, int = 0) { return nullptr; }
+    wxDataViewColumn* AppendTextColumn(const wxString&, unsigned int, int, int, int = 0) { return nullptr; }
     void Expand(const wxDataViewItem&) {}
     void Collapse(const wxDataViewItem&) {}
+    bool IsExpanded(const wxDataViewItem&) const { return false; }
     void EnsureVisible(const wxDataViewItem&, wxDataViewColumn* = nullptr) {}
+    wxDataViewItem GetCurrentItem() const { return wxDataViewItem(); }
+    void SetCurrentItem(const wxDataViewItem&) {}
 };
 class wxDataViewIconText {
 public:
@@ -129,8 +139,17 @@ public:
     wxSize GetMinClientSize() const { return wxSize(); }
 };
 
+// Event type stubs
+#define wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED 0
+#define wxEVT_DATAVIEW_SELECTION_CHANGED 0
+#define wxEVT_DATAVIEW_ITEM_ACTIVATED 0
+#define wxEVT_DATAVIEW_ITEM_CONTEXT_MENU 0
+
 class wxDataViewEvent : public wxEvent {
 public:
+    wxDataViewEvent() = default;
+    wxDataViewEvent(int, wxDataViewCtrl*, const wxDataViewItem&) {}
+    wxDataViewEvent(int, const wxDataViewItem&) {}
     wxDataViewItem GetItem() const { return wxDataViewItem(); }
     wxDataViewColumn* GetColumn() const { return nullptr; }
     int GetModelColumn() const { return 0; }

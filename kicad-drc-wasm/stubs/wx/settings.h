@@ -1,1 +1,64 @@
 #pragma once
+#include "colour.h"
+
+enum wxSystemColour {
+    wxSYS_COLOUR_SCROLLBAR,
+    wxSYS_COLOUR_DESKTOP,
+    wxSYS_COLOUR_ACTIVECAPTION,
+    wxSYS_COLOUR_INACTIVECAPTION,
+    wxSYS_COLOUR_MENU,
+    wxSYS_COLOUR_WINDOW,
+    wxSYS_COLOUR_WINDOWFRAME,
+    wxSYS_COLOUR_MENUTEXT,
+    wxSYS_COLOUR_WINDOWTEXT,
+    wxSYS_COLOUR_CAPTIONTEXT,
+    wxSYS_COLOUR_ACTIVEBORDER,
+    wxSYS_COLOUR_INACTIVEBORDER,
+    wxSYS_COLOUR_APPWORKSPACE,
+    wxSYS_COLOUR_HIGHLIGHT,
+    wxSYS_COLOUR_HIGHLIGHTTEXT,
+    wxSYS_COLOUR_BTNFACE,
+    wxSYS_COLOUR_BTNSHADOW,
+    wxSYS_COLOUR_GRAYTEXT,
+    wxSYS_COLOUR_BTNTEXT,
+    wxSYS_COLOUR_INACTIVECAPTIONTEXT,
+    wxSYS_COLOUR_BTNHIGHLIGHT,
+    wxSYS_COLOUR_3DDKSHADOW,
+    wxSYS_COLOUR_3DLIGHT,
+    wxSYS_COLOUR_INFOTEXT,
+    wxSYS_COLOUR_INFOBK,
+    wxSYS_COLOUR_LISTBOX,
+    wxSYS_COLOUR_HOTLIGHT,
+    wxSYS_COLOUR_LISTBOXTEXT,
+    wxSYS_COLOUR_LISTBOXHIGHLIGHTTEXT,
+    wxSYS_COLOUR_BACKGROUND = wxSYS_COLOUR_DESKTOP,
+};
+
+enum wxSystemFont {
+    wxSYS_OEM_FIXED_FONT,
+    wxSYS_ANSI_FIXED_FONT,
+    wxSYS_ANSI_VAR_FONT,
+    wxSYS_SYSTEM_FONT,
+    wxSYS_DEVICE_DEFAULT_FONT,
+    wxSYS_DEFAULT_GUI_FONT,
+};
+
+enum wxSystemMetric {
+    wxSYS_MOUSE_BUTTONS,
+    wxSYS_BORDER_X,
+    wxSYS_BORDER_Y,
+    wxSYS_CURSOR_X,
+    wxSYS_CURSOR_Y,
+    wxSYS_DCLICK_X,
+    wxSYS_DCLICK_Y,
+    wxSYS_SCREEN_X,
+    wxSYS_SCREEN_Y,
+    wxSYS_HSCROLL_Y,
+    wxSYS_VSCROLL_X,
+};
+
+class wxSystemSettings {
+public:
+    static wxColour GetColour(wxSystemColour) { return wxColour(0, 0, 0); }
+    static int GetMetric(wxSystemMetric, void* = nullptr) { return 0; }
+};
