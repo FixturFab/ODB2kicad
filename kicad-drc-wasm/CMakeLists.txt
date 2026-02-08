@@ -87,7 +87,8 @@ if(EMSCRIPTEN)
 
     # ── Compile options ─────────────────────────────────────────────────────
     add_compile_options(
-        -g2
+        -O3
+        -flto
         -fexceptions
         -pthread
         -Wno-attributes
@@ -640,18 +641,18 @@ if(EMSCRIPTEN)
             -sEXPORT_NAME=createKicadDRC \
             -sEXPORTED_FUNCTIONS=[\"_kicad_load_pcb\",\"_kicad_run_drc\",\"_kicad_get_drc_results\",\"_kicad_cleanup\",\"_diag_ping\",\"_malloc\",\"_free\"] \
             -sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"UTF8ToString\",\"stringToUTF8\",\"lengthBytesUTF8\"] \
+            -O3 \
+            -flto \
             -sALLOW_MEMORY_GROWTH=1 \
-            -sINITIAL_MEMORY=134217728 \
+            -sINITIAL_MEMORY=67108864 \
             -sSTACK_SIZE=16777216 \
             -sFILESYSTEM=1 \
             -sENVIRONMENT=node,web,worker \
             -sNO_DISABLE_EXCEPTION_CATCHING \
-            -sASSERTIONS=2 \
-            -sSTACK_OVERFLOW_CHECK=2 \
+            -sASSERTIONS=0 \
+            -sSTACK_OVERFLOW_CHECK=0 \
             -pthread \
             -sPTHREAD_POOL_SIZE=4 \
-            --emit-symbol-map \
-            -g2 \
         "
     )
 

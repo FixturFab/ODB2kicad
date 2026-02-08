@@ -394,15 +394,15 @@ namespace TEXT_EVAL_VCS {
 }
 
 // ── libc++ atomic wait stubs ────────────────────────────────────────────
-// Emscripten libc++-mt has __cxx_contention_t = int64_t but wasm32 compilation
-// generates references with __cxx_contention_t = int32_t. Provide matching stubs.
+// With LTO, libc++-mt provides these symbols. Without LTO, the non-LTO libc++
+// may be missing them. Use weak linkage so they don't conflict either way.
 #include <__atomic/contention_t.h>
 
 namespace std {
 inline namespace __2 {
-    _LIBCPP_EXPORTED_FROM_ABI void
+    __attribute__((weak)) void
     __libcpp_atomic_wait(void const volatile*, __cxx_contention_t) noexcept {}
-    _LIBCPP_EXPORTED_FROM_ABI __cxx_contention_t
+    __attribute__((weak)) __cxx_contention_t
     __libcpp_atomic_monitor(void const volatile*) noexcept { return 0; }
 }}
 
