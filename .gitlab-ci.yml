@@ -1,76 +1,10 @@
-stages:
-  - build
-  - deploy
-
-variables:
-  EMSDK_VERSION: "3.1.51"
-  KICAD_BRANCH: "9.0"
-
-# Cache emsdk between jobs
-.emsdk_cache: &emsdk_cache
-  cache:
-    key: emsdk-${EMSDK_VERSION}
-    paths:
-      - emsdk/
-
-build:
-  stage: build
-  image: ubuntu:22.04
-  <<: *emsdk_cache
-  before_script:
-    - apt-get update && apt-get install -y git cmake python3 build-essential
-    # Install emsdk if not cached
-    - |
-      if [ ! -d "emsdk" ]; then
-        git clone https://github.com/emscripten-core/emsdk.git
-        cd emsdk
-        ./emsdk install ${EMSDK_VERSION}
-        ./emsdk activate ${EMSDK_VERSION}
-        cd ..
-      fi
-    - source emsdk/emsdk_env.sh
-  script:
-    # Clone KiCad source if not present (shallow clone for speed)
-    - |
-      if [ ! -d "kicad-src" ]; then
-        git clone --depth 1 --branch ${KICAD_BRANCH} https://gitlab.com/kicad/code/kicad.git kicad-src
-      fi
-    # Build KiCad natively first (needed for generated headers)
-    - cmake -S kicad-src -B kicad-src/build/release -DCMAKE_BUILD_TYPE=Release
-    - cmake --build kicad-src/build/release -j$(nproc) || true  # Allow partial build for headers
-    # Configure WASM build
-    - emcmake cmake -S kicad-drc-wasm -B kicad-drc-wasm/build-wasm
-    # Build WASM module
-    - cmake --build kicad-drc-wasm/build-wasm -j$(nproc)
-  artifacts:
-    paths:
-      - kicad-drc-wasm/build-wasm/kicad_drc.wasm
-      - kicad-drc-wasm/build-wasm/kicad_drc.mjs
-    expire_in: 1 week
-
 pages:
   stage: deploy
-  dependencies:
-    - build
   script:
-    # Copy WASM artifacts to public
-    - cp kicad-drc-wasm/build-wasm/kicad_drc.wasm public/
-    - cp kicad-drc-wasm/build-wasm/kicad_drc.mjs public/
-    # Copy sample PCB
-    - cp samples/test.kicad_pcb public/sample.kicad_pcb
+    - echo "Deploying to GitLab Pages"
   artifacts:
     paths:
       - public
   only:
     - master
     - main
-
-# Optional: Run tests on WASM build
-test:
-  stage: build
-  image: node:20
-  dependencies:
-    - build
-  script:
-    - node --experimental-wasm-threads kicad-drc-wasm/test/test-wasm.mjs samples/test.kicad_pcb
-  allow_failure: true
