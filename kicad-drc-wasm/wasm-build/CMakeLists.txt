@@ -583,7 +583,7 @@ set_target_properties(kicad_drc PROPERTIES
         -sSTACK_SIZE=1048576 \
         -sFILESYSTEM=1 \
         -sENVIRONMENT=node,web,worker \
-        -sPTHREAD_POOL_SIZE=0 \
+        -sPTHREAD_POOL_SIZE=4 \
         -sNO_DISABLE_EXCEPTION_CATCHING \
         -lembind \
         -pthread \
