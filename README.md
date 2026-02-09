@@ -4,6 +4,8 @@ Run KiCad design rule checks in the browser or Node.js via WebAssembly.
 
 This project compiles KiCad's DRC (Design Rule Check) engine to WebAssembly, enabling PCB design rule validation without a native KiCad installation.
 
+**[Try the Live Demo](https://henrybtroutman.gitlab.io/kicad-cli-wasm/)**
+
 ## Features
 
 - **26 DRC test providers** — clearance, track width, hole size, annular width, silk/mask, courtyard, connectivity, and more
