@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KiCad DRC WASM - Browser-based PCB Design Rule Checker</title>
     <!-- Enable SharedArrayBuffer via service worker (required for multi-threaded WASM) -->
-    <script src="/coi-serviceworker.js"></script>
+    <script src="coi-serviceworker.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -473,12 +473,12 @@
 
         async function loadModule() {
             try {
-                const { default: createKicadDRC } = await import('/kicad_drc.mjs');
+                const { default: createKicadDRC } = await import('./kicad_drc.mjs');
                 Module = await createKicadDRC({
                     print: (text) => console.log('[WASM]', text),
                     printErr: (text) => console.error('[WASM]', text),
-                    locateFile: (path) => '/' + path,
-                    mainScriptUrlOrBlob: '/kicad_drc.mjs'
+                    locateFile: (path) => './' + path,
+                    mainScriptUrlOrBlob: './kicad_drc.mjs'
                 });
 
                 // Wait for pthread workers to fully initialize
@@ -547,7 +547,7 @@
                 useSampleBtn.disabled = true;
                 useSampleBtn.textContent = 'Loading...';
 
-                const response = await fetch('/sample.kicad_pcb');
+                const response = await fetch('./sample.kicad_pcb');
                 currentPcbContent = await response.text();
 
                 fileName.textContent = 'sample.kicad_pcb';
