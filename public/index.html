@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KiCad DRC WASM - Browser-based PCB Design Rule Checker</title>
+    <!-- Enable SharedArrayBuffer via service worker (required for multi-threaded WASM) -->
+    <script src="/coi-serviceworker.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --error: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone p {
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone .hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #cbd5e1;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .status.loading {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .status.success {
+            background: #f0fdf4;
+            color: var(--success);
+        }
+
+        .status.error {
+            background: #fef2f2;
+            color: var(--error);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #f1f5f9;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .file-name {
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .results-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: #fef9c3;
+            color: var(--warning);
+        }
+
+        .badge-error {
+            background: #fee2e2;
+            color: var(--error);
+        }
+
+        .violation {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .violation-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .violation-type {
+            font-weight: 600;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .severity-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .severity-error { background: var(--error); }
+        .severity-warning { background: var(--warning); }
+
+        .violation-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .violation-items {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding-left: 1rem;
+            border-left: 2px solid var(--border);
+        }
+
+        .violation-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .no-violations {
+            text-align: center;
+            padding: 2rem;
+            color: var(--success);
+        }
+
+        .no-violations-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .json-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .toggle-json {
+            font-size: 0.9rem;
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .feature-icon {
+            color: var(--success);
+        }
+
+        #results {
+            display: none;
+        }
+
+        .header-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            .card { padding: 1rem; }
+            .drop-zone { padding: 2rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KiCad DRC WASM</h1>
+            <p class="subtitle">Run PCB design rule checks directly in your browser</p>
+        </header>
+
+        <div id="header-warning" class="header-warning" style="display: none;">
+            <strong>Note:</strong> This page requires <code>SharedArrayBuffer</code> for multi-threaded WASM.
+            If loading fails, ensure the page is served with the proper COOP/COEP headers.
+        </div>
+
+        <div class="card">
+            <div id="module-status" class="status loading">
+                <div class="spinner"></div>
+                <span>Loading WASM module (7.3 MB)...</span>
+            </div>
+
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone-icon">📁</div>
+                <p><strong>Drop your .kicad_pcb file here</strong></p>
+                <p class="hint">or click to browse</p>
+                <input type="file" id="file-input" accept=".kicad_pcb">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="use-sample" disabled>Use Sample PCB</button>
+                <button class="btn btn-primary" id="run-drc" disabled>Run DRC Check</button>
+            </div>
+
+            <div id="file-info" class="file-info" style="display: none;">
+                <span class="file-name" id="file-name"></span>
+                <button class="btn btn-secondary" id="clear-file" style="padding: 0.5rem 1rem;">Clear</button>
+            </div>
+        </div>
+
+        <div id="results" class="card">
+            <div class="results-header">
+                <h2>DRC Results</h2>
+                <span id="results-badge" class="badge"></span>
+            </div>
+
+            <div id="violations-list"></div>
+
+            <div style="margin-top: 1rem;">
+                <button class="toggle-json" id="toggle-json">Show raw JSON</button>
+                <div id="json-container" style="display: none; margin-top: 0.5rem;">
+                    <pre class="json-output" id="json-output"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 0.5rem;">Features</h3>
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">✓</span>
+                    <span>26 DRC test providers</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">✓</span>
+                    <span>Multi-threaded WASM</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">✓</span>
+                    <span>JSON output format</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">✓</span>
+                    <span>No server upload required</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                Built with <a href="https://www.kicad.org/" target="_blank">KiCad</a> &amp;
+                <a href="https://emscripten.org/" target="_blank">Emscripten</a>
+            </p>
+            <p style="margin-top: 0.5rem;">
+                <a href="https://gitlab.com/henrybtroutman/kicad-cli-wasm" target="_blank">View Source</a>
+            </p>
+        </footer>
+    </div>
+
+    <script type="module">
+        let Module = null;
+        let currentPcbContent = null;
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const useSampleBtn = document.getElementById('use-sample');
+        const runDrcBtn = document.getElementById('run-drc');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const clearFileBtn = document.getElementById('clear-file');
+        const moduleStatus = document.getElementById('module-status');
+        const results = document.getElementById('results');
+        const violationsList = document.getElementById('violations-list');
+        const resultsBadge = document.getElementById('results-badge');
+        const toggleJson = document.getElementById('toggle-json');
+        const jsonContainer = document.getElementById('json-container');
+        const jsonOutput = document.getElementById('json-output');
+        const headerWarning = document.getElementById('header-warning');
+
+        // Check for SharedArrayBuffer support
+        if (typeof SharedArrayBuffer === 'undefined') {
+            headerWarning.style.display = 'block';
+            moduleStatus.className = 'status error';
+            moduleStatus.innerHTML = '<span>SharedArrayBuffer not available. Multi-threaded WASM requires COOP/COEP headers.</span>';
+        } else {
+            // Load the WASM module
+            loadModule();
+        }
+
+        async function loadModule() {
+            try {
+                const { default: createKicadDRC } = await import('/kicad_drc.mjs');
+                Module = await createKicadDRC({
+                    print: (text) => console.log('[WASM]', text),
+                    printErr: (text) => console.error('[WASM]', text),
+                    locateFile: (path) => '/' + path,
+                    mainScriptUrlOrBlob: '/kicad_drc.mjs'
+                });
+
+                // Wait for pthread workers to fully initialize
+                await new Promise(r => setTimeout(r, 1000));
+
+                moduleStatus.className = 'status success';
+                moduleStatus.innerHTML = '<span>WASM module loaded successfully</span>';
+                useSampleBtn.disabled = false;
+                if (currentPcbContent) runDrcBtn.disabled = false;
+            } catch (err) {
+                console.error('Failed to load WASM module:', err);
+                moduleStatus.className = 'status error';
+                moduleStatus.innerHTML = `<span>Failed to load WASM module: ${err.message}</span>`;
+            }
+        }
+
+        // Drag and drop handling
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        async function handleFile(file) {
+            if (!file.name.endsWith('.kicad_pcb')) {
+                alert('Please select a .kicad_pcb file');
+                return;
+            }
+
+            currentPcbContent = await file.text();
+            fileName.textContent = file.name;
+            fileInfo.style.display = 'flex';
+            dropZone.style.display = 'none';
+            runDrcBtn.disabled = !Module;
+            results.style.display = 'none';
+        }
+
+        clearFileBtn.addEventListener('click', () => {
+            currentPcbContent = null;
+            fileInput.value = '';
+            fileInfo.style.display = 'none';
+            dropZone.style.display = 'block';
+            runDrcBtn.disabled = true;
+            results.style.display = 'none';
+        });
+
+        useSampleBtn.addEventListener('click', async () => {
+            try {
+                useSampleBtn.disabled = true;
+                useSampleBtn.textContent = 'Loading...';
+
+                const response = await fetch('/sample.kicad_pcb');
+                currentPcbContent = await response.text();
+
+                fileName.textContent = 'sample.kicad_pcb';
+                fileInfo.style.display = 'flex';
+                dropZone.style.display = 'none';
+                runDrcBtn.disabled = !Module;
+                results.style.display = 'none';
+            } catch (err) {
+                alert('Failed to load sample PCB: ' + err.message);
+            } finally {
+                useSampleBtn.disabled = false;
+                useSampleBtn.textContent = 'Use Sample PCB';
+            }
+        });
+
+        runDrcBtn.addEventListener('click', runDRC);
+
+        const DRC_TIMEOUT_MS = 60000; // 60 second timeout
+
+        async function runDRC() {
+            if (!Module || !currentPcbContent) return;
+
+            runDrcBtn.disabled = true;
+            runDrcBtn.textContent = 'Loading PCB...';
+            results.style.display = 'none';
+
+            // Start timeout timer
+            const startTime = performance.now();
+            let timedOut = false;
+            let elapsedInterval = null;
+
+            const timeoutId = setTimeout(() => {
+                timedOut = true;
+                runDrcBtn.textContent = 'Timed out - refresh page';
+                moduleStatus.className = 'status error';
+                moduleStatus.innerHTML = '<span>DRC timed out after 60s. The page may need to be refreshed.</span>';
+            }, DRC_TIMEOUT_MS);
+
+            try {
+                // Allocate string in WASM memory
+                const len = Module.lengthBytesUTF8(currentPcbContent) + 1;
+                const ptr = Module._malloc(len);
+                Module.stringToUTF8(currentPcbContent, ptr, len);
+
+                // Load PCB
+                const rc = Module._kicad_load_pcb(ptr, 0);
+                Module._free(ptr);
+
+                if (rc !== 0) {
+                    throw new Error(`Failed to load PCB (error code: ${rc})`);
+                }
+
+                // Wait for workers to be ready
+                runDrcBtn.textContent = 'Initializing...';
+                await new Promise(r => setTimeout(r, 1000));
+
+                // Show elapsed time while running
+                runDrcBtn.textContent = 'Running DRC...';
+                elapsedInterval = setInterval(() => {
+                    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+                    runDrcBtn.textContent = `Running DRC... (${elapsed}s)`;
+                }, 1000);
+
+                // Run DRC (this blocks the main thread, so interval won't update during execution)
+                const violationCount = Module._kicad_run_drc();
+
+                clearTimeout(timeoutId);
+                clearInterval(elapsedInterval);
+
+                if (timedOut) {
+                    // Already timed out, don't process results
+                    return;
+                }
+
+                if (violationCount < 0) {
+                    throw new Error('DRC failed to run');
+                }
+
+                // Get results
+                const jsonPtr = Module._kicad_get_drc_results();
+                const jsonStr = Module.UTF8ToString(jsonPtr);
+                const drcResults = JSON.parse(jsonStr);
+
+                // Cleanup
+                Module._kicad_cleanup();
+
+                // Show elapsed time
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                console.log(`DRC completed in ${elapsed}s`);
+
+                // Display results
+                displayResults(drcResults);
+            } catch (err) {
+                clearTimeout(timeoutId);
+                clearInterval(elapsedInterval);
+                alert('DRC Error: ' + err.message);
+                console.error(err);
+            } finally {
+                if (!timedOut) {
+                    runDrcBtn.disabled = false;
+                    runDrcBtn.textContent = 'Run DRC Check';
+                }
+            }
+        }
+
+        function displayResults(drcResults) {
+            results.style.display = 'block';
+
+            const violations = drcResults.violations || [];
+            const total = violations.length;
+
+            // Update badge
+            if (total === 0) {
+                resultsBadge.textContent = 'No violations';
+                resultsBadge.className = 'badge badge-success';
+            } else {
+                const errors = violations.filter(v => v.severity === 'error').length;
+                const warnings = total - errors;
+                resultsBadge.textContent = `${errors} errors, ${warnings} warnings`;
+                resultsBadge.className = errors > 0 ? 'badge badge-error' : 'badge badge-warning';
+            }
+
+            // Display violations
+            if (total === 0) {
+                violationsList.innerHTML = `
+                    <div class="no-violations">
+                        <div class="no-violations-icon">✓</div>
+                        <p>No DRC violations found!</p>
+                    </div>
+                `;
+            } else {
+                violationsList.innerHTML = violations.map(v => `
+                    <div class="violation">
+                        <div class="violation-header">
+                            <div class="severity-indicator severity-${v.severity || 'warning'}"></div>
+                            <div>
+                                <div class="violation-type">${escapeHtml(v.type)}</div>
+                                <div class="violation-description">${escapeHtml(v.description)}</div>
+                            </div>
+                        </div>
+                        ${v.items && v.items.length > 0 ? `
+                            <div class="violation-items">
+                                ${v.items.map(item => `
+                                    <div class="violation-item">
+                                        ${escapeHtml(item.description)}
+                                        ${item.pos ? ` @ (${item.pos.x.toFixed(2)}, ${item.pos.y.toFixed(2)})` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // JSON output
+            jsonOutput.textContent = JSON.stringify(drcResults, null, 2);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        toggleJson.addEventListener('click', () => {
+            const isHidden = jsonContainer.style.display === 'none';
+            jsonContainer.style.display = isHidden ? 'block' : 'none';
+            toggleJson.textContent = isHidden ? 'Hide raw JSON' : 'Show raw JSON';
+        });
+    </script>
+</body>
+</html>
