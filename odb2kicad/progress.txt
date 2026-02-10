@@ -19,3 +19,15 @@
 - Smoke test created and passing (test/test_simple.sh)
 - Kitchen-sink sample parses without crashing
 - Stage A COMPLETE ✓ (includes: layers, setup, nets, footprints, pads, trace, board outline)
+
+### Stage C progress:
+- Added via detection from drill layer features (.geometry attr → VIA string)
+- Via sizing: drill from drill-layer symbol, pad size from copper-layer symbol
+- Via net assignment from netlist points with 'v' flag
+- Fixed trace net assignment: pad lookup table with TH pad support + net propagation along connected traces
+- Kitchen-sink: 3 vias at correct positions (120,102), (118,102), (120,103.5), drill 0.3mm, size 0.6mm
+- Kitchen-sink: All 4 B.Cu traces now have net 1 ("A") instead of net 0
+- Simple test: still passing, segment net=SIG correct
+- Smoke test updated: kitchen-sink test added (components, vias, traces, TH pads, board outline)
+- All Stage C acceptance criteria verified against PRD
+- Stage C COMPLETE ✓ (vias, trace net assignment, drill detection)

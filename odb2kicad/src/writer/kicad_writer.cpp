@@ -269,7 +269,182 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     processComponents(design.topComponents, false);
     processComponents(design.botComponents, true);
 
-    // 4. Transform copper traces
+    // 4. Detect vias from drill layer features
+    // Build a set of via positions from drill layers
+    struct ViaInfo {
+        double x, y;           // ODB++ coordinates
+        double drillDiameter;  // from drill layer symbol
+        double padSize;        // from copper layer symbol
+        int netId;
+    };
+    std::vector<ViaInfo> viaInfos;
+
+    for (auto& [layerNameLower, features] : design.layerFeatures) {
+        // Find drill layers (name contains "drill")
+        if (layerNameLower.find("drill") == std::string::npos) continue;
+
+        for (auto& pad : features.pads) {
+            // Check if this drill pad has a .geometry attribute referencing a VIA string
+            bool isVia = false;
+            for (auto& [attrIdx, attrVal] : pad.attrs) {
+                auto attrDefIt = features.attrDefs.find(attrIdx);
+                if (attrDefIt != features.attrDefs.end() && attrDefIt->second == ".geometry") {
+                    // The value is a string index; look up the string
+                    int strIdx = -1;
+                    try { strIdx = std::stoi(attrVal); } catch (...) {}
+                    if (strIdx >= 0) {
+                        auto strIt = features.strings.find(strIdx);
+                        if (strIt != features.strings.end() && strIt->second.find("VIA") != std::string::npos) {
+                            isVia = true;
+                        }
+                    }
+                }
+            }
+            if (!isVia) continue;
+
+            ViaInfo vi;
+            vi.x = pad.x;
+            vi.y = pad.y;
+            vi.netId = 0;
+
+            // Drill diameter from drill-layer symbol
+            if (pad.symIdx < (int)features.symbols.size()) {
+                auto& sym = features.symbols[pad.symIdx];
+                vi.drillDiameter = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+            } else {
+                vi.drillDiameter = 0.3; // default
+            }
+
+            // Find pad size from copper layer (F.Cu) at same position
+            vi.padSize = vi.drillDiameter + 0.3; // default annular ring
+            auto fcuIt = design.layerFeatures.find("f.cu");
+            if (fcuIt != design.layerFeatures.end()) {
+                for (auto& cuPad : fcuIt->second.pads) {
+                    if (std::abs(cuPad.x - pad.x) < 0.01 && std::abs(cuPad.y - pad.y) < 0.01) {
+                        if (cuPad.symIdx < (int)fcuIt->second.symbols.size()) {
+                            auto& cuSym = fcuIt->second.symbols[cuPad.symIdx];
+                            if (cuSym.shape == OdbSymbol::ROUND) {
+                                vi.padSize = cuSym.diameter;
+                            } else {
+                                vi.padSize = std::max(cuSym.width, cuSym.height);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            viaInfos.push_back(vi);
+        }
+    }
+
+    // Assign nets to vias from netlist points with 'v' flag
+    for (auto& vi : viaInfos) {
+        for (auto& pt : design.netlist.points) {
+            if (!pt.isVia) continue;
+            if (std::abs(pt.x - vi.x) < 0.01 && std::abs(pt.y - vi.y) < 0.01) {
+                // Map netlist index to KiCad net
+                for (auto& nd : design.netlist.nets) {
+                    if (nd.index == pt.netIdx) {
+                        auto it = netNameToId.find(nd.name);
+                        if (it != netNameToId.end()) {
+                            vi.netId = it->second;
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    // Build a set of via positions for quick lookup (in KiCad coords)
+    // to exclude them from segment generation
+    struct PosKey {
+        double x, y;
+    };
+    std::vector<PosKey> viaPositions;
+    for (auto& vi : viaInfos) {
+        viaPositions.push_back({vi.x, vi.y});
+    }
+
+    auto isViaPosition = [&](double odbX, double odbY) -> bool {
+        for (auto& vp : viaPositions) {
+            if (std::abs(vp.x - odbX) < 0.01 && std::abs(vp.y - odbY) < 0.01) return true;
+        }
+        return false;
+    };
+
+    // Emit vias
+    for (auto& vi : viaInfos) {
+        KicadVia kv;
+        kv.x = toKicadX(vi.x);
+        kv.y = toKicadY(vi.y);
+        kv.size = vi.padSize;
+        kv.drill = vi.drillDiameter;
+        kv.fromLayer = "F.Cu";
+        kv.toLayer = "B.Cu";
+        kv.netId = vi.netId;
+        pcb.vias.push_back(kv);
+    }
+
+    // 5. Build pad lookup table for net assignment (absolute positions)
+    struct PadNetInfo {
+        double x, y;  // absolute KiCad coordinates
+        int netId;
+        bool throughHole; // if true, pad exists on all copper layers
+    };
+    std::vector<PadNetInfo> padLookup;
+
+    for (auto& fp : pcb.footprints) {
+        double angleRad = degToRad(fp.angle);
+        double cosA = std::cos(angleRad);
+        double sinA = std::sin(angleRad);
+        for (auto& pad : fp.pads) {
+            PadNetInfo pni;
+            pni.x = fp.x + pad.x * cosA - pad.y * sinA;
+            pni.y = fp.y + pad.x * sinA + pad.y * cosA;
+            pni.netId = pad.netId;
+            pni.throughHole = (pad.type == "thru_hole");
+            padLookup.push_back(pni);
+        }
+    }
+
+    // Also add via positions to pad lookup for trace-to-via net propagation
+    for (auto& vi : viaInfos) {
+        PadNetInfo pni;
+        pni.x = toKicadX(vi.x);
+        pni.y = toKicadY(vi.y);
+        pni.netId = vi.netId;
+        pni.throughHole = true; // vias span all copper layers
+        padLookup.push_back(pni);
+    }
+
+    // Helper to find net for a point on a given layer
+    auto findNetAtPoint = [&](double kx, double ky, const std::string& layer) -> int {
+        int layerId = -1;
+        for (auto& m : kLayerMappings) {
+            if (m.canonical == layer) { layerId = m.id; break; }
+        }
+        bool isCopperLayer = (layerId == 0 || layerId == 31);
+        if (!isCopperLayer) return 0;
+
+        for (auto& pni : padLookup) {
+            // Through-hole pads match on any copper layer
+            bool layerMatch = pni.throughHole ||
+                (layerId == 0 && !pni.throughHole) || // SMD on F.Cu
+                (layerId == 31 && !pni.throughHole);   // SMD on B.Cu (if the footprint is on B.Cu)
+            // Actually: SMD pad only matches on its own layer.
+            // For simplicity, TH pads match any copper layer, SMD pads always match
+            // since they were placed from the correct footprint layer.
+            if (std::abs(pni.x - kx) < 0.02 && std::abs(pni.y - ky) < 0.02) {
+                if (pni.netId > 0) return pni.netId;
+            }
+        }
+        return 0;
+    };
+
+    // 6. Transform copper traces
     for (auto& [layerNameLower, features] : design.layerFeatures) {
         auto* mapping = findLayerByOdbName(layerNameLower);
         if (!mapping) continue;
@@ -279,7 +454,6 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         std::string kicadLayer = mapping->canonical;
 
         for (auto& line : features.lines) {
-            // Skip lines that are part of pads (they're traces)
             KicadSegment seg;
             seg.x1 = toKicadX(line.x1);
             seg.y1 = toKicadY(line.y1);
@@ -298,24 +472,39 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             seg.layer = kicadLayer;
 
-            // Net assignment: match endpoints to pad positions
-            seg.netId = 0;
-            for (auto& fp : pcb.footprints) {
-                for (auto& pad : fp.pads) {
-                    double padAbsX = fp.x + pad.x * std::cos(degToRad(fp.angle)) - pad.y * std::sin(degToRad(fp.angle));
-                    double padAbsY = fp.y + pad.x * std::sin(degToRad(fp.angle)) + pad.y * std::cos(degToRad(fp.angle));
-                    if ((std::abs(padAbsX - seg.x1) < 0.02 && std::abs(padAbsY - seg.y1) < 0.02) ||
-                        (std::abs(padAbsX - seg.x2) < 0.02 && std::abs(padAbsY - seg.y2) < 0.02)) {
-                        if (pad.netId > 0) {
-                            seg.netId = pad.netId;
-                            break;
-                        }
-                    }
-                }
-                if (seg.netId > 0) break;
+            // Net assignment: check both endpoints against pad and via positions
+            seg.netId = findNetAtPoint(seg.x1, seg.y1, kicadLayer);
+            if (seg.netId == 0) {
+                seg.netId = findNetAtPoint(seg.x2, seg.y2, kicadLayer);
             }
 
             pcb.segments.push_back(seg);
+        }
+    }
+
+    // Propagate nets along connected traces (multi-hop)
+    // Traces sharing an endpoint inherit each other's net
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (size_t i = 0; i < pcb.segments.size(); i++) {
+            if (pcb.segments[i].netId > 0) continue;
+            for (size_t j = 0; j < pcb.segments.size(); j++) {
+                if (i == j || pcb.segments[j].netId == 0) continue;
+                if (pcb.segments[i].layer != pcb.segments[j].layer) continue;
+                // Check if they share an endpoint
+                auto touches = [](double ax, double ay, double bx, double by) {
+                    return std::abs(ax - bx) < 0.02 && std::abs(ay - by) < 0.02;
+                };
+                if (touches(pcb.segments[i].x1, pcb.segments[i].y1, pcb.segments[j].x1, pcb.segments[j].y1) ||
+                    touches(pcb.segments[i].x1, pcb.segments[i].y1, pcb.segments[j].x2, pcb.segments[j].y2) ||
+                    touches(pcb.segments[i].x2, pcb.segments[i].y2, pcb.segments[j].x1, pcb.segments[j].y1) ||
+                    touches(pcb.segments[i].x2, pcb.segments[i].y2, pcb.segments[j].x2, pcb.segments[j].y2)) {
+                    pcb.segments[i].netId = pcb.segments[j].netId;
+                    changed = true;
+                    break;
+                }
+            }
         }
     }
 
