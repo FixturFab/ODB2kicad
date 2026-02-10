@@ -32,8 +32,7 @@ if(EMSCRIPTEN)
         LINK_FLAGS "\
             -s MODULARIZE=1 \
             -s EXPORT_ES6=1 \
-            -s EXPORTED_RUNTIME_METHODS=['FS','callMain','ccall','cwrap'] \
-            -s EXPORTED_FUNCTIONS=['_convert_odb','_malloc','_free'] \
+            -s EXPORTED_RUNTIME_METHODS=['FS'] \
             -s ALLOW_MEMORY_GROWTH=1 \
             -s ENVIRONMENT='web,node' \
             -s FORCE_FILESYSTEM=1 \

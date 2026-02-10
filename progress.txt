@@ -447,3 +447,34 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 - MODIFIED: odb2kicad/CMakeLists.txt (odb2kicad_core library target + if(EMSCRIPTEN) block)
 
 ### Next: Stage 2 - Emscripten Build Configuration
+
+## 2026-02-10: Stage 2 - Emscripten Build Configuration COMPLETE
+
+### What was done:
+- Task 2.1: Emscripten SDK 5.0.0 found at /root/kicad-test/emsdk/, symlinked to /root/emsdk/
+- Task 2.2: Created src/wasm_bindings.cpp with embind bridge (Approach A from PRD - filesystem-based)
+  - Uses emscripten::function("convertOdb", ...) via EMSCRIPTEN_BINDINGS macro
+  - Calls odb2kicad::convert() and returns kicad_pcb string or "ERROR: " prefix on failure
+- Task 2.2b: Cleaned up CMakeLists.txt LINK_FLAGS:
+  - Removed EXPORTED_FUNCTIONS (not needed with embind)
+  - Removed callMain/ccall/cwrap from EXPORTED_RUNTIME_METHODS (only FS needed)
+  - Kept: MODULARIZE=1, EXPORT_ES6=1, ALLOW_MEMORY_GROWTH=1, FORCE_FILESYSTEM=1, -lembind
+- Task 2.3: emcmake cmake configured without errors
+- Task 2.3b: emmake build completed — all 14 source files + wasm_bindings.cpp compiled cleanly
+- Task 2.3c: Output files produced:
+  - odb2kicad_wasm.mjs (78KB JS glue)
+  - odb2kicad_wasm.wasm (364KB binary — well under 500KB target!)
+- Task 2.3d: Node.js smoke test — WASM module loads, convertOdb function accessible
+- Task 2.3e: Native build still works, all smoke tests pass
+
+### Files created/modified:
+- NEW: odb2kicad/src/wasm_bindings.cpp (embind bridge, also satisfies Stage 3 Approach A)
+- MODIFIED: odb2kicad/CMakeLists.txt (cleaned up WASM link flags)
+
+### Key findings:
+- Zero compile errors or warnings — pure C++17 stdlib with no external deps compiles cleanly with Emscripten
+- POSIX calls (opendir/readdir/stat) in odb_parser.cpp compile fine under Emscripten MEMFS
+- WASM binary is only 364KB — very small due to no external dependencies
+- embind provides cleaner JS API than cwrap/ccall
+
+### Next: Stage 3 - WASM Bindings (already implemented, needs end-to-end testing)
