@@ -66,12 +66,18 @@ bool parseComponents(const std::string& path, OdbComponents& components) {
                     part = trim(part);
                     auto eq = part.find('=');
                     if (eq != std::string::npos) {
-                        int idx = std::stoi(part.substr(0, eq));
-                        std::string val = part.substr(eq + 1);
-                        // Check if this attr is .comp_mount_type
-                        auto it = components.attrDefs.find(idx);
-                        if (it != components.attrDefs.end() && it->second == ".comp_mount_type") {
-                            comp.mountType = std::stoi(val);
+                        std::string key = part.substr(0, eq);
+                        // Only parse numeric attribute keys; skip named attrs
+                        try {
+                            int idx = std::stoi(key);
+                            std::string val = part.substr(eq + 1);
+                            // Check if this attr is .comp_mount_type
+                            auto it = components.attrDefs.find(idx);
+                            if (it != components.attrDefs.end() && it->second == ".comp_mount_type") {
+                                try { comp.mountType = std::stoi(val); } catch (...) {}
+                            }
+                        } catch (const std::invalid_argument&) {
+                            // Named attribute from non-KiCad ODB++ — skip
                         }
                     }
                 }

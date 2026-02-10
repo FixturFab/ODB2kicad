@@ -49,6 +49,108 @@ static const LayerMapping* findLayerByOdbName(const std::string& odbName) {
     return nullptr;
 }
 
+// Build layer name mapping from ODB++ matrix layer stack.
+// Handles both KiCad-generated (F.CU, B.CU) and non-KiCad (SIGNAL_1, SIGNAL_10, etc.) naming.
+static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vector<OdbLayer>& layers) {
+    std::map<std::string, const LayerMapping*> result;
+
+    // First pass: try direct name matching (KiCad ODB++ output)
+    for (auto& layer : layers) {
+        auto* m = findLayerByOdbName(layer.name);
+        if (m) {
+            result[toLower(layer.name)] = m;
+        }
+    }
+
+    // If we found F.Cu and B.Cu by name, we're done (KiCad source)
+    bool hasFCu = false, hasBCu = false;
+    for (auto& [name, m] : result) {
+        if (m->id == 0) hasFCu = true;
+        if (m->id == 31) hasBCu = true;
+    }
+    if (hasFCu && hasBCu) return result;
+
+    // Second pass: TYPE-based mapping for non-KiCad ODB++ files
+    // Collect copper layers (SIGNAL and POWER_GROUND) in row order
+    std::vector<std::pair<std::string, int>> copperLayers; // name, row
+    std::vector<std::pair<std::string, int>> maskLayers;
+    std::vector<std::pair<std::string, int>> pasteLayers;
+    std::vector<std::pair<std::string, int>> silkLayers;
+    std::vector<std::pair<std::string, int>> drillLayers;
+
+    for (auto& layer : layers) {
+        std::string type = toUpper(layer.type);
+        if (type == "SIGNAL" || type == "POWER_GROUND")
+            copperLayers.push_back({layer.name, layer.row});
+        else if (type == "SOLDER_MASK")
+            maskLayers.push_back({layer.name, layer.row});
+        else if (type == "SOLDER_PASTE")
+            pasteLayers.push_back({layer.name, layer.row});
+        else if (type == "SILK_SCREEN")
+            silkLayers.push_back({layer.name, layer.row});
+        else if (type == "DRILL")
+            drillLayers.push_back({layer.name, layer.row});
+    }
+
+    // Sort by row
+    auto byRow = [](auto& a, auto& b) { return a.second < b.second; };
+    std::sort(copperLayers.begin(), copperLayers.end(), byRow);
+    std::sort(maskLayers.begin(), maskLayers.end(), byRow);
+    std::sort(pasteLayers.begin(), pasteLayers.end(), byRow);
+    std::sort(silkLayers.begin(), silkLayers.end(), byRow);
+
+    // Map copper: first = F.Cu (0), last = B.Cu (31), inner = In1.Cu through In28.Cu
+    if (!copperLayers.empty()) {
+        result[toLower(copperLayers.front().first)] = &kLayerMappings[0]; // F.Cu
+        if (copperLayers.size() > 1) {
+            result[toLower(copperLayers.back().first)] = &kLayerMappings[1]; // B.Cu
+        }
+        // Inner copper layers (KiCad IDs 1-30)
+        // We use a static array for inner layer mappings
+        static LayerMapping innerLayers[30];
+        static bool innerInit = false;
+        if (!innerInit) {
+            for (int i = 0; i < 30; i++) {
+                innerLayers[i].id = i + 1;
+                static char names[30][16];
+                snprintf(names[i], sizeof(names[i]), "In%d.Cu", i + 1);
+                innerLayers[i].canonical = names[i];
+                innerLayers[i].alias = nullptr;
+            }
+            innerInit = true;
+        }
+        for (size_t i = 1; i + 1 < copperLayers.size() && i <= 30; i++) {
+            result[toLower(copperLayers[i].first)] = &innerLayers[i - 1];
+        }
+    }
+
+    // Map mask: first (top) = F.Mask (39), last (bottom) = B.Mask (38)
+    if (!maskLayers.empty()) {
+        result[toLower(maskLayers.front().first)] = &kLayerMappings[9]; // F.Mask (id 39)
+        if (maskLayers.size() > 1) {
+            result[toLower(maskLayers.back().first)] = &kLayerMappings[8]; // B.Mask (id 38)
+        }
+    }
+
+    // Map paste: first = F.Paste (35), last = B.Paste (34)
+    if (!pasteLayers.empty()) {
+        result[toLower(pasteLayers.front().first)] = &kLayerMappings[5]; // F.Paste (id 35)
+        if (pasteLayers.size() > 1) {
+            result[toLower(pasteLayers.back().first)] = &kLayerMappings[4]; // B.Paste (id 34)
+        }
+    }
+
+    // Map silk: first = F.SilkS (37), last = B.SilkS (36)
+    if (!silkLayers.empty()) {
+        result[toLower(silkLayers.front().first)] = &kLayerMappings[7]; // F.SilkS (id 37)
+        if (silkLayers.size() > 1) {
+            result[toLower(silkLayers.back().first)] = &kLayerMappings[6]; // B.SilkS (id 36)
+        }
+    }
+
+    return result;
+}
+
 static std::string formatFloat(double v, int precision = 6) {
     // Remove trailing zeros
     std::ostringstream oss;
@@ -108,12 +210,18 @@ static void computeArcMidpoint(double xs, double ys, double xe, double ye,
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
+    // Build layer name mapping (handles both KiCad and non-KiCad ODB++ sources)
+    auto layerMap = buildLayerMap(design.layers);
+
     // 1. Map layers
     for (auto& odbLayer : design.layers) {
-        auto* mapping = findLayerByOdbName(odbLayer.name);
-        if (!mapping) continue;
+        std::string nameLower = toLower(odbLayer.name);
+        auto it = layerMap.find(nameLower);
+        if (it == layerMap.end()) continue;
+        auto* mapping = it->second;
         // Skip dielectric, component meta-layers
-        if (odbLayer.type == "DIELECTRIC" || odbLayer.type == "COMPONENT") continue;
+        std::string typeUpper = toUpper(odbLayer.type);
+        if (typeUpper == "DIELECTRIC" || typeUpper == "COMPONENT") continue;
 
         KicadLayer kl;
         kl.id = mapping->id;
@@ -190,9 +298,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     };
 
     // Helper: ODB layer name -> KiCad canonical name
-    auto mapLayerName = [](const std::string& odbName) -> std::string {
-        auto* m = findLayerByOdbName(odbName);
-        return m ? m->canonical : odbName;
+    auto mapLayerName = [&layerMap](const std::string& odbName) -> std::string {
+        auto it = layerMap.find(toLower(odbName));
+        if (it != layerMap.end()) return it->second->canonical;
+        return odbName;
     };
 
     // 3. Transform components -> footprints
@@ -226,8 +335,11 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 pad.pinNum = term.pinNum;
 
                 // Determine pad shape from the feature layer
-                // Find the symbol used for this pad
-                std::string cuLayerName = isBottom ? "b.cu" : "f.cu";
+                // Find the ODB++ copper layer name for this side
+                std::string cuLayerName;
+                for (auto& [name, m] : layerMap) {
+                    if (m->id == (isBottom ? 31 : 0)) { cuLayerName = name; break; }
+                }
                 auto featIt = design.layerFeatures.find(cuLayerName);
                 OdbSymbol padSym;
                 padSym.shape = OdbSymbol::ROUNDRECT; // default
@@ -364,7 +476,11 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             // Find pad size from copper layer (F.Cu) at same position
             vi.padSize = vi.drillDiameter + 0.3; // default annular ring
-            auto fcuIt = design.layerFeatures.find("f.cu");
+            std::string fcuName;
+            for (auto& [name, m] : layerMap) {
+                if (m->id == 0) { fcuName = name; break; }
+            }
+            auto fcuIt = design.layerFeatures.find(fcuName);
             if (fcuIt != design.layerFeatures.end()) {
                 for (auto& cuPad : fcuIt->second.pads) {
                     if (std::abs(cuPad.x - pad.x) < 0.01 && std::abs(cuPad.y - pad.y) < 0.01) {
@@ -473,7 +589,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         for (auto& m : kLayerMappings) {
             if (m.canonical == layer) { layerId = m.id; break; }
         }
-        bool isCopperLayer = (layerId == 0 || layerId == 31);
+        bool isCopperLayer = (layerId >= 0 && layerId <= 31);
         if (!isCopperLayer) return 0;
 
         for (auto& pni : padLookup) {
@@ -493,10 +609,11 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
     // 6. Transform copper traces
     for (auto& [layerNameLower, features] : design.layerFeatures) {
-        auto* mapping = findLayerByOdbName(layerNameLower);
-        if (!mapping) continue;
-        // Only copper layers
-        if (mapping->id != 0 && mapping->id != 31) continue;
+        auto lmIt = layerMap.find(layerNameLower);
+        if (lmIt == layerMap.end()) continue;
+        auto* mapping = lmIt->second;
+        // Only copper layers (F.Cu=0, B.Cu=31, inner=1-30)
+        if (mapping->id > 31) continue;
 
         std::string kicadLayer = mapping->canonical;
 
@@ -712,9 +829,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
     // 9. Copper fill zones from surface records on copper layers
     for (auto& [layerNameLower, features] : design.layerFeatures) {
-        auto* mapping = findLayerByOdbName(layerNameLower);
-        if (!mapping) continue;
-        if (mapping->id != 0 && mapping->id != 31) continue; // copper only
+        auto lmIt = layerMap.find(layerNameLower);
+        if (lmIt == layerMap.end()) continue;
+        auto* mapping = lmIt->second;
+        if (mapping->id > 31) continue; // copper only
         std::string kicadLayer = mapping->canonical;
 
         for (auto& surface : features.surfaces) {
@@ -750,7 +868,11 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
     // 10. Non-copper, non-edge.cuts layer graphics (silkscreen, fab, courtyard, etc.)
     // These become gr_line / gr_arc at board level
-    std::set<std::string> copperLayers = {"f.cu", "b.cu"};
+    // Build set of copper layer names (lowercase) from the layer map
+    std::set<std::string> copperLayers;
+    for (auto& [name, m] : layerMap) {
+        if (m->id <= 31) copperLayers.insert(name);
+    }
     std::set<std::string> skipLayers = {"edge.cuts"}; // already handled
     for (auto& [layerNameLower, features] : design.layerFeatures) {
         if (copperLayers.count(layerNameLower)) continue;
@@ -758,9 +880,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         if (layerNameLower.find("drill") != std::string::npos) continue;
         if (layerNameLower.find("comp_") != std::string::npos) continue;
         // Skip layers with no mapping to KiCad
-        auto* mapping = findLayerByOdbName(layerNameLower);
-        if (!mapping) continue;
-        std::string kicadLayer = mapping->canonical;
+        auto lmIt2 = layerMap.find(layerNameLower);
+        if (lmIt2 == layerMap.end()) continue;
+        std::string kicadLayer = lmIt2->second->canonical;
 
         for (auto& line : features.lines) {
             KicadGrLine gl;

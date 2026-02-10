@@ -31,7 +31,13 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
 
         if (startsWith(line, "NET ")) {
             OdbEdaNet net;
-            net.name = trim(line.substr(4));
+            std::string netStr = trim(line.substr(4));
+            // Strip trailing attribute suffix (e.g. ";;ID=4588" or ";attr=val")
+            auto semi = netStr.find(';');
+            if (semi != std::string::npos) {
+                netStr = netStr.substr(0, semi);
+            }
+            net.name = trim(netStr);
             edaData.nets.push_back(net);
             currentPkg = nullptr;
             continue;

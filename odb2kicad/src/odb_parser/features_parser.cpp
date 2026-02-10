@@ -15,8 +15,14 @@ static std::map<int, std::string> parseAttrs(const std::string& attrStr) {
         part = trim(part);
         auto eq = part.find('=');
         if (eq != std::string::npos) {
-            int idx = std::stoi(part.substr(0, eq));
-            result[idx] = part.substr(eq + 1);
+            std::string key = part.substr(0, eq);
+            // Only parse numeric attribute keys; skip named attrs (e.g. "ID=472680")
+            try {
+                int idx = std::stoi(key);
+                result[idx] = part.substr(eq + 1);
+            } catch (const std::invalid_argument&) {
+                // Named attribute from non-KiCad ODB++ — skip
+            }
         }
         // Single value like "1" means attr flag is set (used for .smd)
     }
