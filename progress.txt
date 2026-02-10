@@ -478,3 +478,30 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 - embind provides cleaner JS API than cwrap/ccall
 
 ### Next: Stage 3 - WASM Bindings (already implemented, needs end-to-end testing)
+
+## 2026-02-10: Stage 3 - WASM Bindings (C → JS bridge) COMPLETE
+
+### What was done:
+- Task 3.1: wasm_bindings.cpp already implemented in Stage 2 (Approach A — filesystem-based via embind)
+- Task 3.2: WASM module already compiled (.mjs + .wasm produced in Stage 2)
+- Task 3.3: Created test/test-wasm.mjs — Node.js end-to-end test that:
+  - Loads ODB++ directory files from disk
+  - Writes them into Emscripten MEMFS under /odb/
+  - Calls Module.convertOdb("/odb")
+  - Validates output contains kicad_pcb, nets, footprints, traces/graphics
+- Task 3.4: Created test/test-wasm-parity.mjs — outputs WASM conversion to file for diff comparison
+- Task 3.5: Verified byte-identical output between native CLI and WASM for both samples:
+  - odb-output (simple): 7,567 bytes — byte-identical
+  - odb-kitchen-sink: 730,464 bytes — byte-identical
+
+### Files created:
+- NEW: odb2kicad/test/test-wasm.mjs (end-to-end WASM test)
+- NEW: odb2kicad/test/test-wasm-parity.mjs (parity comparison utility)
+
+### Key findings:
+- WASM conversion output is byte-for-byte identical to native CLI output
+- Emscripten MEMFS handles all POSIX filesystem calls transparently
+- Both simple (44 files) and complex (83 files) ODB++ samples convert successfully
+- All Stage 3 success criteria met
+
+### Next: Stage 4 - JavaScript/TypeScript Wrapper
