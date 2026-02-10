@@ -412,3 +412,38 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 
 ### All Stage 5g success criteria met
 ### Stage 5 COMPLETE - DRC runs successfully in WebAssembly!
+
+---
+
+## NEW SPRINT: odb2kicad WASM Compilation (PRD-wasm.md)
+## Started: 2026-02-10
+
+### Context:
+- The native odb2kicad C++ converter (Stages A-D) is COMPLETE
+- The kicad-drc-wasm project (Stages 1-5) is COMPLETE
+- This new sprint compiles the odb2kicad converter itself to WebAssembly
+- PRD: PRD-wasm.md (Stages 1-7)
+- Stage 1: Refactor core into library
+- Stage 2: Emscripten build configuration
+- Stage 3: WASM bindings (C→JS bridge)
+- Stage 4: JavaScript/TypeScript wrapper
+- Stage 5: Testing (WASM vs native parity)
+- Stage 6: Archive extraction support
+- Stage 7: Optimize and package
+
+## 2026-02-10: Stage 1 - Refactor Core into Library COMPLETE
+
+### What was done:
+- Task 1.1: Created src/odb2kicad_lib.h with ConvertResult struct and convert() API
+- Task 1.2: Created src/odb2kicad_lib.cpp implementing convert() — parse→transform→write pipeline captured to std::ostringstream
+- Task 1.3: Slimmed main.cpp from 40 lines to 30 lines, now calls odb2kicad::convert() and writes result
+- Task 1.4: Updated CMakeLists.txt — added odb2kicad_core static library target, if(EMSCRIPTEN) block for future WASM build
+- Task 1.5: Native build verified — all smoke tests pass (simple + kitchen-sink)
+
+### Files created/modified:
+- NEW: odb2kicad/src/odb2kicad_lib.h (public C++ API header)
+- NEW: odb2kicad/src/odb2kicad_lib.cpp (library implementation)
+- MODIFIED: odb2kicad/src/main.cpp (slimmed to use library API)
+- MODIFIED: odb2kicad/CMakeLists.txt (odb2kicad_core library target + if(EMSCRIPTEN) block)
+
+### Next: Stage 2 - Emscripten Build Configuration
