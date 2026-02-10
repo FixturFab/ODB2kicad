@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iomanip>
 #include <map>
+#include <set>
 #include <sstream>
 
 namespace odb2kicad {
@@ -74,6 +75,34 @@ static std::string makeUuid(int index) {
     snprintf(buf, sizeof(buf), "%08x-%04x-%04x-%04x-%012x",
              index + 1, index + 1, index + 1, index + 1, index + 1);
     return buf;
+}
+
+// Compute arc midpoint from ODB++ center, start, end, clockwise flag.
+// ODB++ uses center representation; KiCad uses start/mid/end.
+// The midpoint is the point on the arc at the halfway angle.
+static void computeArcMidpoint(double xs, double ys, double xe, double ye,
+                                double xc, double yc, bool clockwise,
+                                double& xm, double& ym) {
+    double startAngle = std::atan2(ys - yc, xs - xc);
+    double endAngle = std::atan2(ye - yc, xe - xc);
+    double radius = std::sqrt((xs - xc) * (xs - xc) + (ys - yc) * (ys - yc));
+
+    double sweep;
+    if (clockwise) {
+        // CW: start -> end going clockwise (decreasing angle)
+        sweep = startAngle - endAngle;
+        if (sweep <= 0) sweep += 2.0 * PI;
+        double midAngle = startAngle - sweep / 2.0;
+        xm = xc + radius * std::cos(midAngle);
+        ym = yc + radius * std::sin(midAngle);
+    } else {
+        // CCW: start -> end going counter-clockwise (increasing angle)
+        sweep = endAngle - startAngle;
+        if (sweep <= 0) sweep += 2.0 * PI;
+        double midAngle = startAngle + sweep / 2.0;
+        xm = xc + radius * std::cos(midAngle);
+        ym = yc + radius * std::sin(midAngle);
+    }
 }
 
 KicadPcb transformToKicad(const OdbDesign& design) {
@@ -251,6 +280,24 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                         pad.layerNames = {"B.Cu", "B.Paste", "B.Mask"};
                     } else {
                         pad.layerNames = {"F.Cu", "F.Paste", "F.Mask"};
+                    }
+                }
+
+                // Drill size for through-hole pads: look up from drill layer
+                if (pad.type == "thru_hole") {
+                    for (auto& [dlName, dlFeats] : design.layerFeatures) {
+                        if (dlName.find("drill") == std::string::npos) continue;
+                        for (auto& drillPad : dlFeats.pads) {
+                            if (std::abs(drillPad.x - term.x) < 0.01 &&
+                                std::abs(drillPad.y - term.y) < 0.01) {
+                                if (drillPad.symIdx < (int)dlFeats.symbols.size()) {
+                                    auto& ds = dlFeats.symbols[drillPad.symIdx];
+                                    pad.drill = (ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width;
+                                }
+                                break;
+                            }
+                        }
+                        if (pad.drill > 0) break;
                     }
                 }
 
@@ -508,72 +555,249 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         }
     }
 
-    // 5. Board outline from profile
+    // 7. Board outline from profile
+    // Helper to emit contour lines on Edge.Cuts
+    auto emitContourAsEdgeCuts = [&](const OdbContour& contour) {
+        auto& pts = contour.points;
+        if (pts.size() < 4) return;
+
+        // Collect unique points (skip OB starting point duplicate and closing duplicate)
+        std::vector<OdbPoint> unique;
+        for (size_t i = 1; i < pts.size(); i++) {
+            if (i == pts.size() - 1 &&
+                std::abs(pts[i].x - pts[1].x) < 0.001 &&
+                std::abs(pts[i].y - pts[1].y) < 0.001)
+                continue;
+            unique.push_back(pts[i]);
+        }
+
+        // Check if rectangular (only for non-holes)
+        if (!contour.isHole && unique.size() == 4) {
+            double minX = unique[0].x, maxX = unique[0].x;
+            double minY = unique[0].y, maxY = unique[0].y;
+            for (auto& p : unique) {
+                minX = std::min(minX, p.x);
+                maxX = std::max(maxX, p.x);
+                minY = std::min(minY, p.y);
+                maxY = std::max(maxY, p.y);
+            }
+            bool isRect = true;
+            for (auto& p : unique) {
+                bool atCorner = (std::abs(p.x - minX) < 0.001 || std::abs(p.x - maxX) < 0.001) &&
+                                (std::abs(p.y - minY) < 0.001 || std::abs(p.y - maxY) < 0.001);
+                if (!atCorner) { isRect = false; break; }
+            }
+            if (isRect) {
+                KicadGrRect rect;
+                rect.x1 = toKicadX(minX);
+                rect.y1 = toKicadY(maxY);
+                rect.x2 = toKicadX(maxX);
+                rect.y2 = toKicadY(minY);
+                rect.width = 0.05;
+                rect.type = "default";
+                rect.layer = "Edge.Cuts";
+                pcb.grRects.push_back(rect);
+                return;
+            }
+        }
+
+        // Non-rectangular or hole: emit individual line segments
+        for (size_t i = 1; i < pts.size() - 1; i++) {
+            KicadGrLine gl;
+            gl.x1 = toKicadX(pts[i].x);
+            gl.y1 = toKicadY(pts[i].y);
+            gl.x2 = toKicadX(pts[i + 1].x);
+            gl.y2 = toKicadY(pts[i + 1].y);
+            gl.width = 0.05;
+            gl.type = "default";
+            gl.layer = "Edge.Cuts";
+            pcb.grLines.push_back(gl);
+        }
+    };
+
     if (!design.profile.surfaces.empty()) {
         for (auto& surface : design.profile.surfaces) {
             for (auto& contour : surface.contours) {
-                if (contour.isHole) continue; // Skip holes for now
-                auto& pts = contour.points;
-                if (pts.size() < 4) continue; // Need at least 3 unique points + closing
+                emitContourAsEdgeCuts(contour);
+            }
+        }
+    }
 
-                // Check if it's a simple rectangle
-                // Skip first point (OB starting point, same as first OS)
-                // Points: [OB_start, OS1=same, OS2, OS3, OS4, OS5=same_as_OS1]
-                // For a rect: 6 points where first=last
-                std::vector<OdbPoint> unique;
-                for (size_t i = 1; i < pts.size(); i++) {
-                    // Skip duplicate closing point
-                    if (i == pts.size() - 1 &&
-                        std::abs(pts[i].x - pts[1].x) < 0.001 &&
-                        std::abs(pts[i].y - pts[1].y) < 0.001)
-                        continue;
-                    unique.push_back(pts[i]);
-                }
-
-                if (unique.size() == 4) {
-                    // Check if rectangular (all corners at 90 degrees)
-                    double minX = unique[0].x, maxX = unique[0].x;
-                    double minY = unique[0].y, maxY = unique[0].y;
-                    for (auto& p : unique) {
-                        minX = std::min(minX, p.x);
-                        maxX = std::max(maxX, p.x);
-                        minY = std::min(minY, p.y);
-                        maxY = std::max(maxY, p.y);
-                    }
-                    bool isRect = true;
-                    for (auto& p : unique) {
-                        bool atCorner = (std::abs(p.x - minX) < 0.001 || std::abs(p.x - maxX) < 0.001) &&
-                                        (std::abs(p.y - minY) < 0.001 || std::abs(p.y - maxY) < 0.001);
-                        if (!atCorner) { isRect = false; break; }
-                    }
-
-                    if (isRect) {
-                        KicadGrRect rect;
-                        rect.x1 = toKicadX(minX);
-                        rect.y1 = toKicadY(maxY); // negate: ODB maxY (most negative) -> smallest KiCad Y
-                        rect.x2 = toKicadX(maxX);
-                        rect.y2 = toKicadY(minY); // negate: ODB minY (least negative) -> largest KiCad Y
-                        rect.width = 0.05;
-                        rect.type = "default";
-                        rect.layer = "Edge.Cuts";
-                        pcb.grRects.push_back(rect);
-                        continue;
-                    }
-                }
-
-                // Non-rectangular: emit individual line segments
-                for (size_t i = 1; i < pts.size() - 1; i++) {
-                    KicadGrLine gl;
-                    gl.x1 = toKicadX(pts[i].x);
-                    gl.y1 = toKicadY(pts[i].y);
-                    gl.x2 = toKicadX(pts[i + 1].x);
-                    gl.y2 = toKicadY(pts[i + 1].y);
+    // 8. Edge.Cuts layer features (lines, arcs, circles from features file)
+    {
+        auto ecIt = design.layerFeatures.find("edge.cuts");
+        if (ecIt != design.layerFeatures.end()) {
+            auto& ecFeats = ecIt->second;
+            for (auto& line : ecFeats.lines) {
+                KicadGrLine gl;
+                gl.x1 = toKicadX(line.x1);
+                gl.y1 = toKicadY(line.y1);
+                gl.x2 = toKicadX(line.x2);
+                gl.y2 = toKicadY(line.y2);
+                if (line.symIdx < (int)ecFeats.symbols.size()) {
+                    auto& sym = ecFeats.symbols[line.symIdx];
+                    gl.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                } else {
                     gl.width = 0.05;
-                    gl.type = "default";
-                    gl.layer = "Edge.Cuts";
-                    pcb.grLines.push_back(gl);
+                }
+                gl.type = "default";
+                gl.layer = "Edge.Cuts";
+                pcb.grLines.push_back(gl);
+            }
+            for (auto& arc : ecFeats.arcs) {
+                KicadGrArc ga;
+                ga.xs = toKicadX(arc.xs);
+                ga.ys = toKicadY(arc.ys);
+                ga.xe = toKicadX(arc.xe);
+                ga.ye = toKicadY(arc.ye);
+                double xm_odb, ym_odb;
+                computeArcMidpoint(arc.xs, arc.ys, arc.xe, arc.ye,
+                                   arc.xc, arc.yc, arc.clockwise, xm_odb, ym_odb);
+                ga.xm = toKicadX(xm_odb);
+                ga.ym = toKicadY(ym_odb);
+                if (arc.symIdx < (int)ecFeats.symbols.size()) {
+                    auto& sym = ecFeats.symbols[arc.symIdx];
+                    ga.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                } else {
+                    ga.width = 0.05;
+                }
+                ga.layer = "Edge.Cuts";
+                pcb.grArcs.push_back(ga);
+            }
+            // Donut/circle pads on Edge.Cuts → circular cutouts via gr_circle
+            // Emit as a series of arc segments approximating a circle
+            for (auto& pad : ecFeats.pads) {
+                if (pad.symIdx < (int)ecFeats.symbols.size()) {
+                    auto& sym = ecFeats.symbols[pad.symIdx];
+                    // For donut symbols, use the outer diameter to draw a circle
+                    double radius = 0;
+                    if (sym.name.find("donut_r") == 0) {
+                        // donut_r<outer>x<inner> - extract outer diameter
+                        radius = sym.diameter / 2.0;
+                        if (radius <= 0) radius = sym.width / 2.0;
+                    } else if (sym.shape == OdbSymbol::ROUND) {
+                        radius = sym.diameter / 2.0;
+                    }
+                    if (radius > 0) {
+                        // Emit as gr_circle (KiCad supports it)
+                        KicadGrArc ga;
+                        // KiCad gr_circle: (gr_circle (center x y) (end x+r y) ...)
+                        // We'll use a full arc: start at right, mid at top, end at left...
+                        // Actually, better to emit 2 half arcs
+                        double cx = toKicadX(pad.x);
+                        double cy = toKicadY(pad.y);
+                        // First half: right -> top -> left
+                        ga.xs = cx + radius;
+                        ga.ys = cy;
+                        ga.xm = cx;
+                        ga.ym = cy - radius;
+                        ga.xe = cx - radius;
+                        ga.ye = cy;
+                        ga.width = 0.05;
+                        ga.layer = "Edge.Cuts";
+                        pcb.grArcs.push_back(ga);
+                        // Second half: left -> bottom -> right
+                        ga.xs = cx - radius;
+                        ga.ys = cy;
+                        ga.xm = cx;
+                        ga.ym = cy + radius;
+                        ga.xe = cx + radius;
+                        ga.ye = cy;
+                        pcb.grArcs.push_back(ga);
+                    }
                 }
             }
+        }
+    }
+
+    // 9. Copper fill zones from surface records on copper layers
+    for (auto& [layerNameLower, features] : design.layerFeatures) {
+        auto* mapping = findLayerByOdbName(layerNameLower);
+        if (!mapping) continue;
+        if (mapping->id != 0 && mapping->id != 31) continue; // copper only
+        std::string kicadLayer = mapping->canonical;
+
+        for (auto& surface : features.surfaces) {
+            KicadZone zone;
+            zone.layer = kicadLayer;
+            zone.netId = 0;
+            zone.netName = "";
+
+            // Collect all island (non-hole) contour points as outline
+            // and all contours as filled polygons
+            for (auto& contour : surface.contours) {
+                std::vector<std::pair<double,double>> polyPts;
+                for (size_t i = 1; i < contour.points.size(); i++) {
+                    // Skip closing duplicate
+                    if (i == contour.points.size() - 1 && contour.points.size() > 2 &&
+                        std::abs(contour.points[i].x - contour.points[1].x) < 0.001 &&
+                        std::abs(contour.points[i].y - contour.points[1].y) < 0.001)
+                        continue;
+                    polyPts.push_back({toKicadX(contour.points[i].x),
+                                       toKicadY(contour.points[i].y)});
+                }
+                if (!contour.isHole && zone.outlinePoints.empty()) {
+                    zone.outlinePoints = polyPts;
+                }
+                zone.filledPolygons.push_back(polyPts);
+            }
+
+            if (!zone.outlinePoints.empty() || !zone.filledPolygons.empty()) {
+                pcb.zones.push_back(zone);
+            }
+        }
+    }
+
+    // 10. Non-copper, non-edge.cuts layer graphics (silkscreen, fab, courtyard, etc.)
+    // These become gr_line / gr_arc at board level
+    std::set<std::string> copperLayers = {"f.cu", "b.cu"};
+    std::set<std::string> skipLayers = {"edge.cuts"}; // already handled
+    for (auto& [layerNameLower, features] : design.layerFeatures) {
+        if (copperLayers.count(layerNameLower)) continue;
+        if (skipLayers.count(layerNameLower)) continue;
+        if (layerNameLower.find("drill") != std::string::npos) continue;
+        if (layerNameLower.find("comp_") != std::string::npos) continue;
+        // Skip layers with no mapping to KiCad
+        auto* mapping = findLayerByOdbName(layerNameLower);
+        if (!mapping) continue;
+        std::string kicadLayer = mapping->canonical;
+
+        for (auto& line : features.lines) {
+            KicadGrLine gl;
+            gl.x1 = toKicadX(line.x1);
+            gl.y1 = toKicadY(line.y1);
+            gl.x2 = toKicadX(line.x2);
+            gl.y2 = toKicadY(line.y2);
+            if (line.symIdx < (int)features.symbols.size()) {
+                auto& sym = features.symbols[line.symIdx];
+                gl.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+            } else {
+                gl.width = 0.1;
+            }
+            gl.type = "solid";
+            gl.layer = kicadLayer;
+            pcb.grLines.push_back(gl);
+        }
+
+        for (auto& arc : features.arcs) {
+            KicadGrArc ga;
+            ga.xs = toKicadX(arc.xs);
+            ga.ys = toKicadY(arc.ys);
+            ga.xe = toKicadX(arc.xe);
+            ga.ye = toKicadY(arc.ye);
+            double xm_odb, ym_odb;
+            computeArcMidpoint(arc.xs, arc.ys, arc.xe, arc.ye,
+                               arc.xc, arc.yc, arc.clockwise, xm_odb, ym_odb);
+            ga.xm = toKicadX(xm_odb);
+            ga.ym = toKicadY(ym_odb);
+            if (arc.symIdx < (int)features.symbols.size()) {
+                auto& sym = features.symbols[arc.symIdx];
+                ga.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+            } else {
+                ga.width = 0.1;
+            }
+            ga.layer = kicadLayer;
+            pcb.grArcs.push_back(ga);
         }
     }
 
@@ -705,6 +929,15 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             << ") (end " << formatFloat(gr.x2) << " " << formatFloat(gr.y2)
             << ") (stroke (width " << formatFloat(gr.width)
             << ") (type " << gr.type << ")) (fill none) (layer \"" << gr.layer << "\"))\n";
+    }
+
+    // Graphic arcs
+    for (auto& ga : pcb.grArcs) {
+        out << "\n  (gr_arc (start " << formatFloat(ga.xs) << " " << formatFloat(ga.ys)
+            << ") (mid " << formatFloat(ga.xm) << " " << formatFloat(ga.ym)
+            << ") (end " << formatFloat(ga.xe) << " " << formatFloat(ga.ye)
+            << ") (stroke (width " << formatFloat(ga.width)
+            << ") (type solid)) (layer \"" << ga.layer << "\"))\n";
     }
 
     // Zones

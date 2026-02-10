@@ -41,6 +41,9 @@ grep -q '"4.7k"' /tmp/test-out.kicad_pcb || { echo "FAIL: no R2 value 4.7k"; exi
 # Check segment net assignment
 grep -q 'net 2' /tmp/test-out.kicad_pcb || { echo "FAIL: segment net should be SIG (net 2)"; exit 1; }
 
+# Stage D checks: silkscreen graphics at board level
+grep -q 'gr_line.*F.SilkS' /tmp/test-out.kicad_pcb || { echo "FAIL: no silkscreen gr_lines"; exit 1; }
+
 echo "PASS: simple test"
 
 # --- Kitchen-sink test (odb-kitchen-sink) ---
@@ -90,6 +93,34 @@ grep -qF '"*.Cu" "*.Mask"' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-
 
 # Check board outline (polygon, not rect)
 grep -q 'gr_line' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no gr_line (board outline)"; exit 1; }
+
+# Stage D: Check copper fill zones on B.Cu
+grep -q 'zone.*B.Cu' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no zones on B.Cu"; exit 1; }
+grep -q 'filled_polygon' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no filled polygons in zones"; exit 1; }
+
+# Stage D: Check arcs (Edge.Cuts cutouts + B.Fab arc)
+grep -q 'gr_arc' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no gr_arcs"; exit 1; }
+ARC_COUNT=$(grep -c 'gr_arc' /tmp/test-kitchen.kicad_pcb || true)
+[ "$ARC_COUNT" -ge 4 ] || { echo "FAIL: kitchen-sink expected >=4 arcs, got $ARC_COUNT"; exit 1; }
+
+# Stage D: Check silkscreen graphics at board level
+grep -q 'gr_line.*F.SilkS' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no silkscreen gr_lines"; exit 1; }
+
+# Stage D: Check fab layer graphics
+grep -q 'gr_line.*F.Fab' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no F.Fab gr_lines"; exit 1; }
+grep -q 'gr_line.*B.Fab' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no B.Fab gr_lines"; exit 1; }
+grep -q 'gr_arc.*B.Fab' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no B.Fab gr_arc"; exit 1; }
+
+# Stage D: Check courtyard graphics
+grep -q 'F.CrtYd' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no F.CrtYd layer"; exit 1; }
+
+# Stage D: Check TH pad drill sizes (D1 = 1.143mm, P2 = 1.524mm)
+grep -q 'drill 1.143' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no D1 drill size 1.143"; exit 1; }
+grep -q 'drill 1.524' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no P2 drill size 1.524"; exit 1; }
+
+# Stage D: Board outline should have profile holes (polygon outline, not just rect)
+OUTLINE_LINES=$(grep -c 'gr_line.*Edge.Cuts' /tmp/test-kitchen.kicad_pcb || true)
+[ "$OUTLINE_LINES" -ge 10 ] || { echo "FAIL: kitchen-sink too few Edge.Cuts lines ($OUTLINE_LINES), expected profile with holes"; exit 1; }
 
 echo "PASS: kitchen-sink test"
 

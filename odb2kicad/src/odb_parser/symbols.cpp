@@ -56,6 +56,26 @@ OdbSymbol decodeSymbol(const std::string& name) {
         return sym;
     }
 
+    // Donut round: donut_r<outer>x<inner>
+    std::regex donutRoundRe(R"(donut_r(\d+\.?\d*)x(\d+\.?\d*))");
+    if (std::regex_match(name, m, donutRoundRe)) {
+        sym.shape = OdbSymbol::ROUND;
+        sym.diameter = std::stod(m[1]) / 1000.0;
+        sym.width = sym.diameter;
+        sym.height = sym.diameter;
+        return sym;
+    }
+
+    // Donut round-cornered: donut_rc<w>x<h>x<lw>xr<r>
+    std::regex donutRcRe(R"(donut_rc(\d+\.?\d*)x(\d+\.?\d*)x(\d+\.?\d*)xr(\d+\.?\d*))");
+    if (std::regex_match(name, m, donutRcRe)) {
+        sym.shape = OdbSymbol::ROUNDRECT;
+        sym.width = std::stod(m[1]) / 1000.0;
+        sym.height = std::stod(m[2]) / 1000.0;
+        sym.cornerRadius = std::stod(m[4]) / 1000.0;
+        return sym;
+    }
+
     return sym;
 }
 

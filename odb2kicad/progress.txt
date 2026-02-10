@@ -31,3 +31,21 @@
 - Smoke test updated: kitchen-sink test added (components, vias, traces, TH pads, board outline)
 - All Stage C acceptance criteria verified against PRD
 - Stage C COMPLETE ✓ (vias, trace net assignment, drill detection)
+
+### Stage D progress:
+- Added copper fill zones from surface records on B.Cu (3 zones with filled polygons)
+- Added donut symbol parsing (donut_r, donut_rc variants)
+- Added arc midpoint computation (ODB++ center→KiCad start/mid/end)
+- Added gr_arc output to writer
+- Added non-copper layer graphics: silkscreen, fab, courtyard → gr_line/gr_arc
+- Added Edge.Cuts feature lines and circular cutouts (donut pads → 2 half-arc pairs)
+- Board profile holes now emitted (removed isHole skip)
+- TH pad drill sizes from drill layer features (D1=1.143mm, P2=1.524mm)
+- Kitchen-sink: 3 zones on B.Cu, 6 gr_arcs, 277 silkscreen items, 33 B.Fab lines, 5 courtyard lines
+- Kitchen-sink: 141 Edge.Cuts lines (outline + holes), arcs for circular cutouts
+- Simple test: still passes, added silkscreen/fab gr_lines
+- Both tests: brackets balanced, all previous tests still passing
+- Smoke test updated with Stage D specific checks (zones, arcs, silkscreen, fab, courtyard, drill sizes, profile holes)
+- what-doesnt-work.md updated with remaining known limitations
+- All Stage D acceptance criteria verified against PRD
+- Stage D COMPLETE ✓ (zones, graphics, arcs, profile holes, Edge.Cuts features, TH drill sizes)
