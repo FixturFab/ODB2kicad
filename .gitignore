@@ -33,9 +33,13 @@ emscripten-test/test.wasm
 
 # Build artifacts
 build/
+build-wasm/
 *.o
 *.so
 *.a
+
+# WASM package build output
+wasm/dist/
 
 # OS junk
 .DS_Store

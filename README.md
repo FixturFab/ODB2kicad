@@ -1,155 +1,118 @@
-# KiCad DRC WASM
+# odb2kicad
 
-Run KiCad design rule checks in the browser or Node.js via WebAssembly.
+Convert ODB++ PCB designs to KiCad `.kicad_pcb` format.
 
-This project compiles KiCad's DRC (Design Rule Check) engine to WebAssembly, enabling PCB design rule validation without a native KiCad installation.
-
-**[Try the Live Demo](https://henrybtroutman.gitlab.io/kicad-cli-wasm/)**
-
-## Features
-
-- **26 DRC test providers** — clearance, track width, hole size, annular width, silk/mask, courtyard, connectivity, and more
-- **JSON output** following the [`schemas.kicad.org/drc.v1.json`](https://schemas.kicad.org/drc.v1.json) schema
-- **Multi-threaded** via WebAssembly pthreads (SharedArrayBuffer)
-- **7.3 MB** optimized WASM binary (-O3 -flto)
-- Runs in **Node.js** and **browser** environments
+A standalone C++17 command-line tool that reads a pre-extracted ODB++ directory tree and writes a KiCad s-expression PCB file. Zero external dependencies — pure C++17 standard library only.
 
 ## Quick Start
 
-```js
-import { readFileSync } from 'fs';
-import createKicadDRC from './build-wasm/kicad_drc.mjs';
-
-// Initialize the WASM module
-const Module = await createKicadDRC();
-
-// Read a .kicad_pcb file
-const pcb = readFileSync('board.kicad_pcb', 'utf-8');
-
-// Allocate string in WASM memory
-const len = Module.lengthBytesUTF8(pcb) + 1;
-const ptr = Module._malloc(len);
-Module.stringToUTF8(pcb, ptr, len);
-
-// Load PCB (returns 0 on success)
-const rc = Module._kicad_load_pcb(ptr, 0);
-Module._free(ptr);
-
-// Run DRC
-const violationCount = Module._kicad_run_drc();
-
-// Get JSON results
-const jsonPtr = Module._kicad_get_drc_results();
-const results = JSON.parse(Module.UTF8ToString(jsonPtr));
-
-console.log(results.violations);
-
-// Clean up
-Module._kicad_cleanup();
-```
-
-Run with threading support:
-
 ```bash
-node --experimental-wasm-threads test/test-wasm.mjs board.kicad_pcb
+# Build
+cmake -S odb2kicad -B odb2kicad/build
+cmake --build odb2kicad/build -j$(nproc)
+
+# Convert (to file)
+./odb2kicad/build/odb2kicad /path/to/extracted-odb output.kicad_pcb
+
+# Convert (to stdout)
+./odb2kicad/build/odb2kicad /path/to/extracted-odb > output.kicad_pcb
 ```
 
-## API Reference
+The input must be a pre-extracted ODB++ directory (use `tar xzf` or `unzip` on the archive first).
 
-The module exports four C functions, callable via `Module._<name>()`:
+## Features
 
-### `kicad_load_pcb(pcb_content, length)`
+- **Components & pads** — SMD and through-hole placement with correct positioning, rotation, and pad shapes (round, rect, roundrect, oval)
+- **Net assignment** — pads, traces, and vias are assigned to their correct nets
+- **Copper traces** — segments on F.Cu and B.Cu with proper width and net
+- **Vias** — detected from drill layers with correct drill and pad sizing
+- **Copper fill zones** — imported as filled polygons from surface records
+- **Board outline** — rectangular and polygonal profiles, including cutout holes
+- **Graphics** — silkscreen, fab, and courtyard lines and arcs on all layers
+- **Layer mapping** — ODB++ layers mapped to KiCad canonical layer names (F.Cu, B.Cu, F.SilkS, F.Mask, Edge.Cuts, etc.)
 
-Load a KiCad PCB from in-memory content (s-expression format).
-
-- **pcb_content** (`const char*`) — null-terminated `.kicad_pcb` file content
-- **length** (`size_t`) — byte length, or 0 to use strlen
-- **Returns** `0` on success, non-zero error code on failure
-
-### `kicad_run_drc()`
-
-Run all DRC checks on the loaded PCB. Must call `kicad_load_pcb()` first.
-
-- **Returns** number of violations found, or `-1` on error
-
-### `kicad_get_drc_results()`
-
-Get DRC results as a JSON string. The returned pointer is valid until the next call to `kicad_run_drc()` or `kicad_cleanup()`.
-
-- **Returns** JSON string following the `schemas.kicad.org/drc.v1.json` schema, or `NULL` on error
-
-### `kicad_cleanup()`
-
-Free all resources (board, DRC engine, results).
-
-## Output Format
-
-Results follow the [KiCad DRC JSON schema](https://schemas.kicad.org/drc.v1.json):
-
-```json
-{
-  "source": "board.kicad_pcb",
-  "coordinate_units": "mm",
-  "violations": [
-    {
-      "type": "silk_overlap",
-      "severity": "warning",
-      "description": "Silkscreen overlap ...",
-      "items": [
-        {
-          "description": "Text \"REF**\" on F.Silkscreen",
-          "pos": { "x": 100.0, "y": 50.0 }
-        }
-      ]
-    }
-  ],
-  "unconnected_items": [],
-  "schematic_parity": []
-}
-```
-
-## Building from Source
+## Building
 
 ### Prerequisites
 
-- **Emscripten SDK** (emsdk 5.0.0+)
-- **CMake** 3.20+
-- **KiCad source tree** with a completed native release build (provides generated headers)
+- CMake 3.10+
+- C++17 compiler (GCC or Clang)
 
-### Steps
+No external libraries required.
 
 ```bash
-# 1. Clone KiCad source (if not already present)
-git clone --depth 1 --branch 9.0 https://gitlab.com/kicad/code/kicad.git kicad-src
-
-# 2. Build KiCad natively first (needed for generated headers)
-cmake -S kicad-src -B kicad-src/build/release -DCMAKE_BUILD_TYPE=Release
-cmake --build kicad-src/build/release -j$(nproc)
-
-# 3. Install and activate Emscripten
-git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk && ./emsdk install 5.0.0 && ./emsdk activate 5.0.0
-source emsdk_env.sh && cd ..
-
-# 4. Configure WASM build
-emcmake cmake -S kicad-drc-wasm -B kicad-drc-wasm/build-wasm
-
-# 5. Build
-cmake --build kicad-drc-wasm/build-wasm -j$(nproc)
+cmake -S odb2kicad -B odb2kicad/build
+cmake --build odb2kicad/build -j$(nproc)
 ```
 
-Output files:
-- `kicad-drc-wasm/build-wasm/kicad_drc.wasm` (7.3 MB)
-- `kicad-drc-wasm/build-wasm/kicad_drc.mjs` (103 KB loader)
-- `kicad-drc-wasm/build-wasm/kicad_drc.worker.mjs` (pthread worker)
+## Architecture
+
+```
+ODB++ directory tree
+        │
+        ▼
+┌─────────────────┐
+│  ODB Parsers    │  10 modular parsers → OdbDesign model
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Transformer    │  Coordinate transforms, layer/net remapping
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  KiCad Writer   │  Emit .kicad_pcb s-expression
+└─────────────────┘
+```
+
+### Source Layout
+
+```
+odb2kicad/
+├── CMakeLists.txt
+├── src/
+│   ├── main.cpp                    # CLI entry point
+│   ├── odb_parser/                 # Modular ODB++ parsers
+│   │   ├── odb_parser.cpp/h        #   Top-level orchestrator
+│   │   ├── info_parser.cpp/h       #   misc/info (units, job name)
+│   │   ├── matrix_parser.cpp/h     #   matrix/matrix (layer stack)
+│   │   ├── stephdr_parser.cpp/h    #   steps/pcb/stephdr (origins)
+│   │   ├── profile_parser.cpp/h    #   steps/pcb/profile (board outline)
+│   │   ├── features_parser.cpp/h   #   Layer features (pads, lines, arcs, surfaces)
+│   │   ├── components_parser.cpp/h #   Component placement
+│   │   ├── eda_parser.cpp/h        #   EDA data (packages, nets, pins)
+│   │   ├── netlist_parser.cpp/h    #   Netlist definitions
+│   │   └── symbols.cpp/h           #   Symbol name → pad geometry decoder
+│   ├── model/
+│   │   ├── odb_design.h            #   In-memory ODB++ design model
+│   │   └── kicad_pcb.h             #   In-memory KiCad PCB model
+│   ├── writer/
+│   │   └── kicad_writer.cpp/h      #   Transform + s-expression output
+│   └── util/
+│       ├── string_utils.cpp/h      #   String helpers
+│       └── coord.h                 #   Coordinate transforms
+└── test/
+    └── test_simple.sh              #   Smoke tests (60+ assertions)
+```
+
+## Testing
+
+```bash
+cd odb2kicad && bash test/test_simple.sh
+```
+
+Runs against two sample boards:
+- **Simple** (`samples/odb-output`) — 2-resistor board: validates nets, components, pads, traces, board outline
+- **Kitchen-sink** (`samples/odb-kitchen-sink`) — complex board: validates vias, through-hole components, copper zones, arcs, polygonal outline with holes
 
 ## Known Limitations
 
-- **Violation count differs from kicad-cli** — the WASM build reports 4 violations on the sample PCB vs. 6 from `kicad-cli`. The 2 missing are library parity warnings that require footprint library access and schematic data, which are not available in standalone mode.
-- **No schematic parity checks** — schematic data (`testFootprints=false`) is not loaded, so footprint-vs-schematic checks are skipped.
-- **No library parity provider** — `drc_test_provider_library_parity` is excluded (crashes in WASM static initialization due to a global `UNITS_PROVIDER`).
-- **wxWidgets stubbed** — wxString and other wx types are minimal stubs; no GUI functionality is available.
-- **Threading requires SharedArrayBuffer** — the browser must serve pages with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers.
+- **Text is rasterized** — ODB++ exports text as line strokes; imported as line segments, not editable KiCad text objects
+- **Zone outlines simplified** — copper fills are imported as filled polygons without thermal relief or clearance rules
+- **Two copper layers only** — F.Cu and B.Cu are supported; inner copper layers are parsed but not yet mapped
+- **No archive extraction** — input must be a pre-extracted ODB++ directory
+- **Precision** — ODB++ coordinates may have minor rounding differences vs. the original design
 
 ## License
 

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>odb2kicad WASM — Browser Smoke Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
+  h1 { font-size: 1.5rem; margin-bottom: 8px; }
+  .subtitle { color: #666; margin-bottom: 24px; }
+  .section { margin-bottom: 24px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  .drop-zone {
+    border: 2px dashed #ccc; border-radius: 8px; padding: 40px; text-align: center;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: #4a90d9; background: #f0f6ff; }
+  .drop-zone input { display: none; }
+  button {
+    background: #4a90d9; color: #fff; border: none; border-radius: 6px;
+    padding: 10px 24px; font-size: 1rem; cursor: pointer;
+  }
+  button:disabled { background: #aaa; cursor: not-allowed; }
+  button:hover:not(:disabled) { background: #357abd; }
+  #status { margin-top: 12px; padding: 8px 12px; border-radius: 4px; display: none; }
+  #status.info { display: block; background: #e8f4fd; color: #1a5276; }
+  #status.error { display: block; background: #fde8e8; color: #761a1a; }
+  #status.success { display: block; background: #e8fde8; color: #1a761a; }
+  textarea {
+    width: 100%; height: 300px; font-family: monospace; font-size: 0.85rem;
+    border: 1px solid #ddd; border-radius: 6px; padding: 12px; resize: vertical;
+  }
+  .download-link { display: inline-block; margin-top: 8px; }
+  .stats { color: #666; font-size: 0.9rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>odb2kicad WASM — Browser Smoke Test</h1>
+<p class="subtitle">Convert ODB++ directories to KiCad .kicad_pcb format, entirely in the browser.</p>
+
+<div class="section">
+  <label>1. Select ODB++ files (use directory upload or individual files)</label>
+  <div class="drop-zone" id="dropZone">
+    <p>Drag &amp; drop ODB++ directory here, or click to browse</p>
+    <p style="font-size: 0.85rem; color: #888; margin-top: 8px;">
+      Use "Upload Directory" to select an extracted ODB++ folder
+    </p>
+    <input type="file" id="fileInput" webkitdirectory multiple>
+  </div>
+  <div class="stats" id="fileStats"></div>
+</div>
+
+<div class="section">
+  <label>2. Convert</label>
+  <button id="convertBtn" disabled>Convert to .kicad_pcb</button>
+  <div id="status"></div>
+</div>
+
+<div class="section" id="outputSection" style="display:none">
+  <label>3. Output (.kicad_pcb)</label>
+  <textarea id="output" readonly></textarea>
+  <div>
+    <a id="downloadLink" class="download-link" style="display:none">Download .kicad_pcb</a>
+  </div>
+  <div class="stats" id="outputStats"></div>
+</div>
+
+<script type="module">
+  // Load the Emscripten WASM module directly (works in browser via ENVIRONMENT=web)
+  const wasmUrl = new URL('../dist/odb2kicad_wasm.mjs', import.meta.url).href;
+
+  let Module = null;
+  let loadedFiles = [];
+
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const convertBtn = document.getElementById('convertBtn');
+  const status = document.getElementById('status');
+  const output = document.getElementById('output');
+  const outputSection = document.getElementById('outputSection');
+  const downloadLink = document.getElementById('downloadLink');
+  const fileStats = document.getElementById('fileStats');
+  const outputStats = document.getElementById('outputStats');
+
+  function setStatus(msg, type) {
+    status.textContent = msg;
+    status.className = type;
+  }
+
+  // --- File loading ---
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', async e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.items) {
+      await handleDataTransferItems(e.dataTransfer.items);
+    }
+  });
+  fileInput.addEventListener('change', () => handleFileList(fileInput.files));
+
+  function handleFileList(fileList) {
+    loadedFiles = [];
+    const promises = [];
+    for (const file of fileList) {
+      // webkitRelativePath gives us the relative path within the directory
+      const relPath = file.webkitRelativePath || file.name;
+      // Strip the top-level directory name (the ODB++ root folder)
+      const parts = relPath.split('/');
+      const path = parts.length > 1 ? parts.slice(1).join('/') : parts[0];
+      promises.push(
+        file.text().then(content => {
+          loadedFiles.push({ path, content });
+        })
+      );
+    }
+    Promise.all(promises).then(() => {
+      fileStats.textContent = `Loaded ${loadedFiles.length} files`;
+      convertBtn.disabled = loadedFiles.length === 0;
+    });
+  }
+
+  async function handleDataTransferItems(items) {
+    // For drag-and-drop, try to get directory entries
+    const entries = [];
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry?.();
+      if (entry) entries.push(entry);
+    }
+    if (entries.length > 0) {
+      loadedFiles = [];
+      for (const entry of entries) {
+        await readEntry(entry, '');
+      }
+      fileStats.textContent = `Loaded ${loadedFiles.length} files`;
+      convertBtn.disabled = loadedFiles.length === 0;
+    }
+  }
+
+  function readEntry(entry, basePath) {
+    return new Promise(resolve => {
+      if (entry.isFile) {
+        entry.file(file => {
+          file.text().then(content => {
+            const path = basePath ? basePath + '/' + entry.name : entry.name;
+            loadedFiles.push({ path, content });
+            resolve();
+          });
+        });
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        reader.readEntries(async entries => {
+          const dirPath = basePath ? basePath + '/' + entry.name : entry.name;
+          for (const e of entries) {
+            await readEntry(e, dirPath);
+          }
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  // --- WASM initialization ---
+  async function getModule() {
+    if (!Module) {
+      setStatus('Loading WASM module...', 'info');
+      const { default: initModule } = await import(wasmUrl);
+      Module = await initModule();
+    }
+    return Module;
+  }
+
+  // --- MEMFS helpers ---
+  function mkdirp(FS, path) {
+    const parts = path.split('/').filter(Boolean);
+    let current = '';
+    for (const part of parts) {
+      current += '/' + part;
+      try { FS.mkdir(current); } catch (_) {}
+    }
+  }
+
+  function rmrf(FS, path) {
+    try {
+      const entries = FS.readdir(path).filter(e => e !== '.' && e !== '..');
+      for (const entry of entries) {
+        const full = path + '/' + entry;
+        const stat = FS.stat(full);
+        if (FS.isDir(stat.mode)) {
+          rmrf(FS, full);
+        } else {
+          FS.unlink(full);
+        }
+      }
+      FS.rmdir(path);
+    } catch (_) {}
+  }
+
+  // --- Conversion ---
+  convertBtn.addEventListener('click', async () => {
+    if (loadedFiles.length === 0) return;
+
+    convertBtn.disabled = true;
+    setStatus('Initializing WASM module...', 'info');
+
+    try {
+      const mod = await getModule();
+      const FS = mod.FS;
+      const mountPoint = '/odb';
+
+      setStatus(`Writing ${loadedFiles.length} files to virtual filesystem...`, 'info');
+      rmrf(FS, mountPoint);
+      mkdirp(FS, mountPoint);
+
+      for (const file of loadedFiles) {
+        const fullPath = mountPoint + '/' + file.path;
+        const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+        mkdirp(FS, dir);
+        FS.writeFile(fullPath, file.content);
+      }
+
+      setStatus('Converting ODB++ to .kicad_pcb...', 'info');
+      const t0 = performance.now();
+      const raw = mod.convertOdb(mountPoint);
+      const elapsed = (performance.now() - t0).toFixed(0);
+
+      // Clean up MEMFS
+      rmrf(FS, mountPoint);
+
+      if (raw.startsWith('ERROR: ')) {
+        setStatus('Conversion failed: ' + raw.substring(7), 'error');
+        convertBtn.disabled = false;
+        return;
+      }
+
+      // Success
+      const lines = raw.split('\n').length;
+      setStatus(`Conversion successful in ${elapsed}ms`, 'success');
+      outputStats.textContent = `${raw.length.toLocaleString()} characters, ${lines.toLocaleString()} lines`;
+
+      output.value = raw;
+      outputSection.style.display = 'block';
+
+      // Create download link
+      const blob = new Blob([raw], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+      downloadLink.download = 'output.kicad_pcb';
+      downloadLink.textContent = 'Download output.kicad_pcb';
+      downloadLink.style.display = 'inline-block';
+
+    } catch (err) {
+      setStatus('Error: ' + err.message, 'error');
+      console.error(err);
+    }
+
+    convertBtn.disabled = false;
+  });
+</script>
+</body>
+</html>

@@ -505,3 +505,68 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 - All Stage 3 success criteria met
 
 ### Next: Stage 4 - JavaScript/TypeScript Wrapper
+
+## 2026-02-10: Stage 4 - JavaScript/TypeScript Wrapper COMPLETE
+
+### What was done:
+- Task 4.1: Created wasm/package.json (ESM package, main: dist/index.mjs, types: dist/index.d.ts)
+- Task 4.2: Created wasm/src/index.mjs — high-level convertOdb() API:
+  - Lazy WASM module initialization (cached singleton)
+  - MEMFS file loading (writes input files to /odb/, calls convertOdb, cleans up)
+  - Structured result: {success, kicadPcb, error} instead of raw string
+  - mkdirp/rmrf helpers for MEMFS directory management
+- Task 4.3: Created wasm/src/index.d.ts — full TypeScript declarations (OdbFile, ConvertResult, convertOdb)
+- Task 4.4: Created wasm/scripts/build.mjs — copies WASM artifacts + wrapper into dist/
+- Task 4.5: Created wasm/test/test-node.mjs — 5 integration tests:
+  1. Simple ODB++ sample (odb-output): 44 files → 7,567 chars output
+  2. Kitchen-sink sample: 83 files → 730,464 chars output
+  3. WASM vs native CLI parity: byte-identical output confirmed
+  4. Error handling: empty input returns {success: false, error: ...}
+  5. Multiple sequential conversions: identical output, MEMFS cleanup works
+
+### Files created:
+- NEW: wasm/package.json
+- NEW: wasm/src/index.mjs (high-level JS API)
+- NEW: wasm/src/index.d.ts (TypeScript declarations)
+- NEW: wasm/scripts/build.mjs (build script)
+- NEW: wasm/test/test-node.mjs (integration tests)
+
+### dist/ contents (after build):
+- dist/index.mjs (2.8KB) — JS wrapper
+- dist/index.d.ts (1.1KB) — TypeScript declarations
+- dist/odb2kicad_wasm.mjs (78KB) — Emscripten JS glue
+- dist/odb2kicad_wasm.wasm (364KB) — WebAssembly binary
+
+### All Stage 4 success criteria met
+
+## 2026-02-10: Stage 5 - Testing COMPLETE
+
+### 5.1-5.2: Node.js integration tests + parity — already done in Stage 3/4
+- wasm/test/test-node.mjs: 5 tests all pass (simple, kitchen-sink, parity, error handling, sequential)
+- WASM output byte-identical to native CLI for both samples
+
+### 5.3: WASM smoke tests (test_simple.sh assertions on WASM output) COMPLETE
+- Created odb2kicad/test/test-wasm-smoke.sh — runs all 60+ native test assertions against WASM output
+- All simple test assertions pass (nets, components, positions, pads, layers, board outline, silkscreen)
+- All kitchen-sink assertions pass (vias, zones, arcs, fab layers, courtyards, drill sizes, profile holes)
+- Byte-identical parity confirmed for both samples via diff
+
+### 5.4: Browser smoke test COMPLETE
+- Created wasm/test/browser.html — self-contained browser smoke test
+  - Directory upload via click or drag-and-drop (webkitdirectory)
+  - Writes files to Emscripten MEMFS, calls convertOdb, displays output
+  - Textarea showing .kicad_pcb output, download link, conversion timing
+  - Loads WASM module directly from dist/ (no build step needed)
+  - Serves correctly from wasm/ directory via any HTTP server
+
+### All Stage 5 success criteria met:
+- WASM output is byte-identical to native CLI for both samples
+- 60+ smoke test assertions pass against WASM output
+- Node.js integration tests pass (5 tests: simple, kitchen-sink, parity, error handling, sequential)
+- Browser smoke test created with file upload, convert, display, and download
+
+### Files created:
+- NEW: odb2kicad/test/test-wasm-smoke.sh (WASM smoke test with all test_simple.sh assertions)
+- NEW: wasm/test/browser.html (browser smoke test)
+
+### Next: Stage 6 - Archive Extraction Support

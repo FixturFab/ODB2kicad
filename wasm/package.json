@@ -1,0 +1,23 @@
+{
+  "name": "odb2kicad-wasm",
+  "version": "0.1.0",
+  "description": "ODB++ to KiCad .kicad_pcb converter — WebAssembly build",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node test/test-node.mjs"
+  },
+  "keywords": ["odb++", "kicad", "pcb", "eda", "wasm", "webassembly"],
+  "license": "MIT"
+}
