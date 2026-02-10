@@ -570,3 +570,12 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 - NEW: wasm/test/browser.html (browser smoke test)
 
 ### Next: Stage 6 - Archive Extraction Support
+
+## 2026-02-10: Stage 6 - Archive Extraction Support IN PROGRESS
+
+- 6.1: Installed fflate dependency (v0.8.2) for .tgz/.zip extraction
+- 6.2: Implemented convertOdbArchive() in index.mjs with parseTar(), extractArchive(), stripCommonPrefix()
+- 6.3: Updated TypeScript declarations (index.d.ts) with convertOdbArchive()
+- 6.4: Updated browser.html with archive tab (tab-switching UI, .tgz/.zip file input, inline extraction)
+- 6.5: Added 6 archive tests to test-node.mjs (tgz simple, zip simple, tgz kitchen-sink, zip kitchen-sink, invalid, empty)
+- 6.6: All 11 tests pass — archive output byte-identical to directory-based conversion

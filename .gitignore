@@ -41,6 +41,9 @@ build-wasm/
 # WASM package build output
 wasm/dist/
 
+# Node.js dependencies
+node_modules/
+
 # OS junk
 .DS_Store
 Thumbs.db

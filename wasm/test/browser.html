@@ -17,6 +17,8 @@
   }
   .drop-zone:hover, .drop-zone.dragover { border-color: #4a90d9; background: #f0f6ff; }
   .drop-zone input { display: none; }
+  .input-row { display: flex; gap: 12px; margin-top: 12px; }
+  .input-row label { display: inline; font-weight: normal; }
   button {
     background: #4a90d9; color: #fff; border: none; border-radius: 6px;
     padding: 10px 24px; font-size: 1rem; cursor: pointer;
@@ -33,22 +35,50 @@
   }
   .download-link { display: inline-block; margin-top: 8px; }
   .stats { color: #666; font-size: 0.9rem; margin-top: 8px; }
+  .tab-bar { display: flex; gap: 0; margin-bottom: 12px; }
+  .tab {
+    padding: 8px 16px; cursor: pointer; border: 1px solid #ccc;
+    background: #f5f5f5; color: #666; font-size: 0.9rem;
+  }
+  .tab:first-child { border-radius: 6px 0 0 6px; }
+  .tab:last-child { border-radius: 0 6px 6px 0; }
+  .tab.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 </style>
 </head>
 <body>
 
 <h1>odb2kicad WASM — Browser Smoke Test</h1>
-<p class="subtitle">Convert ODB++ directories to KiCad .kicad_pcb format, entirely in the browser.</p>
+<p class="subtitle">Convert ODB++ directories or archives to KiCad .kicad_pcb format, entirely in the browser.</p>
 
 <div class="section">
-  <label>1. Select ODB++ files (use directory upload or individual files)</label>
-  <div class="drop-zone" id="dropZone">
-    <p>Drag &amp; drop ODB++ directory here, or click to browse</p>
-    <p style="font-size: 0.85rem; color: #888; margin-top: 8px;">
-      Use "Upload Directory" to select an extracted ODB++ folder
-    </p>
-    <input type="file" id="fileInput" webkitdirectory multiple>
+  <label>1. Select ODB++ input</label>
+  <div class="tab-bar">
+    <div class="tab active" data-tab="dir">Directory</div>
+    <div class="tab" data-tab="archive">Archive (.tgz / .zip)</div>
   </div>
+
+  <div class="tab-content active" id="tab-dir">
+    <div class="drop-zone" id="dropZone">
+      <p>Drag &amp; drop ODB++ directory here, or click to browse</p>
+      <p style="font-size: 0.85rem; color: #888; margin-top: 8px;">
+        Use "Upload Directory" to select an extracted ODB++ folder
+      </p>
+      <input type="file" id="fileInput" webkitdirectory multiple>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-archive">
+    <div class="drop-zone" id="archiveDropZone">
+      <p>Drag &amp; drop a .tgz, .tar.gz, or .zip archive here, or click to browse</p>
+      <p style="font-size: 0.85rem; color: #888; margin-top: 8px;">
+        ODB++ archives from EDA tools (Altium, KiCad, etc.)
+      </p>
+      <input type="file" id="archiveInput" accept=".tgz,.tar.gz,.tar,.zip,.gz">
+    </div>
+  </div>
+
   <div class="stats" id="fileStats"></div>
 </div>
 
@@ -68,14 +98,20 @@
 </div>
 
 <script type="module">
+  import { gunzipSync, unzipSync } from 'https://cdn.jsdelivr.net/npm/fflate@0.8/esm/browser.js';
+
   // Load the Emscripten WASM module directly (works in browser via ENVIRONMENT=web)
   const wasmUrl = new URL('../dist/odb2kicad_wasm.mjs', import.meta.url).href;
 
   let Module = null;
   let loadedFiles = [];
+  let archiveBuffer = null;
+  let inputMode = 'dir'; // 'dir' or 'archive'
 
   const dropZone = document.getElementById('dropZone');
   const fileInput = document.getElementById('fileInput');
+  const archiveDropZone = document.getElementById('archiveDropZone');
+  const archiveInput = document.getElementById('archiveInput');
   const convertBtn = document.getElementById('convertBtn');
   const status = document.getElementById('status');
   const output = document.getElementById('output');
@@ -89,7 +125,23 @@
     status.className = type;
   }
 
-  // --- File loading ---
+  // --- Tab switching ---
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      inputMode = tab.dataset.tab;
+      // Reset state on tab switch
+      loadedFiles = [];
+      archiveBuffer = null;
+      fileStats.textContent = '';
+      convertBtn.disabled = true;
+    });
+  });
+
+  // --- Directory file loading ---
   dropZone.addEventListener('click', () => fileInput.click());
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -106,9 +158,7 @@
     loadedFiles = [];
     const promises = [];
     for (const file of fileList) {
-      // webkitRelativePath gives us the relative path within the directory
       const relPath = file.webkitRelativePath || file.name;
-      // Strip the top-level directory name (the ODB++ root folder)
       const parts = relPath.split('/');
       const path = parts.length > 1 ? parts.slice(1).join('/') : parts[0];
       promises.push(
@@ -124,7 +174,6 @@
   }
 
   async function handleDataTransferItems(items) {
-    // For drag-and-drop, try to get directory entries
     const entries = [];
     for (const item of items) {
       const entry = item.webkitGetAsEntry?.();
@@ -165,6 +214,92 @@
     });
   }
 
+  // --- Archive file loading ---
+  archiveDropZone.addEventListener('click', () => archiveInput.click());
+  archiveDropZone.addEventListener('dragover', e => { e.preventDefault(); archiveDropZone.classList.add('dragover'); });
+  archiveDropZone.addEventListener('dragleave', () => archiveDropZone.classList.remove('dragover'));
+  archiveDropZone.addEventListener('drop', async e => {
+    e.preventDefault();
+    archiveDropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      await handleArchiveFile(e.dataTransfer.files[0]);
+    }
+  });
+  archiveInput.addEventListener('change', async () => {
+    if (archiveInput.files.length > 0) {
+      await handleArchiveFile(archiveInput.files[0]);
+    }
+  });
+
+  async function handleArchiveFile(file) {
+    archiveBuffer = new Uint8Array(await file.arrayBuffer());
+    const sizeKB = (archiveBuffer.length / 1024).toFixed(1);
+    fileStats.textContent = `Loaded archive: ${file.name} (${sizeKB} KB)`;
+    convertBtn.disabled = false;
+  }
+
+  // --- Tar parser ---
+  function parseTar(data) {
+    const files = [];
+    const decoder = new TextDecoder();
+    let offset = 0;
+    while (offset + 512 <= data.length) {
+      const header = data.subarray(offset, offset + 512);
+      if (header.every(b => b === 0)) break;
+      let name = decoder.decode(header.subarray(0, 100)).replace(/\0.*/s, '');
+      const magic = decoder.decode(header.subarray(257, 263)).replace(/\0.*/s, '');
+      if (magic === 'ustar') {
+        const prefix = decoder.decode(header.subarray(345, 500)).replace(/\0.*/s, '');
+        if (prefix) name = prefix + '/' + name;
+      }
+      const sizeStr = decoder.decode(header.subarray(124, 136)).replace(/\0.*/s, '').trim();
+      const size = parseInt(sizeStr, 8) || 0;
+      const type = header[156];
+      offset += 512;
+      if ((type === 0x30 || type === 0) && size > 0 && name) {
+        files.push({ path: name, content: decoder.decode(data.subarray(offset, offset + size)) });
+      }
+      offset += Math.ceil(size / 512) * 512;
+    }
+    return files;
+  }
+
+  function extractArchive(data) {
+    if (data[0] === 0x1f && data[1] === 0x8b) {
+      return parseTar(gunzipSync(data));
+    }
+    if (data[0] === 0x50 && data[1] === 0x4b && data[2] === 0x03 && data[3] === 0x04) {
+      const entries = unzipSync(data);
+      const files = [];
+      const decoder = new TextDecoder();
+      for (const [name, content] of Object.entries(entries)) {
+        if (name.endsWith('/')) continue;
+        files.push({ path: name, content: decoder.decode(content) });
+      }
+      return files;
+    }
+    if (data.length > 262) {
+      const magic = new TextDecoder().decode(data.subarray(257, 263)).replace(/\0.*/s, '');
+      if (magic === 'ustar') return parseTar(data);
+    }
+    throw new Error('Unrecognized archive format. Expected .tgz, .tar.gz, .zip, or .tar');
+  }
+
+  function stripCommonPrefix(files) {
+    if (files.length === 0) return files;
+    const paths = files.map(f => f.path);
+    const firstParts = paths[0].split('/');
+    let commonDepth = 0;
+    for (let i = 0; i < firstParts.length - 1; i++) {
+      const prefix = firstParts.slice(0, i + 1).join('/') + '/';
+      if (paths.every(p => p.startsWith(prefix))) commonDepth = i + 1;
+      else break;
+    }
+    if (commonDepth === 0) return files;
+    const prefixLen = firstParts.slice(0, commonDepth).join('/').length + 1;
+    return files.map(f => ({ path: f.path.substring(prefixLen), content: f.content })).filter(f => f.path.length > 0);
+  }
+
   // --- WASM initialization ---
   async function getModule() {
     if (!Module) {
@@ -203,21 +338,35 @@
 
   // --- Conversion ---
   convertBtn.addEventListener('click', async () => {
-    if (loadedFiles.length === 0) return;
-
     convertBtn.disabled = true;
-    setStatus('Initializing WASM module...', 'info');
 
     try {
+      let filesToConvert;
+
+      if (inputMode === 'archive' && archiveBuffer) {
+        setStatus('Extracting archive...', 'info');
+        filesToConvert = stripCommonPrefix(extractArchive(archiveBuffer));
+        if (filesToConvert.length === 0) {
+          setStatus('Archive contains no files', 'error');
+          convertBtn.disabled = false;
+          return;
+        }
+        setStatus(`Extracted ${filesToConvert.length} files from archive`, 'info');
+      } else {
+        filesToConvert = loadedFiles;
+      }
+
+      if (filesToConvert.length === 0) return;
+
       const mod = await getModule();
       const FS = mod.FS;
       const mountPoint = '/odb';
 
-      setStatus(`Writing ${loadedFiles.length} files to virtual filesystem...`, 'info');
+      setStatus(`Writing ${filesToConvert.length} files to virtual filesystem...`, 'info');
       rmrf(FS, mountPoint);
       mkdirp(FS, mountPoint);
 
-      for (const file of loadedFiles) {
+      for (const file of filesToConvert) {
         const fullPath = mountPoint + '/' + file.path;
         const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
         mkdirp(FS, dir);
@@ -229,7 +378,6 @@
       const raw = mod.convertOdb(mountPoint);
       const elapsed = (performance.now() - t0).toFixed(0);
 
-      // Clean up MEMFS
       rmrf(FS, mountPoint);
 
       if (raw.startsWith('ERROR: ')) {
@@ -238,7 +386,6 @@
         return;
       }
 
-      // Success
       const lines = raw.split('\n').length;
       setStatus(`Conversion successful in ${elapsed}ms`, 'success');
       outputStats.textContent = `${raw.length.toLocaleString()} characters, ${lines.toLocaleString()} lines`;
@@ -246,7 +393,6 @@
       output.value = raw;
       outputSection.style.display = 'block';
 
-      // Create download link
       const blob = new Blob([raw], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       downloadLink.href = url;

@@ -18,6 +18,16 @@
     "build": "node scripts/build.mjs",
     "test": "node test/test-node.mjs"
   },
-  "keywords": ["odb++", "kicad", "pcb", "eda", "wasm", "webassembly"],
-  "license": "MIT"
+  "keywords": [
+    "odb++",
+    "kicad",
+    "pcb",
+    "eda",
+    "wasm",
+    "webassembly"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "fflate": "^0.8.2"
+  }
 }

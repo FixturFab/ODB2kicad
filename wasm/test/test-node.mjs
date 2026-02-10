@@ -1,15 +1,16 @@
-// Stage 4: Integration test for the odb2kicad-wasm JS wrapper
-// Tests the high-level convertOdb() API against sample ODB++ directories.
+// Integration test for the odb2kicad-wasm JS wrapper
+// Tests both convertOdb() and convertOdbArchive() APIs.
 
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, relative, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { strict as assert } from 'assert';
+import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Import from dist/ (the built package)
-const { convertOdb } = await import(join(__dirname, '..', 'dist', 'index.mjs'));
+const { convertOdb, convertOdbArchive } = await import(join(__dirname, '..', 'dist', 'index.mjs'));
 
 // Recursively load all files from a directory
 function loadDir(dir, base = dir) {
@@ -75,7 +76,6 @@ console.log('--- Test 3: WASM vs native parity ---');
   const result = await convertOdb(files);
 
   // Run native CLI for comparison (no output arg = writes to stdout)
-  const { execSync } = await import('child_process');
   const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
   const nativeOutput = execSync(
     `"${nativeBin}" "${join(samplesDir, 'odb-output')}"`,
@@ -107,6 +107,86 @@ console.log('--- Test 5: Multiple sequential conversions ---');
   assert.equal(r2.success, true);
   assert.equal(r1.kicadPcb, r2.kicadPcb, 'repeated conversions should produce identical output');
   console.log('  PASS: Two sequential conversions produce identical output');
+}
+
+// === Archive extraction tests ===
+
+// Create test archives (tgz and zip) from sample directories
+const tmpDir = '/tmp';
+execSync(`tar czf ${tmpDir}/odb-output.tgz -C "${samplesDir}" odb-output`);
+execSync(`tar czf ${tmpDir}/odb-kitchen-sink.tgz -C "${samplesDir}" odb-kitchen-sink`);
+execSync(`cd "${samplesDir}" && zip -rq ${tmpDir}/odb-output.zip odb-output`);
+execSync(`cd "${samplesDir}" && zip -rq ${tmpDir}/odb-kitchen-sink.zip odb-kitchen-sink`);
+
+// Get reference output from directory-based conversion
+const refSimple = await convertOdb(loadDir(join(samplesDir, 'odb-output')));
+const refKitchen = await convertOdb(loadDir(join(samplesDir, 'odb-kitchen-sink')));
+
+// --- Test 6: .tgz archive (simple) ---
+console.log('--- Test 6: .tgz archive (odb-output) ---');
+{
+  const buf = readFileSync(join(tmpDir, 'odb-output.tgz'));
+  const result = await convertOdbArchive(buf);
+
+  assert.equal(result.success, true, 'tgz conversion should succeed');
+  assert.ok(result.kicadPcb.includes('kicad_pcb'), 'output should contain kicad_pcb');
+  assert.equal(result.kicadPcb, refSimple.kicadPcb, 'tgz output should match directory-based output');
+  console.log(`  PASS: ${result.kicadPcb.length} chars, identical to directory conversion`);
+}
+
+// --- Test 7: .zip archive (simple) ---
+console.log('--- Test 7: .zip archive (odb-output) ---');
+{
+  const buf = readFileSync(join(tmpDir, 'odb-output.zip'));
+  const result = await convertOdbArchive(buf);
+
+  assert.equal(result.success, true, 'zip conversion should succeed');
+  assert.ok(result.kicadPcb.includes('kicad_pcb'), 'output should contain kicad_pcb');
+  assert.equal(result.kicadPcb, refSimple.kicadPcb, 'zip output should match directory-based output');
+  console.log(`  PASS: ${result.kicadPcb.length} chars, identical to directory conversion`);
+}
+
+// --- Test 8: .tgz archive (kitchen-sink) ---
+console.log('--- Test 8: .tgz archive (odb-kitchen-sink) ---');
+{
+  const buf = readFileSync(join(tmpDir, 'odb-kitchen-sink.tgz'));
+  const result = await convertOdbArchive(buf);
+
+  assert.equal(result.success, true, 'tgz kitchen-sink should succeed');
+  assert.equal(result.kicadPcb, refKitchen.kicadPcb, 'tgz kitchen-sink should match directory-based output');
+  console.log(`  PASS: ${result.kicadPcb.length} chars, identical to directory conversion`);
+}
+
+// --- Test 9: .zip archive (kitchen-sink) ---
+console.log('--- Test 9: .zip archive (odb-kitchen-sink) ---');
+{
+  const buf = readFileSync(join(tmpDir, 'odb-kitchen-sink.zip'));
+  const result = await convertOdbArchive(buf);
+
+  assert.equal(result.success, true, 'zip kitchen-sink should succeed');
+  assert.equal(result.kicadPcb, refKitchen.kicadPcb, 'zip kitchen-sink should match directory-based output');
+  console.log(`  PASS: ${result.kicadPcb.length} chars, identical to directory conversion`);
+}
+
+// --- Test 10: Invalid archive ---
+console.log('--- Test 10: Invalid archive ---');
+{
+  const buf = new Uint8Array([0xDE, 0xAD, 0xBE, 0xEF]);
+  const result = await convertOdbArchive(buf);
+
+  assert.equal(result.success, false, 'invalid archive should fail');
+  assert.ok(result.error, 'error message should be present');
+  console.log(`  PASS: Error for invalid archive: "${result.error}"`);
+}
+
+// --- Test 11: Empty ArrayBuffer ---
+console.log('--- Test 11: Empty ArrayBuffer ---');
+{
+  const result = await convertOdbArchive(new ArrayBuffer(0));
+
+  assert.equal(result.success, false, 'empty buffer should fail');
+  assert.ok(result.error, 'error message should be present');
+  console.log(`  PASS: Error for empty buffer: "${result.error}"`);
 }
 
 console.log('\nAll tests PASSED');

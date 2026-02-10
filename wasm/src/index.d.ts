@@ -31,3 +31,15 @@ export interface ConvertResult {
  * @returns Conversion result with .kicad_pcb output or error message
  */
 export declare function convertOdb(files: OdbFile[]): Promise<ConvertResult>;
+
+/**
+ * Convert an ODB++ archive (.tgz, .tar.gz, .zip, or .tar) to KiCad .kicad_pcb format.
+ *
+ * The archive is extracted in-memory and the contained files are passed to convertOdb().
+ * A common root directory prefix is automatically stripped (e.g., "odb-output/matrix/matrix"
+ * becomes "matrix/matrix").
+ *
+ * @param buffer - Archive data as ArrayBuffer or Uint8Array
+ * @returns Conversion result with .kicad_pcb output or error message
+ */
+export declare function convertOdbArchive(buffer: ArrayBuffer | Uint8Array): Promise<ConvertResult>;
