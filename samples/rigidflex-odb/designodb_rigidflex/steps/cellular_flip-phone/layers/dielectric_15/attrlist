@@ -1,0 +1,6 @@
+UNITS=INCH
+.dielectric_constant=4.4
+.loss_tangent=0.02
+.layer_dielectric=0.00984252
+.comment=dielectric layer
+.eda_layers=dielectric_15

@@ -1,0 +1,7 @@
+DISPLAY {
+    L0 = signal_10
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = covertop
+}

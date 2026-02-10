@@ -1,0 +1,58 @@
+#
+#Units
+#
+UNITS=INCH
+ID=133
+#
+#Num Features
+#
+F 1
+#
+#Feature attribute names
+#
+@0 .pad_usage
+@1 .test_point
+@2 .geometry
+@3 .smd
+@4 .nomenclature
+@5 .string
+@6 .drc_assembly_lyrs
+@7 .drc_board
+@8 .drc_comp_height
+@9 .drc_comp_keepin
+@10 .drc_comp_keepout
+@11 .drc_etch_lyrs
+@12 .drc_etch_lyrs_all
+@13 .drc_etch_lyrs_bit
+@14 .drc_max_height
+@15 .drc_min_height
+@16 .drc_pad_keepout
+@17 .drc_plane_keepout
+@18 .drc_ref_des
+@19 .drc_route_keepin
+@20 .drc_route_keepout
+@21 .drc_tp_keepin
+@22 .drc_tp_keepout
+@23 .drc_trace_keepout
+@24 .drc_via_keepout
+@25 .source_llayer
+@26 .tear_drop
+@27 .artwork
+@28 .pattern_fill
+@29 .hatch
+@30 .mount_hole
+@31 .tooling_hole
+@32 .testprobe_diameter
+@33 .rf
+#
+#Layer features
+#
+S P 0 ;;ID=526317
+OB -0.062901456693 -0.070866141732 I
+OS -0.341192362205 -0.070866181102
+OS -0.342181496063 0.604728385827
+OC -0.242867204724 0.577948346457 -0.242871811024 0.775475826772 N
+OS -0.063851377953 0.577952559055
+OS -0.062901456693 -0.070866141732
+OE
+SE

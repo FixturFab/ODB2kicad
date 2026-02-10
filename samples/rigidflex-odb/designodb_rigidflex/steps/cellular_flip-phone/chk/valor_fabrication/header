@@ -1,0 +1,6 @@
+SHOW_REF_LAYER=0
+FROM_REP=0
+SOLVED_CHK=0
+SIGNATURE=valor_analysis_drill_STD;valor_analysis_signal_Outer;valor_analysis_signal_Inner;valor_analysis_pg_Outer;valor_analysis_pg_Inner;valor_analysis_sm_STD;valor_analysis_ss_STD;valor_analysis_profile_STD;valor_analysis_brd_drill_STD;valor_analysis_drillsum_STD;valor_analysis_smdsum_STD
+RAN_IN_SAFE_MODE=0
+REP_RANGE_TYPE=0

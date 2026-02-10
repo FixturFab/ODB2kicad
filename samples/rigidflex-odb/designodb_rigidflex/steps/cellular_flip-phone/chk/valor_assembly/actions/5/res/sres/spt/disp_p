@@ -1,0 +1,37 @@
+DISPLAY {
+    L0 = spt
+}
+DISPLAY {
+    L0 = spt
+    L1 = signal_1
+}
+DISPLAY {
+    L0 = spt
+    L1 = signal_1
+    L2 = soldermask_top
+    L3 = comp_+_top
+}
+DISPLAY {
+    L0 = spt
+    L1 = soldermask_top
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = spt
+    L1 = comp_+_top
+}
+DISPLAY {
+    L0 = spt
+    L1 = rout
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = spt
+    L1 = d_1_2
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = spt
+    L1 = d_1_10
+    L2 = comp_+_top
+}

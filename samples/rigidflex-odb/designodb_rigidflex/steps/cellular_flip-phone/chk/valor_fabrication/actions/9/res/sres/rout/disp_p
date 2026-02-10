@@ -1,0 +1,23 @@
+DISPLAY {
+    L0 = rout
+}
+DISPLAY {
+    L0 = rout
+    L1 = d_1_2
+}
+DISPLAY {
+    L0 = rout
+    L1 = d_2_3
+}
+DISPLAY {
+    L0 = rout
+    L1 = d_8_9
+}
+DISPLAY {
+    L0 = rout
+    L1 = d_9_10
+}
+DISPLAY {
+    L0 = rout
+    L1 = d_3_8
+}

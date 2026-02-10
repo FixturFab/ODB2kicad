@@ -1,0 +1,17 @@
+UNITS=INCH
+.cu_base=NO
+.eda_layers=layer_5
+.inp_file=
+.lpol_done=NO
+.out_angle=0.0
+.out_comp=0
+.out_mirror=NO
+.out_polarity=Positive
+.out_x_scale=1
+.out_y_scale=1
+.comment=flex_5
+.layer_hdi_type=Core
+.copper_weight=1.02149
+.dielectric_constant=4.299
+.loss_tangent=0.02
+.bulk_resistivity=16.7

@@ -1,0 +1,70 @@
+#
+#Units
+#
+UNITS=INCH
+ID=119
+#
+#Num Features
+#
+F 5
+#
+#Feature symbol names
+#
+$0 r78.74
+$1 r59.055
+$2 r29.528
+$3 r35.433
+#
+#Feature attribute names
+#
+@0 .pad_usage
+@1 .test_point
+@2 .geometry
+@3 .smd
+@4 .nomenclature
+@5 .string
+@6 .drc_assembly_lyrs
+@7 .drc_board
+@8 .drc_comp_height
+@9 .drc_comp_keepin
+@10 .drc_comp_keepout
+@11 .drc_etch_lyrs
+@12 .drc_etch_lyrs_all
+@13 .drc_etch_lyrs_bit
+@14 .drc_max_height
+@15 .drc_min_height
+@16 .drc_pad_keepout
+@17 .drc_plane_keepout
+@18 .drc_ref_des
+@19 .drc_route_keepin
+@20 .drc_route_keepout
+@21 .drc_tp_keepin
+@22 .drc_tp_keepout
+@23 .drc_trace_keepout
+@24 .drc_via_keepout
+@25 .drill
+@26 .pf_optimized
+@27 .source_llayer
+@28 .tear_drop
+@29 .artwork
+@30 .pattern_fill
+@31 .hatch
+@32 .mount_hole
+@33 .tooling_hole
+@34 .testprobe_diameter
+@35 .rf
+#
+#Feature attribute text strings
+#
+&0 hole2.000_np
+&1 hole1.500_npth
+&2 hole0.750_npth
+&3 hole0.900_round1.400_p_specialpaste
+#
+#Layer features
+#
+P 0.029527559055 0.157480314961 0 P 1 0 ;0=4,2=0,25=1,32;ID=526076
+P 0.728346456693 0.522247322835 1 P 2 0 ;0=4,2=1,25=1,32;ID=526077
+P 2.756299212598 0.5 2 P 3 2 ;0=4,2=2,25=1,32;ID=526078
+P 2.745078740157 0.857086614173 3 P 4 3 ;0=4,2=3,25=0,32;ID=526079
+P 2.745078740157 0.725984251969 3 P 4 3 ;0=4,2=3,25=0,32;ID=526080

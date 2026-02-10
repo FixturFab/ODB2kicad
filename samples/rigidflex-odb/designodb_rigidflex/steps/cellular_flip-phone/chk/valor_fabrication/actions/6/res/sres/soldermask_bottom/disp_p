@@ -1,0 +1,19 @@
+DISPLAY {
+    L0 = soldermask_bottom
+}
+DISPLAY {
+    L0 = soldermask_bottom
+    L1 = signal_10
+}
+DISPLAY {
+    L0 = soldermask_bottom
+    L1 = d_9_10
+}
+DISPLAY {
+    L0 = soldermask_bottom
+    L1 = d_1_10
+}
+DISPLAY {
+    L0 = soldermask_bottom
+    L1 = rout
+}

@@ -1,0 +1,500 @@
+<metadata>
+ <header>
+  <node display="Designer Name" value="Prince" name="designer_name" />
+  <node display="Layer Count" value="10" name="layer_count" />
+  <node display="Buried Resistor" value="No" name="buried_resistor" />
+  <node display="Buried Capacitor" value="No" name="buried_capacitor" />
+  <node display="Company Address" value="8005 SW Boeckman Rd&#xa; Wilsonville&#xa; OR USA 97070-7777" name="company_address" />
+  <node display="Company Name" value="Mentor Graphics" name="company_name" />
+  <node display="Counter Bore" value="No" name="counter_bore" />
+  <node display="Counter Sink" value="No" name="countersink" />
+  <node display="Customer Control Number" value="201" name="customer_control_number" />
+  <node display="Designer Email" value="prince-abc@mentor.com" name="designer_email" />
+  <node display="Designer Phone Number" value="83940000" name="designer_phone_number" />
+  <node display="Edge Connectors" value="Yes" name="edge_connectors" />
+  <node display="Layout Name" value="Cellular Flipphone" name="layout_name" />
+  <node display="PCB Part Number" value="706883" name="pcb_part_number" />
+  <node display="Revision" value="0" name="revision" />
+  <node display="RoHS Compliant" value="" name="rohs_compliant" />
+  <node display="Ruling IPC Spec (Class 1, 2, 3 etc.)" value="Class 1" name="ruling_ipc_spec" />
+ </header>
+ <requirements>
+  <node display="Board Thickness" units="Inch" value="0.0547402" name="board_thickness" />
+  <node display="Additional Requirements" value="" name="additional_requirements" />
+  <node display="Board Outline Tolerance Plus" units="Inch" value="" name="board_outline_tolerance_plus" />
+  <node display="Board Outline Tolerance Minus" units="Inch" value="" name="board_outline_tolerance_minus" />
+  <node display="Board Thickness Tol Plus" units="Inch" value="" name="board_thickness_tol_plus" />
+  <node display="Board Thickness Tol Minus" units="Inch" value="" name="board_thickness_tol_minus" />
+  <node display="Board Thickness Type" value="over mask on plated copper" name="board_thickness_type" />
+  <node display="Bottom Legend Color" value="white" name="bottom_legend_color" />
+  <node display="Bottom Soldermask Color" value="yellow" name="bottom_soldermask_color" />
+  <node display="Flammability Rating Standard" value="UL94V-0" name="flammability_rating_standard" />
+  <node display="General PCB Standard" value="IPC 6012A" name="general_pcb_standard" />
+  <node display="Glass Transition Temperature (Tg)" value="110.000000" name="glass_transition_temperature_tg" />
+  <node display="Legend Sides" value="" name="legend_sides" />
+  <node display="PCB Acceptability Standard" value="IPC 6012A" name="pcb_acceptability_standard" />
+  <node display="Peelable Mask Side" value="" name="peelable_mask_side" />
+  <node display="Plated Edge" value="" name="plated_edge" />
+  <node display="Plated Slots" value="" name="plated_slots" />
+  <node display="Qualification and Performance Standard" value="" name="qualification_performance_std" />
+  <node display="Soldermask Sides" value="Both" name="soldermask_sides" />
+  <node display="Thermal Stress Requirement" value="" name="thermal_stress_requirement" />
+  <node display="Tolerance Standard" value="" name="tolerance_standard" />
+  <node display="Top Legend Color" value="white" name="top_legend_color" />
+  <node display="Top Soldermask Color" value="green" name="top_soldermask_color" />
+ </requirements>
+ <steps>
+  <step description="" name="cellular_flip-phone" >
+   <requirements>
+    <node display="Plated Slots" value="no" name="plated_slots" />
+    <node display="Solder Mask Sides" value="both" name="soldermask_sides" />
+    <node display="Additional Copper Layer Requirements" value="" name="additional_copper_lyr_require" />
+    <node display="Gold Plating Thickness Min" units="Inch" value="" name="gold_plating_thickness_min" />
+    <node display="Gold Plating Thickness Max" units="Inch" value="" name="gold_plating_thickness_max" />
+    <node display="Hole Position Plus Tolerance" units="Inch" value="" name="hole_position_plus_tolerance" />
+    <node display="Hole Position Minus Tolerance" units="Inch" value="" name="hole_position_minus_tolerance" />
+    <node display="Idenitfy Soldermask Define Pads that Need to Remain Untouched" value="" name="identify_soldermask_define_pads_that_need_to_remain_untouched" />
+    <node display="Legend  Clearance from Component Pads" units="Inch" value="N/A" name="legend_clearance_from_component_pads" />
+    <node display="Legend Clearance from Soldermask Clearance" units="Inch" value="N/A" name="legend_clearance_from_soldermask_clearance" />
+    <node display="Legend Clearance from Test Points" units="Inch" value="N/A" name="legend_clearance_from_test_points" />
+    <node display="Layer to Layer Registration Max Tolerance" units="Inch" value="" name="lyr_to_lyr_reg_max_tolerance" />
+    <node display="Max Bow and Twist of the PCB" units="Inch" value="" name="max_bow_and_twist_of_the_pcb" />
+    <node display="Min AR Blind Via" units="Inch" value="N/A" name="min_ar_blind_via" />
+    <node display="Min AR Buried Via" units="Inch" value="N/A" name="min_ar_buried_via" />
+    <node display="Min AR Pressfit PTH" units="Inch" value="N/A" name="min_ar_pressfit_pth" />
+    <node display="Min AR PTH" units="Inch" value="N/A" name="min_ar_pth" />
+    <node display="Min AR Via" units="Inch" value="N/A" name="min_ar_via" />
+    <node display="Min Copper to Board Edge" units="Inch" value="0.011812" name="min_copper_to_board_edge" />
+    <node display="Min Hole to Edge" units="Inch" value="N/A" name="min_hole_to_edge" />
+    <node display="Min Hole to Hole" units="Inch" value="N/A" name="min_hole_to_hole" />
+    <node display="Min Soldermask Clearance for BGA Pads" units="Inch" value="N/A" name="min_soldermask_clearance_for_bga_pads" />
+    <node display="Min Soldermask Clearance for NPTH" units="Inch" value="N/A" name="min_soldermask_clearance_for_npth" />
+    <node display="Min Soldermask Clearance for PTH Pads" units="Inch" value="N/A" name="min_soldermask_clearance_for_pth_pads" />
+    <node display="Min Soldermask Clearance for SMD Pads" units="Inch" value="0" name="min_soldermask_clearance_for_smd_pads" />
+   </requirements>
+   <manufacturing>
+    <node display="Smallest Drill Size" units="Inch" value="0.00393701" name="smallest_drill_size" />
+    <node display="Number of Drill Holes" value="9389" name="number_of_drill_holes" />
+    <node display="Number of Unique Drill Sizes" value="10" name="number_of_unique_drill_sizes" />
+    <node display="Number of Vias" value="9389" name="number_of_vias" />
+    <node display="Smallest Trace Width" units="Inch" value="N/A" name="smallest_trace_width" />
+    <node display="Smallest Via Diameter" units="Inch" value="0.00393701" name="smallest_via_diameter" />
+    <node display="Allowed to Remove non-functional Pads" value="" name="allowed_remove_nfp" />
+    <node display="Barrel Cu Thickness Blind Via" units="Inch" value="" name="barrel_cu_thickness_blind_via" />
+    <node display="Barrel Cu Thickness Buried Via" units="Inch" value="" name="barrel_cu_thickness_buried_via" />
+    <node display="Barrel Cu Thickness Pressfit PTH" units="Inch" value="" name="barrel_cu_thickness_pressfit_pth" />
+    <node display="Barrel Cu Thickness PTH" units="Inch" value="" name="barrel_cu_thickness_pth" />
+    <node display="Barrel Cu Thickness Via" units="Inch" value="" name="barrel_cu_thickness_via" />
+    <node display="PCB Circuit Copper Repairs Allowed" value="" name="circuit_copper_repairs_allowed" />
+    <node display="Contour Processing Type" value="Route" name="contour_processing_type" />
+    <node display="Copper Area Percent" value="" name="copper_area_percent" />
+    <node display="Date Stamp Format" value="" name="date_stamp_format" />
+    <node display="Date Stamp Required" value="" name="date_stamp_required" />
+    <node display="Electrical Test Required" value="" name="electrical_test_required" />
+    <node display="Fiducial Soldermask Clearance" units="Inch" value="0" name="fiducial_soldermask_clearance" />
+    <node display="Gold Plating Defined by" value="" name="gold_plating_defined_by" />
+    <node display="High Voltage Board" value="" name="high_voltage_board" />
+    <node display="Hole Breakout Allowed" value="" name="hole_breakout_allowed" />
+    <node display="Legend Clipping Allowed" value="" name="legend_clipping_allowed" />
+    <node display="Production Lot Number" value="" name="lot" />
+    <node display="Manufacturer Identification Stamp" value="" name="mfg_id_stamp" />
+    <node display="Min Conductor Width Inner" units="Inch" value="N/A" name="min_conductor_width_inner" />
+    <node display="Min Conductor Width Outer" units="Inch" value="N/A" name="min_conductor_width_outer" />
+    <node display="Min Copper Spacing Inner" units="Inch" value="N/A" name="min_copper_spacing_inner" />
+    <node display="Min Copper Spacing Outer" units="Inch" value="N/A" name="min_copper_spacing_outer" />
+    <node display="Number of Thru Pads" value="0" name="number_of_thru_pads" />
+    <node display="Number of Tooling Holes" value="0" name="number_of_tooling_holes" />
+    <node display="Part Number Stamp" value="" name="part_number_stamp" />
+    <node display="Plug Vias" value="" name="plug_vias" />
+    <node display="Print ET Test Stamp on Board" value="" name="print_et_test_stamp_on_board" />
+    <node display="Surface Finish Contact Fingers" value="" name="surface_finish_contact_fingers" />
+    <node display="Surface Finish Pads" value="" name="surface_finish_pads" />
+    <node display="Teardrop Addition Allowed on Inner" value="" name="teardrop_allowed_on_inner" />
+    <node display="Teardrop Addition Allowed on Outer" value="" name="teardrop_allowed_on_outer" />
+    <node display="UL Code Stamp" value="" name="ul_code_stamp" />
+    <node display="Unique Serial  NR Stamp" value="" name="unique_serial_nr_stamp" />
+    <node display="Via Tenting" value="" name="via_tenting" />
+    <node display="Via Treatments" value="" name="via_treatments" />
+   </manufacturing>
+   <assembly>
+    <node display="Number of Fiducials" value="0" name="number_of_fiducials" >
+     <classify_by display="Fiducials in Top Layer" value="0" name="Top" />
+     <classify_by display="Fiducials in Bottom Layer" value="0" name="Bottom" />
+    </node>
+    <node display="SMD Technology" value="N/A" name="smd_technology" />
+    <node display="Number of Nets" value="677" name="number_of_nets" />
+    <node display="Number of Test_Points" value="0" name="number_of_test_points" >
+     <classify_by display="Test Points in Top Layer" value="0" name="Top" />
+     <classify_by display="Test Points in Bottom Layer" value="0" name="Bottom" />
+    </node>
+    <node display="Component Count" value="692" name="component_count" >
+     <classify_by display="Components in Top Layer" value="610" name="top" >
+      <classify_by value="1" name="Discrete_Other" />
+      <classify_by value="15" name="IC_BGA" />
+      <classify_by value="501" name="Discrete_Chip" />
+      <classify_by value="3" name="IC_SOIC" />
+      <classify_by value="8" name="IC_Other" />
+      <classify_by value="2" name="IC_LCC" />
+      <classify_by value="9" name="Connector" />
+      <classify_by value="71" name="General" />
+      <classify_by value="71" name="Undefined" />
+      <classify_by value="2" name="cc" />
+      <classify_by value="8" name="smt-misc" />
+      <classify_by value="15" name="ga" />
+      <classify_by value="502" name="chip" />
+      <classify_by value="3" name="so" />
+     </classify_by>
+     <classify_by display="Components in Bottom Layer" value="82" name="bottom" >
+      <classify_by value="25" name="Discrete_Other" />
+      <classify_by value="1" name="IC_BGA" />
+      <classify_by value="44" name="Discrete_Chip" />
+      <classify_by value="1" name="Connector" />
+      <classify_by value="11" name="General" />
+      <classify_by value="11" name="Undefined" />
+      <classify_by value="1" name="ga" />
+      <classify_by value="69" name="chip" />
+     </classify_by>
+    </node>
+    <node display="Cad Package Analysis" value="75" name="cad_package_analysis" >
+     <classify_by display="CAD Packages on Top Layer" value="65" name="Top" >
+      <classify_by display="CAD Package" value="1" name="FILTER_TDK_8PIN" >
+       <classify_by display="Pin Count" value="8" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02559055118110236" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="3" name="EMD2_2_A" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.05905511811023622" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="DF2S68FS_D" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03543307086614173" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="29" name="K0603_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.05204724409448819" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BYX101243_A" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03228346456692913" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="MO229_A" >
+       <classify_by display="Pin Count" value="8" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02559055118110236" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_5_05_3_B" >
+       <classify_by display="Pin Count" value="5" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01975285433070866" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="CONNECTORPAD_2_5x3_1mm_NP" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="CON_BATT" >
+       <classify_by display="Pin Count" value="3" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1468503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="4" name="DE2812C_1_A" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1062992125984252" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_196_05_1_A" >
+       <classify_by display="Pin Count" value="196" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="129" name="K0201_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02086614173228346" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="US_FLAT_B" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.07283464566929133" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="SC_SERENA_BB_B" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_5_05_6_A" >
+       <classify_by display="Pin Count" value="5" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968464566929134" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="58" name="K0402C_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03267716535433071" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="ELLEN_BT_ANTENNA_PAD" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="VMT3_2_C" >
+       <classify_by display="Pin Count" value="3" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03149606299212598" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="NT2520SA_1" >
+       <classify_by display="Pin Count" value="4" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.05590551181102362" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_36_05_1_A" >
+       <classify_by display="Pin Count" value="36" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="7" name="TESTPAD0_4mm" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="SOT666_B" >
+       <classify_by display="Pin Count" value="6" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_8_05_1_A" >
+       <classify_by display="Pin Count" value="8" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="3" name="TESTPAD2_0mm" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="K0805HD_1" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.06496062992125984" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_FLIPCHIP5_1_A" >
+       <classify_by display="Pin Count" value="5" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968464566929134" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="SON6" >
+       <classify_by display="Pin Count" value="6" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="LGA_QCS5F" >
+       <classify_by display="Pin Count" value="5" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="CON_MULAN_M2_READER_D" >
+       <classify_by display="Pin Count" value="22" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03543307086614173" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="UDFN6_2x2" >
+       <classify_by display="Pin Count" value="7" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02559055118110236" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_9_ON-CSP_A" >
+       <classify_by display="Pin Count" value="9" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA36_NAT_SEM" >
+       <classify_by display="Pin Count" value="36" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="KI0080_b" >
+       <classify_by display="Pin Count" value="53" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.06299212598425197" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="MAA06A" >
+       <classify_by display="Pin Count" value="6" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02559055118110236" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="204" name="K0201A_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02086614173228346" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_R_XBGA_N5_1_A" >
+       <classify_by display="Pin Count" value="5" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_49_A" >
+       <classify_by display="Pin Count" value="49" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="EMD2_1_C" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.05905511811023622" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="6" name="SOD923" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03543307086614173" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="SUPERSOT3" >
+       <classify_by display="Pin Count" value="3" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.07519685039370079" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="FC135" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1023622047244094" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="FBGA152-SAMSUNG_POP" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="12" name="K0402D_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03267716535433071" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="LGA_PTSLP71_A" >
+       <classify_by display="Pin Count" value="7" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="3" name="MCIUHF2_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03267716535433071" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="NK2003A_1_A" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="K0603A_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.05204724409448819" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA440_ANJA" >
+       <classify_by display="Pin Count" value="440" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BYX101542_B_SERENA_ONLY" >
+       <classify_by display="Pin Count" value="24" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1082677165354331" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="55" name="TESTPAD0_3mm" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="CON_COAX_SWITCH_A" >
+       <classify_by display="Pin Count" value="6" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.09055118110236221" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="EM3" >
+       <classify_by display="Pin Count" value="3" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03937007874015748" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="TCM1210_B" >
+       <classify_by display="Pin Count" value="4" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02165354330708661" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_100_05_1_A" >
+       <classify_by display="Pin Count" value="100" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="CRYSTAL_SG-3030LC" >
+       <classify_by display="Pin Count" value="12" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="MAMMOTH_MODULE_LUND_071306_REV" >
+       <classify_by display="Pin Count" value="61" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.06299212598425197" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="VMT3_1_B" >
+       <classify_by display="Pin Count" value="3" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03149606299212598" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="MIC_KNOWLES_2_C" >
+       <classify_by display="Pin Count" value="5" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.07007874015748032" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="SPARK_GAP_0.15mm_x0.23mm" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.032" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="SC_SERENA_AGPS_B" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="K0805BHD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.06496062992125984" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="35" name="JOIN0201_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02086614173228346" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BYX101553_A" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1181102362204724" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="2" name="VMN2_ROHM_REV" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03543307086614173" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BGA_CSP_4_05_3_A" >
+       <classify_by display="Pin Count" value="4" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+     </classify_by>
+     <classify_by display="CAD Packages on Bottom Layer" value="10" name="Bottom" >
+      <classify_by display="CAD Package" value="8" name="K0201A_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02086614173228346" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="4" name="K0402C_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03267716535433071" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="CSP20_PHILIPS" >
+       <classify_by display="Pin Count" value="20" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.01968503937007874" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="BSOD882_ST_B" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02559055118110236" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="25" name="FLEX_DOMEKEY_ECSAATH" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.07677165354330709" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="16" name="K0201_HD" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.02086614173228346" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="ML_STD_883D" >
+       <classify_by display="Pin Count" value="3" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.03543307086614173" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="11" name="TESTPAD1_0mm" >
+       <classify_by display="Pin Count" value="1" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="1" name="CON_JAE_AA03_P_30_B" >
+       <classify_by display="Pin Count" value="34" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.1082677165354331" name="pitch" />
+      </classify_by>
+      <classify_by display="CAD Package" value="14" name="TWH104_HS" >
+       <classify_by display="Pin Count" value="2" name="pin_count" />
+       <classify_by display="Pitch" units="Inch" value="0.06299212598425197" name="pitch" />
+      </classify_by>
+     </classify_by>
+    </node>
+    <node display="Complete Test Required" value="" name="complete_test_required" />
+    <node display="Number of Accessible Nets" value="" name="number_of_accessible_nets" />
+    <node display="Number of Multi-pin Nets" value="0" name="number_of_multi_pin_nets" >
+     <classify_by display="Nets with Multiple Test Points in Top Layer" value="0" name="Top" />
+     <classify_by display="Nets with Multiple Test Points in Bottom Layer" value="0" name="Bottom" />
+    </node>
+    <node display="Number of nets with probes" value="" name="number_of_nets_with_probes" />
+    <node display="Number of single pin nets" value="0" name="number_of_single_pin_nets" >
+     <classify_by display="Nets with a Single Test Point in Top Layer" value="0" name="Top" />
+     <classify_by display="Nets with a Single Test Point in Bottom Layer" value="0" name="Bottom" />
+    </node>
+    <node display="Number of unconnected nets" value="677" name="number_of_un-connected_nets" >
+     <classify_by display="Nets with No Test Points in Top Layer" value="655" name="Top" />
+     <classify_by display="Nets with No Test Points in Bottom Layer" value="22" name="Bottom" />
+    </node>
+    <node display="Pressfit Technology" value="No" name="pressfit_technology" />
+    <node display="Smallest Pin Pitch" units="Inch" value="N/A" name="smallest_pin_pitch" />
+    <node display="Total Number of SMD Pads" value="0" name="total_number_of_smd_pads" >
+     <classify_by display="SMD Pads in Top Layer" value="0" name="Top" />
+     <classify_by display="SMD Pads in Bottom Layer" value="0" name="Bottom" />
+    </node>
+   </assembly>
+   <Header description="General Information" >
+    <node display="Direct Connections Present" value="No" name="direct_connections_present" />
+    <node display="Part X Size" units="Inch" value="6.4311" name="part_x_size" />
+    <node display="Part Y Size" units="Inch" value="1.70864" name="part_y_size" />
+    <node display="Stacked Vias Present" value="" name="stacked_vias_present" />
+   </Header>
+   <Final description="Final QC" >
+    <node display="Quality Coupon Cross Section Report" value="" name="qual_coupon_crosssection_rpt" />
+    <node display="Ship as" value="Assembly panel" name="ship_as" />
+    <node display="Solder Resist Adhesion Test Report" value="" name="solder_resist_adhesion_tst_rpt" />
+    <node display="Solderability Test Report" value="" name="solderability_test_report" />
+   </Final>
+  </step>
+ </steps>
+</metadata>

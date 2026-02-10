@@ -1,0 +1,139 @@
+UNITS=INCH
+
+TEXT {
+  NAME    = .hp3070_device
+  ENTITY  = COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 16
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Device
+}
+
+TEXT {
+  NAME    = .hp3070_value
+  ENTITY  = COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 16
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Value
+}
+
+FLOAT {
+  NAME    = .hp3070_tol_pos
+  ENTITY  = COMPONENT;PACKAGE
+  DEF     = 0.0
+  MIN_VAL = 0
+  MAX_VAL = 100
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Positive Tolerance
+}
+
+FLOAT {
+  NAME    = .hp3070_tol_neg
+  ENTITY  = COMPONENT;PACKAGE
+  DEF     = 0.0
+  MIN_VAL = 0
+  MAX_VAL = 100
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Negative Tolerance
+}
+
+BOOLEAN {
+  NAME    = .hp3070_test
+  ENTITY  = COMPONENT;PACKAGE
+  DEF     = NO
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Test
+}
+
+TEXT {
+  NAME    = .hp3070_type
+  ENTITY  = COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 8
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Type
+}
+
+FLOAT {
+  NAME    = .hp3070_hi_value
+  ENTITY  = COMPONENT;PACKAGE
+  DEF     = 0.0
+  MIN_VAL = 0
+  MAX_VAL = 100000.0
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 High Value
+}
+
+FLOAT {
+  NAME    = .hp3070_lo_value
+  ENTITY  = COMPONENT;PACKAGE
+  DEF     = 0.0
+  MIN_VAL = 0
+  MAX_VAL = 100000.0
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Low Value
+}
+
+FLOAT {
+  NAME    = .hp3070_seriesr
+  ENTITY  = COMPONENT;PACKAGE
+  DEF     = 0.0
+  MIN_VAL = 0
+  MAX_VAL = 100000.0
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Series
+}
+
+TEXT {
+  NAME    = .hp3070_fail_msg
+  ENTITY  = COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 64
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Fail Message
+}
+
+TEXT {
+  NAME    = .hp3070_common_pin
+  ENTITY  = COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 16
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Common Pin
+}
+
+TEXT {
+  NAME    = .hp3070_contact_pin
+  ENTITY  = COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 16
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Contact Pin
+}
+
+TEXT {
+  NAME    = .hp3070_probe_access
+  ENTITY  = FEATURE;COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 64
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Probe Access
+}
+
+TEXT {
+  NAME    = .hp3070_comment
+  ENTITY  = COMPONENT
+  MIN_LEN = 0
+  MAX_LEN = 64
+  GROUP   = HP 3070
+  PROMPT  = HP 3070 Comment
+}
+
+OPTION {
+  NAME    = .board_mark
+  ENTITY  = FEATURE
+  OPTIONS = bbm;gpm
+  GROUP   = Feature
+  PROMPT  = VI Tech. Board Mark
+}

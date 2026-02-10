@@ -1,0 +1,8 @@
+DISPLAY {
+    L0 = signal_10
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = spb
+    L2 = comp_+_bot
+}

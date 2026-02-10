@@ -1,0 +1,11 @@
+H optimize n staggered n
+$1 GND
+$2 VCC
+$3 SIG
+#
+#Netlist points
+#
+1 0 120.91 -100.0 T 1.02 1.40 e s
+2 0 99.09 -100.0 T 1.02 1.40 e s
+3 0 100.91 -100.0 T 1.02 1.40 e s
+3 0 119.09 -100.0 T 1.02 1.40 e s

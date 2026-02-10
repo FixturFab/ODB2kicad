@@ -1,0 +1,8 @@
+DISPLAY {
+    L0 = signal_2
+}
+DISPLAY {
+    L0 = signal_2
+    L1 = signal_1
+    L2 = soldermask_top
+}

@@ -1,0 +1,7395 @@
+# header parameters
+HEADER
+BRD 
+REV 
+HEADER_END
+# reference descriptors and their matching customer parts
+RD_CPN
+REF REFDES
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+CPN CPN
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X14
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+CPN 1000-9075
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S13
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S19
+LNFILE 4 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 4 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S4
+LNFILE 5 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 5 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S15
+LNFILE 6 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 6 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S21
+LNFILE 7 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 7 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S3
+LNFILE 8 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 8 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S2
+LNFILE 9 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 9 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S5
+LNFILE 10 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 10 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S9
+LNFILE 11 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 11 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S25
+LNFILE 12 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 12 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S24
+LNFILE 13 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 13 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S20
+LNFILE 14 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 14 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S16
+LNFILE 15 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 15 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S1
+LNFILE 16 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 16 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S22
+LNFILE 17 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 17 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S7
+LNFILE 18 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 18 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S18
+LNFILE 19 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 19 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S12
+LNFILE 20 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 20 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S8
+LNFILE 21 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 21 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S23
+LNFILE 22 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 22 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S10
+LNFILE 23 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 23 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S11
+LNFILE 24 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 24 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S17
+LNFILE 25 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 25 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S6
+LNFILE 26 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 26 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF S14
+LNFILE 27 genesis186a7.inh-saram-lt.10516
+CPN FLEX_DOMEKEY
+LNFILE 27 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF D5
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+CPN 1200-1694
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF D3
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+CPN 1200-0716
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N8
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+CPN 1000-8818
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF D4
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+CPN 1200-0425
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N10
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+CPN 1200-0454
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N9
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+CPN 1200-0107
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X6
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X10
+LNFILE 35 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 35 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X9
+LNFILE 36 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 36 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X7
+LNFILE 37 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 37 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF B1
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+CPN 1200-7847
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N1
+LNFILE 39 genesis186a7.inh-saram-lt.10516
+CPN 1000-8142
+LNFILE 39 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C286
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+CPN 1200-0311
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R136
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+CPN 1000-0252
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R127
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+CPN 1000-0246
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C287
+LNFILE 43 genesis186a7.inh-saram-lt.10516
+CPN 1200-0311
+LNFILE 43 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C240
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+CPN 1000-6903
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V12
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V11
+LNFILE 46 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 46 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V18
+LNFILE 47 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 47 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V17
+LNFILE 48 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 48 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V10
+LNFILE 49 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 49 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V19
+LNFILE 50 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 50 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V20
+LNFILE 51 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 51 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V14
+LNFILE 52 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 52 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V8
+LNFILE 53 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 53 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V15
+LNFILE 54 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 54 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V7
+LNFILE 55 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 55 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V16
+LNFILE 56 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 56 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V13
+LNFILE 57 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 57 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V9
+LNFILE 58 genesis186a7.inh-saram-lt.10516
+CPN 1200-2277
+LNFILE 58 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V2
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+CPN 1000-0294
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V22
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+CPN 1000-0087
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V31
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+CPN 1000-7607
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V28
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+CPN 1000-0272
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V27
+LNFILE 63 genesis186a7.inh-saram-lt.10516
+CPN 1000-0272
+LNFILE 63 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V36
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+CPN 1200-2065
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V33
+LNFILE 65 genesis186a7.inh-saram-lt.10516
+CPN 1200-2065
+LNFILE 65 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V34
+LNFILE 66 genesis186a7.inh-saram-lt.10516
+CPN 1200-2065
+LNFILE 66 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V35
+LNFILE 67 genesis186a7.inh-saram-lt.10516
+CPN 1200-2065
+LNFILE 67 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V37
+LNFILE 68 genesis186a7.inh-saram-lt.10516
+CPN 1200-2065
+LNFILE 68 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V32
+LNFILE 69 genesis186a7.inh-saram-lt.10516
+CPN 1200-2065
+LNFILE 69 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V24
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+CPN 1000-0282
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V25
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+CPN 1000-0286
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V29
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+CPN 1000-0271
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V4
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+CPN 1000-8427
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V1
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+CPN 1000-0402
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V5
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+CPN 1200-0320
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N6
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+CPN 1200-0373
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L18
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+CPN 1200-0092
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L17
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+CPN 1200-0355
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L15
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+CPN 1200-0119
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L14
+LNFILE 80 genesis186a7.inh-saram-lt.10516
+CPN 1200-0119
+LNFILE 80 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF B4
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+CPN 1000-8451
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V3
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+CPN 1200-1196
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N11
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+CPN 1200-6309
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N2
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+CPN 1200-2407
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V23
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+CPN 1200-0145
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X2
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+CPN 1000-9031
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X8
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+CPN 1000-8181
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V38
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+CPN 1201-4584
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V39
+LNFILE 89 genesis186a7.inh-saram-lt.10516
+CPN 1201-4584
+LNFILE 89 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L2
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+CPN 1001-0103
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C283
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+CPN 1000-0075
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R53
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C126
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C203
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R45
+LNFILE 95 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 95 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C256
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+CPN 1000-6901
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C120
+LNFILE 97 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 97 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L4
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+CPN 1000-3612
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C118
+LNFILE 99 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 99 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R49
+LNFILE 100 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 100 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C3
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+CPN 1201-9843
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C113
+LNFILE 102 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 102 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C260
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+CPN 1200-0879
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L1
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+CPN 1001-4017
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C267
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+CPN 1000-0062
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C270
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+CPN 1000-0156
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C123
+LNFILE 107 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 107 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C125
+LNFILE 108 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 108 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C204
+LNFILE 109 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 109 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C282
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+CPN 1000-6049
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C132
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C119
+LNFILE 112 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 112 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C275
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+CPN 1000-0071
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C128
+LNFILE 114 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 114 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C138
+LNFILE 115 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 115 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R51
+LNFILE 116 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 116 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C114
+LNFILE 117 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 117 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C198
+LNFILE 118 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 118 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C131
+LNFILE 119 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 119 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C202
+LNFILE 120 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 120 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C127
+LNFILE 121 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 121 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C200
+LNFILE 122 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 122 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C259
+LNFILE 123 genesis186a7.inh-saram-lt.10516
+CPN 1000-6901
+LNFILE 123 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R69
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+CPN 1000-0264
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C121
+LNFILE 125 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 125 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C137
+LNFILE 126 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 126 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L23
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+CPN 1200-6898
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C205
+LNFILE 128 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 128 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L24
+LNFILE 129 genesis186a7.inh-saram-lt.10516
+CPN 1200-6898
+LNFILE 129 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R154
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+CPN 1000-5865
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C115
+LNFILE 131 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 131 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R46
+LNFILE 132 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 132 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L12
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+CPN 1000-0360
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C274
+LNFILE 134 genesis186a7.inh-saram-lt.10516
+CPN 1000-0071
+LNFILE 134 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C122
+LNFILE 135 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 135 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L11
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+CPN 1200-0317
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C117
+LNFILE 137 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 137 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C147
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+CPN 1000-6124
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C124
+LNFILE 139 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 139 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C116
+LNFILE 140 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 140 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C273
+LNFILE 141 genesis186a7.inh-saram-lt.10516
+CPN 1000-0071
+LNFILE 141 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C133
+LNFILE 142 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 142 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C1
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+CPN 1000-6103
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C206
+LNFILE 144 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 144 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R48
+LNFILE 145 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 145 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R155
+LNFILE 146 genesis186a7.inh-saram-lt.10516
+CPN 1000-5865
+LNFILE 146 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R52
+LNFILE 147 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 147 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C130
+LNFILE 148 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 148 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C135
+LNFILE 149 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 149 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C255
+LNFILE 150 genesis186a7.inh-saram-lt.10516
+CPN 1000-6901
+LNFILE 150 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L13
+LNFILE 151 genesis186a7.inh-saram-lt.10516
+CPN 1000-0360
+LNFILE 151 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L3
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+CPN 1201-9846
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C2
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+CPN 1201-9845
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R47
+LNFILE 154 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 154 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C199
+LNFILE 155 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 155 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C136
+LNFILE 156 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 156 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C257
+LNFILE 157 genesis186a7.inh-saram-lt.10516
+CPN 1000-6901
+LNFILE 157 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R50
+LNFILE 158 genesis186a7.inh-saram-lt.10516
+CPN 1000-0179
+LNFILE 158 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C134
+LNFILE 159 genesis186a7.inh-saram-lt.10516
+CPN 1000-0052
+LNFILE 159 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C272
+LNFILE 160 genesis186a7.inh-saram-lt.10516
+CPN 1000-0071
+LNFILE 160 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C201
+LNFILE 161 genesis186a7.inh-saram-lt.10516
+CPN 1000-0336
+LNFILE 161 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C258
+LNFILE 162 genesis186a7.inh-saram-lt.10516
+CPN 1000-6901
+LNFILE 162 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C129
+LNFILE 163 genesis186a7.inh-saram-lt.10516
+CPN 1000-0051
+LNFILE 163 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V26
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+CPN 1201-2253
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L10
+LNFILE 165 genesis186a7.inh-saram-lt.10516
+CPN 1200-0317
+LNFILE 165 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L9
+LNFILE 166 genesis186a7.inh-saram-lt.10516
+CPN 1200-0317
+LNFILE 166 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L8
+LNFILE 167 genesis186a7.inh-saram-lt.10516
+CPN 1200-0317
+LNFILE 167 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L7
+LNFILE 168 genesis186a7.inh-saram-lt.10516
+CPN 1200-0317
+LNFILE 168 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C241
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R128
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+CPN 1000-0257
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C271
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+CPN 1000-6829
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C235
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+CPN 1000-0076
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C246
+LNFILE 173 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 173 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C238
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+CPN 1000-0059
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C146
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C142
+LNFILE 176 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 176 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C139
+LNFILE 177 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 177 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C140
+LNFILE 178 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 178 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C236
+LNFILE 179 genesis186a7.inh-saram-lt.10516
+CPN 1000-0076
+LNFILE 179 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C248
+LNFILE 180 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 180 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L26
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+CPN 1000-1876
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C145
+LNFILE 182 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 182 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L22
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+CPN 1000-1899
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C144
+LNFILE 184 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 184 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C245
+LNFILE 185 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 185 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C143
+LNFILE 186 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 186 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C251
+LNFILE 187 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 187 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C247
+LNFILE 188 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 188 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L25
+LNFILE 189 genesis186a7.inh-saram-lt.10516
+CPN 1000-1876
+LNFILE 189 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C242
+LNFILE 190 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 190 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C252
+LNFILE 191 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 191 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C250
+LNFILE 192 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 192 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C249
+LNFILE 193 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 193 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C141
+LNFILE 194 genesis186a7.inh-saram-lt.10516
+CPN 1000-0039
+LNFILE 194 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L19
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+CPN 1000-0118
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C244
+LNFILE 196 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 196 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C237
+LNFILE 197 genesis186a7.inh-saram-lt.10516
+CPN 1000-0059
+LNFILE 197 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C243
+LNFILE 198 genesis186a7.inh-saram-lt.10516
+CPN 1000-0061
+LNFILE 198 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF F2
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+CPN SPARK_GAP0.15MM_X0.23MM
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF F1
+LNFILE 200 genesis186a7.inh-saram-lt.10516
+CPN SPARK_GAP0.15MM_X0.23MM
+LNFILE 200 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R77
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C173
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C67
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R86
+LNFILE 204 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 204 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C264
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+CPN 1000-6882
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C161
+LNFILE 206 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 206 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C225
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C18
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C179
+LNFILE 209 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 209 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R3
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R138
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+CPN 1000-0265
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R21
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C23
+LNFILE 213 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 213 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C288
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+CPN 1000-0069
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C20
+LNFILE 215 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 215 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C155
+LNFILE 216 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 216 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C217
+LNFILE 217 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 217 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R137
+LNFILE 218 genesis186a7.inh-saram-lt.10516
+CPN 1000-0265
+LNFILE 218 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C171
+LNFILE 219 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 219 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C4
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+CPN 1000-6073
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C232
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+CPN 1000-6203
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C5
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+CPN 1000-6838
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R147
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+CPN 1000-4063
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R8
+LNFILE 224 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 224 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C168
+LNFILE 225 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 225 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C74
+LNFILE 226 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 226 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C156
+LNFILE 227 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 227 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C97
+LNFILE 228 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 228 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C10
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+CPN 1000-0066
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C222
+LNFILE 230 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 230 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C65
+LNFILE 231 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 231 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C230
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+CPN 1000-6082
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C175
+LNFILE 233 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 233 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R29
+LNFILE 234 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 234 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R101
+LNFILE 235 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 235 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C79
+LNFILE 236 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 236 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R96
+LNFILE 237 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 237 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C11
+LNFILE 238 genesis186a7.inh-saram-lt.10516
+CPN 1000-0066
+LNFILE 238 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C151
+LNFILE 239 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 239 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C94
+LNFILE 240 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 240 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R97
+LNFILE 241 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 241 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C265
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+CPN 1000-0050
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R92
+LNFILE 243 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 243 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R105
+LNFILE 244 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 244 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C38
+LNFILE 245 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 245 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C163
+LNFILE 246 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 246 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C13
+LNFILE 247 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 247 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R153
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+CPN 1000-0382
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C213
+LNFILE 249 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 249 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C47
+LNFILE 250 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 250 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R75
+LNFILE 251 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 251 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C61
+LNFILE 252 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 252 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R1
+LNFILE 253 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 253 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R80
+LNFILE 254 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 254 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R133
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+CPN 1000-0249
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R107
+LNFILE 256 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 256 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R7
+LNFILE 257 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 257 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R134
+LNFILE 258 genesis186a7.inh-saram-lt.10516
+CPN 1000-0249
+LNFILE 258 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C31
+LNFILE 259 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 259 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R70
+LNFILE 260 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 260 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R14
+LNFILE 261 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 261 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C96
+LNFILE 262 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 262 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R16
+LNFILE 263 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 263 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C58
+LNFILE 264 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 264 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R59
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R102
+LNFILE 266 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 266 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C184
+LNFILE 267 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 267 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L5
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+CPN 1200-2416
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R18
+LNFILE 269 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 269 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C167
+LNFILE 270 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 270 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C196
+LNFILE 271 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 271 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C36
+LNFILE 272 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 272 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C152
+LNFILE 273 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 273 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R41
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+CPN 1000-4102
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C165
+LNFILE 275 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 275 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C87
+LNFILE 276 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 276 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C73
+LNFILE 277 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 277 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R5
+LNFILE 278 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 278 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R67
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+CPN 1000-4160
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R84
+LNFILE 280 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 280 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R87
+LNFILE 281 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 281 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R143
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+CPN 1000-0240
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C104
+LNFILE 283 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 283 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R54
+LNFILE 284 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 284 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C191
+LNFILE 285 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 285 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C29
+LNFILE 286 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 286 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R145
+LNFILE 287 genesis186a7.inh-saram-lt.10516
+CPN 1000-4063
+LNFILE 287 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R28
+LNFILE 288 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 288 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C209
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+CPN 1000-6058
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C93
+LNFILE 290 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 290 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R108
+LNFILE 291 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 291 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C172
+LNFILE 292 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 292 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C43
+LNFILE 293 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 293 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C109
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R4
+LNFILE 295 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 295 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R158
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+CPN 1000-4152
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R60
+LNFILE 297 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 297 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R91
+LNFILE 298 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 298 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C112
+LNFILE 299 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 299 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C44
+LNFILE 300 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 300 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R58
+LNFILE 301 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 301 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L16
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+CPN 1000-0128
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R156
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+CPN 1000-0226
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C41
+LNFILE 304 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 304 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C42
+LNFILE 305 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 305 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C110
+LNFILE 306 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 306 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C154
+LNFILE 307 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 307 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C159
+LNFILE 308 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 308 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R132
+LNFILE 309 genesis186a7.inh-saram-lt.10516
+CPN 1000-0249
+LNFILE 309 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C72
+LNFILE 310 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 310 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R74
+LNFILE 311 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 311 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R152
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+CPN 1000-0172
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C174
+LNFILE 313 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 313 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C224
+LNFILE 314 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 314 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C35
+LNFILE 315 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 315 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R78
+LNFILE 316 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 316 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C285
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+CPN 1000-6840
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R98
+LNFILE 318 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 318 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R149
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+CPN 1000-0230
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C85
+LNFILE 320 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 320 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C239
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+CPN 1000-6885
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R62
+LNFILE 322 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 322 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R36
+LNFILE 323 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 323 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C227
+LNFILE 324 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 324 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C107
+LNFILE 325 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 325 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R71
+LNFILE 326 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 326 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R13
+LNFILE 327 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 327 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C178
+LNFILE 328 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 328 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R85
+LNFILE 329 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 329 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R64
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+CPN 1000-0245
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C148
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+CPN 1201-9194
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C277
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+CPN 1000-0060
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C185
+LNFILE 333 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 333 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R148
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+CPN 1000-0178
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R72
+LNFILE 335 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 335 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C71
+LNFILE 336 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 336 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R33
+LNFILE 337 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 337 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C33
+LNFILE 338 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 338 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C30
+LNFILE 339 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 339 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C101
+LNFILE 340 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 340 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R65
+LNFILE 341 genesis186a7.inh-saram-lt.10516
+CPN 1000-0245
+LNFILE 341 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C106
+LNFILE 342 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 342 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C86
+LNFILE 343 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 343 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C214
+LNFILE 344 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 344 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C158
+LNFILE 345 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 345 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C281
+LNFILE 346 genesis186a7.inh-saram-lt.10516
+CPN 1000-0060
+LNFILE 346 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C266
+LNFILE 347 genesis186a7.inh-saram-lt.10516
+CPN 1000-0050
+LNFILE 347 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C7
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+CPN 1000-0338
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C54
+LNFILE 349 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 349 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C98
+LNFILE 350 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 350 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R9
+LNFILE 351 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 351 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R12
+LNFILE 352 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 352 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C69
+LNFILE 353 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 353 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C81
+LNFILE 354 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 354 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C108
+LNFILE 355 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 355 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C105
+LNFILE 356 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 356 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R66
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+CPN 1000-4046
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C76
+LNFILE 358 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 358 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C51
+LNFILE 359 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 359 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R55
+LNFILE 360 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 360 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C34
+LNFILE 361 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 361 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C218
+LNFILE 362 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 362 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R37
+LNFILE 363 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 363 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C50
+LNFILE 364 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 364 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C95
+LNFILE 365 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 365 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C228
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+CPN 1200-4293
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R146
+LNFILE 367 genesis186a7.inh-saram-lt.10516
+CPN 1000-4063
+LNFILE 367 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C77
+LNFILE 368 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 368 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R40
+LNFILE 369 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 369 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C8
+LNFILE 370 genesis186a7.inh-saram-lt.10516
+CPN 1000-0066
+LNFILE 370 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R25
+LNFILE 371 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 371 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C149
+LNFILE 372 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 372 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C215
+LNFILE 373 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 373 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C229
+LNFILE 374 genesis186a7.inh-saram-lt.10516
+CPN 1000-6082
+LNFILE 374 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C66
+LNFILE 375 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 375 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C48
+LNFILE 376 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 376 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C164
+LNFILE 377 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 377 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R57
+LNFILE 378 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 378 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R79
+LNFILE 379 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 379 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C82
+LNFILE 380 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 380 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C177
+LNFILE 381 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 381 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C169
+LNFILE 382 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 382 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R126
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+CPN 1000-0377
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C60
+LNFILE 384 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 384 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C25
+LNFILE 385 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 385 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C55
+LNFILE 386 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 386 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C26
+LNFILE 387 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 387 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C194
+LNFILE 388 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 388 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C216
+LNFILE 389 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 389 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R26
+LNFILE 390 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 390 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R140
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+CPN 1000-0378
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C166
+LNFILE 392 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 392 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C103
+LNFILE 393 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 393 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C49
+LNFILE 394 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 394 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C68
+LNFILE 395 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 395 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L6
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+CPN 1200-2414
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C28
+LNFILE 397 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 397 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C180
+LNFILE 398 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 398 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R151
+LNFILE 399 genesis186a7.inh-saram-lt.10516
+CPN 1000-0172
+LNFILE 399 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R32
+LNFILE 400 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 400 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C208
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+CPN 1000-6067
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C88
+LNFILE 402 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 402 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C220
+LNFILE 403 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 403 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R20
+LNFILE 404 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 404 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C83
+LNFILE 405 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 405 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R125
+LNFILE 406 genesis186a7.inh-saram-lt.10516
+CPN 1000-0377
+LNFILE 406 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C233
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+CPN 1200-0286
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R38
+LNFILE 408 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 408 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C187
+LNFILE 409 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 409 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C219
+LNFILE 410 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 410 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C261
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+CPN 1000-0068
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R61
+LNFILE 412 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 412 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C37
+LNFILE 413 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 413 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R10
+LNFILE 414 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 414 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R130
+LNFILE 415 genesis186a7.inh-saram-lt.10516
+CPN 1000-0249
+LNFILE 415 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C195
+LNFILE 416 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 416 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C221
+LNFILE 417 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 417 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C280
+LNFILE 418 genesis186a7.inh-saram-lt.10516
+CPN 1000-0060
+LNFILE 418 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R76
+LNFILE 419 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 419 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C193
+LNFILE 420 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 420 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R88
+LNFILE 421 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 421 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C39
+LNFILE 422 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 422 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R34
+LNFILE 423 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 423 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C276
+LNFILE 424 genesis186a7.inh-saram-lt.10516
+CPN 1000-0060
+LNFILE 424 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R15
+LNFILE 425 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 425 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C53
+LNFILE 426 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 426 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C64
+LNFILE 427 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 427 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C45
+LNFILE 428 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 428 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C188
+LNFILE 429 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 429 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C59
+LNFILE 430 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 430 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R157
+LNFILE 431 genesis186a7.inh-saram-lt.10516
+CPN 1000-0226
+LNFILE 431 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L20
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+CPN 1200-0177
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R24
+LNFILE 433 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 433 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C89
+LNFILE 434 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 434 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C223
+LNFILE 435 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 435 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R109
+LNFILE 436 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 436 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C99
+LNFILE 437 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 437 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R141
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+CPN 1000-4035
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C57
+LNFILE 439 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 439 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C16
+LNFILE 440 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 440 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R104
+LNFILE 441 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 441 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C262
+LNFILE 442 genesis186a7.inh-saram-lt.10516
+CPN 1000-0068
+LNFILE 442 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C52
+LNFILE 443 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 443 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C234
+LNFILE 444 genesis186a7.inh-saram-lt.10516
+CPN 1200-0286
+LNFILE 444 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C27
+LNFILE 445 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 445 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C91
+LNFILE 446 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 446 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C40
+LNFILE 447 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 447 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R99
+LNFILE 448 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 448 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C21
+LNFILE 449 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 449 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C176
+LNFILE 450 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 450 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C279
+LNFILE 451 genesis186a7.inh-saram-lt.10516
+CPN 1000-0060
+LNFILE 451 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C84
+LNFILE 452 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 452 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C170
+LNFILE 453 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 453 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C226
+LNFILE 454 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 454 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C70
+LNFILE 455 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 455 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R39
+LNFILE 456 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 456 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R124
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+CPN 1000-4142
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R94
+LNFILE 458 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 458 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C181
+LNFILE 459 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 459 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R31
+LNFILE 460 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 460 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R90
+LNFILE 461 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 461 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R139
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+CPN 1000-4164
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R95
+LNFILE 463 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 463 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C211
+LNFILE 464 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 464 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R93
+LNFILE 465 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 465 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R142
+LNFILE 466 genesis186a7.inh-saram-lt.10516
+CPN 1000-0240
+LNFILE 466 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C32
+LNFILE 467 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 467 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C80
+LNFILE 468 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 468 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C75
+LNFILE 469 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 469 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C63
+LNFILE 470 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 470 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R43
+LNFILE 471 genesis186a7.inh-saram-lt.10516
+CPN 1000-4102
+LNFILE 471 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R73
+LNFILE 472 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 472 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C102
+LNFILE 473 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 473 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C9
+LNFILE 474 genesis186a7.inh-saram-lt.10516
+CPN 1000-0066
+LNFILE 474 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C253
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+CPN 1000-0064
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R81
+LNFILE 476 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 476 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C284
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+CPN 1000-0043
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R35
+LNFILE 478 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 478 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C278
+LNFILE 479 genesis186a7.inh-saram-lt.10516
+CPN 1000-0060
+LNFILE 479 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R135
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+CPN 1000-0376
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C207
+LNFILE 481 genesis186a7.inh-saram-lt.10516
+CPN 1000-6067
+LNFILE 481 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R144
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+CPN 1000-4147
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C231
+LNFILE 483 genesis186a7.inh-saram-lt.10516
+CPN 1000-6203
+LNFILE 483 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R63
+LNFILE 484 genesis186a7.inh-saram-lt.10516
+CPN 1000-0245
+LNFILE 484 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C62
+LNFILE 485 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 485 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C78
+LNFILE 486 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 486 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C24
+LNFILE 487 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 487 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R27
+LNFILE 488 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 488 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C46
+LNFILE 489 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 489 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R42
+LNFILE 490 genesis186a7.inh-saram-lt.10516
+CPN 1000-4102
+LNFILE 490 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C189
+LNFILE 491 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 491 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R68
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+CPN 1200-1061
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R103
+LNFILE 493 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 493 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C263
+LNFILE 494 genesis186a7.inh-saram-lt.10516
+CPN 1000-6882
+LNFILE 494 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R82
+LNFILE 495 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 495 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R19
+LNFILE 496 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 496 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C212
+LNFILE 497 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 497 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C157
+LNFILE 498 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 498 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C6
+LNFILE 499 genesis186a7.inh-saram-lt.10516
+CPN 1000-0338
+LNFILE 499 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C190
+LNFILE 500 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 500 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R100
+LNFILE 501 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 501 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C182
+LNFILE 502 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 502 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C153
+LNFILE 503 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 503 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R106
+LNFILE 504 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 504 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C254
+LNFILE 505 genesis186a7.inh-saram-lt.10516
+CPN 1000-0064
+LNFILE 505 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C22
+LNFILE 506 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 506 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R123
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+CPN 1000-4057
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R56
+LNFILE 508 genesis186a7.inh-saram-lt.10516
+CPN 1000-0243
+LNFILE 508 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C160
+LNFILE 509 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 509 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C111
+LNFILE 510 genesis186a7.inh-saram-lt.10516
+CPN 1000-0049
+LNFILE 510 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R6
+LNFILE 511 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 511 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C56
+LNFILE 512 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 512 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C162
+LNFILE 513 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 513 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C100
+LNFILE 514 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 514 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R89
+LNFILE 515 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 515 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C210
+LNFILE 516 genesis186a7.inh-saram-lt.10516
+CPN 1000-0067
+LNFILE 516 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R129
+LNFILE 517 genesis186a7.inh-saram-lt.10516
+CPN 1000-0249
+LNFILE 517 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R150
+LNFILE 518 genesis186a7.inh-saram-lt.10516
+CPN 1000-0172
+LNFILE 518 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R2
+LNFILE 519 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 519 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R11
+LNFILE 520 genesis186a7.inh-saram-lt.10516
+CPN 1000-0175
+LNFILE 520 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R30
+LNFILE 521 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 521 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C183
+LNFILE 522 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 522 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C90
+LNFILE 523 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 523 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R17
+LNFILE 524 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 524 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C186
+LNFILE 525 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 525 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C197
+LNFILE 526 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 526 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R23
+LNFILE 527 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 527 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C19
+LNFILE 528 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 528 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C192
+LNFILE 529 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 529 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R22
+LNFILE 530 genesis186a7.inh-saram-lt.10516
+CPN 1000-0231
+LNFILE 530 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C92
+LNFILE 531 genesis186a7.inh-saram-lt.10516
+CPN 1000-0048
+LNFILE 531 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R83
+LNFILE 532 genesis186a7.inh-saram-lt.10516
+CPN 1000-0181
+LNFILE 532 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R44
+LNFILE 533 genesis186a7.inh-saram-lt.10516
+CPN 1000-4102
+LNFILE 533 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R118
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R160
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+CPN 1000-0388
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R115
+LNFILE 536 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 536 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C14
+LNFILE 537 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 537 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C17
+LNFILE 538 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 538 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C12
+LNFILE 539 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 539 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R120
+LNFILE 540 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 540 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R110
+LNFILE 541 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 541 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R112
+LNFILE 542 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 542 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R121
+LNFILE 543 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 543 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF L21
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+CPN 1203-0723
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R114
+LNFILE 545 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 545 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R131
+LNFILE 546 genesis186a7.inh-saram-lt.10516
+CPN 1000-0249
+LNFILE 546 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C269
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+CPN 1000-0047
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R111
+LNFILE 548 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 548 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R117
+LNFILE 549 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 549 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C150
+LNFILE 550 genesis186a7.inh-saram-lt.10516
+CPN 1000-0056
+LNFILE 550 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R119
+LNFILE 551 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 551 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R116
+LNFILE 552 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 552 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R122
+LNFILE 553 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 553 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C15
+LNFILE 554 genesis186a7.inh-saram-lt.10516
+CPN 1000-0045
+LNFILE 554 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R159
+LNFILE 555 genesis186a7.inh-saram-lt.10516
+CPN 1000-0388
+LNFILE 555 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF R113
+LNFILE 556 genesis186a7.inh-saram-lt.10516
+CPN 1000-4034
+LNFILE 556 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF C268
+LNFILE 557 genesis186a7.inh-saram-lt.10516
+CPN 1000-0047
+LNFILE 557 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST5
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST26
+LNFILE 559 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 559 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST31
+LNFILE 560 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 560 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST4
+LNFILE 561 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 561 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST30
+LNFILE 562 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 562 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST29
+LNFILE 563 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 563 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST18
+LNFILE 564 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 564 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST8
+LNFILE 565 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 565 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST34
+LNFILE 566 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 566 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST2
+LNFILE 567 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 567 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST11
+LNFILE 568 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 568 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST1
+LNFILE 569 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 569 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST9
+LNFILE 570 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 570 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST35
+LNFILE 571 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 571 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST15
+LNFILE 572 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 572 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST19
+LNFILE 573 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 573 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST16
+LNFILE 574 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 574 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST21
+LNFILE 575 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 575 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST25
+LNFILE 576 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 576 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST6
+LNFILE 577 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 577 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST28
+LNFILE 578 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 578 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST32
+LNFILE 579 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 579 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST7
+LNFILE 580 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 580 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST17
+LNFILE 581 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 581 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST12
+LNFILE 582 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 582 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST13
+LNFILE 583 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 583 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST33
+LNFILE 584 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 584 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST14
+LNFILE 585 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 585 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST10
+LNFILE 586 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 586 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST24
+LNFILE 587 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 587 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST22
+LNFILE 588 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 588 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST3
+LNFILE 589 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 589 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST23
+LNFILE 590 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 590 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST27
+LNFILE 591 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 591 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF ST20
+LNFILE 592 genesis186a7.inh-saram-lt.10516
+CPN STRAP
+LNFILE 592 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF Z4
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+CPN 1201-6833
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF Z3
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+CPN 1200-1865
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V21
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+CPN 1002-0000
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF Z1
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+CPN 1200-0660
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF Z2
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+CPN 1200-0607
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N12
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+CPN 1000-0369
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N7
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+CPN 1200-3994
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N13
+LNFILE 600 genesis186a7.inh-saram-lt.10516
+CPN 1000-0372
+LNFILE 600 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V6
+LNFILE 601 genesis186a7.inh-saram-lt.10516
+CPN 1000-0293
+LNFILE 601 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF V30
+LNFILE 602 genesis186a7.inh-saram-lt.10516
+CPN 1000-0270
+LNFILE 602 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP3
+LNFILE 603 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 603 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP46
+LNFILE 604 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 604 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP38
+LNFILE 605 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 605 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP29
+LNFILE 606 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 606 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP30
+LNFILE 607 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 607 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP13
+LNFILE 608 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 608 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP35
+LNFILE 609 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 609 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP7
+LNFILE 610 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 610 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP2
+LNFILE 611 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 611 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X4
+LNFILE 612 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 612 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP27
+LNFILE 613 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 613 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF XD1
+LNFILE 614 genesis186a7.inh-saram-lt.10516
+CPN 1200-0568
+LNFILE 614 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP7
+LNFILE 615 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 615 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N4
+LNFILE 616 genesis186a7.inh-saram-lt.10516
+CPN 1200-0245
+LNFILE 616 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X11
+LNFILE 617 genesis186a7.inh-saram-lt.10516
+CPN 1200-0484
+LNFILE 617 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP50
+LNFILE 618 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 618 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP32
+LNFILE 619 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 619 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X5
+LNFILE 620 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 620 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP31
+LNFILE 621 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 621 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF E2
+LNFILE 622 genesis186a7.inh-saram-lt.10516
+CPN 1200-0822
+LNFILE 622 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP39
+LNFILE 623 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 623 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP47
+LNFILE 624 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 624 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP10
+LNFILE 625 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 625 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP14
+LNFILE 626 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 626 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP17
+LNFILE 627 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 627 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP41
+LNFILE 628 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 628 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF B2
+LNFILE 629 genesis186a7.inh-saram-lt.10516
+CPN 1000-8271
+LNFILE 629 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP22
+LNFILE 630 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 630 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP34
+LNFILE 631 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 631 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X3
+LNFILE 632 genesis186a7.inh-saram-lt.10516
+CPN CONNECTORPAD
+LNFILE 632 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N3
+LNFILE 633 genesis186a7.inh-saram-lt.10516
+CPN 1200-6182
+LNFILE 633 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF E1
+LNFILE 634 genesis186a7.inh-saram-lt.10516
+CPN 1200-0823
+LNFILE 634 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP33
+LNFILE 635 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 635 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP12
+LNFILE 636 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 636 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP24
+LNFILE 637 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 637 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP19
+LNFILE 638 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 638 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP36
+LNFILE 639 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 639 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP9
+LNFILE 640 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 640 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP8
+LNFILE 641 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 641 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF D1
+LNFILE 642 genesis186a7.inh-saram-lt.10516
+CPN 1200-0186
+LNFILE 642 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP48
+LNFILE 643 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 643 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP49
+LNFILE 644 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 644 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP42
+LNFILE 645 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 645 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N5
+LNFILE 646 genesis186a7.inh-saram-lt.10516
+CPN 1200-0158
+LNFILE 646 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP1
+LNFILE 647 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 647 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF B5
+LNFILE 648 genesis186a7.inh-saram-lt.10516
+CPN 1200-0308
+LNFILE 648 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP5
+LNFILE 649 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 649 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP8
+LNFILE 650 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 650 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP6
+LNFILE 651 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 651 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP11
+LNFILE 652 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 652 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF B3
+LNFILE 653 genesis186a7.inh-saram-lt.10516
+CPN 1200-3231
+LNFILE 653 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP43
+LNFILE 654 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 654 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP11
+LNFILE 655 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 655 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP21
+LNFILE 656 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 656 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X12
+LNFILE 657 genesis186a7.inh-saram-lt.10516
+CPN 1200-9764
+LNFILE 657 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP16
+LNFILE 658 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 658 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP9
+LNFILE 659 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 659 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP14
+LNFILE 660 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 660 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP37
+LNFILE 661 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 661 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP4
+LNFILE 662 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 662 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP18
+LNFILE 663 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 663 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP10
+LNFILE 664 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 664 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP12
+LNFILE 665 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 665 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP20
+LNFILE 666 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 666 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP3
+LNFILE 667 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 667 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP44
+LNFILE 668 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 668 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP13
+LNFILE 669 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 669 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP25
+LNFILE 670 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 670 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X13
+LNFILE 671 genesis186a7.inh-saram-lt.10516
+CPN 1000-8911
+LNFILE 671 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF D2
+LNFILE 672 genesis186a7.inh-saram-lt.10516
+CPN 1200-0700
+LNFILE 672 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP4
+LNFILE 673 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 673 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP17
+LNFILE 674 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 674 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP40
+LNFILE 675 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 675 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP23
+LNFILE 676 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 676 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP28
+LNFILE 677 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 677 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP15
+LNFILE 678 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 678 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP45
+LNFILE 679 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 679 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP18
+LNFILE 680 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 680 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF SP26
+LNFILE 681 genesis186a7.inh-saram-lt.10516
+CPN SERVICEPOINT
+LNFILE 681 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP15
+LNFILE 682 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 682 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF X1
+LNFILE 683 genesis186a7.inh-saram-lt.10516
+CPN 1200-0544
+LNFILE 683 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF N14
+LNFILE 684 genesis186a7.inh-saram-lt.10516
+CPN 1000-0198
+LNFILE 684 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP20
+LNFILE 685 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 685 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP1
+LNFILE 686 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 686 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP6
+LNFILE 687 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 687 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP19
+LNFILE 688 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 688 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP16
+LNFILE 689 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 689 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP21
+LNFILE 690 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 690 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP23
+LNFILE 691 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 691 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP5
+LNFILE 692 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 692 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP2
+LNFILE 693 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 693 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+REF TP22
+LNFILE 694 genesis186a7.inh-saram-lt.10516
+CPN TESTPOINT
+LNFILE 694 genesis186a7.inh-saram-lt.10516
+NO_POP 0
+
+RD_CPN_END
+# customer parts and their matching manufacturer parts
+CPN_MPN
+CPN CPN
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+VPL_MPN 
+VPL_VND 
+MPN MPN
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+VND MANUFACTURER
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-9075
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+VPL_MPN 1N4757
+VPL_VND CNTNTL-DVC
+MPN 1N4757
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+VND CNTNTL-DVC
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN FLEX_DOMEKEY
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+VPL_MPN EEUFC1E470
+VPL_VND PANASONIC
+MPN EEUFC1E470
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+VND PANASONIC
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-1694
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+VPL_MPN ISP1716A0ETTM
+VPL_VND ST-ERCSSN
+MPN ISP1716A0ETTM
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+VND ST-ERCSSN
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0716
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+VPL_MPN ISP1716A0ETTM
+VPL_VND ST-ERCSSN
+MPN ISP1716A0ETTM
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+VND ST-ERCSSN
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-8818
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+VPL_MPN CSD13201W10
+VPL_VND TI
+MPN CSD13201W10
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+VND TI
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0425
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+VPL_MPN SN74LVC1G06YZPR
+VPL_VND TI
+MPN SN74LVC1G06YZPR
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+VND TI
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0454
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+VPL_MPN SN74LVC1G06YZPR
+VPL_VND TI
+MPN SN74LVC1G06YZPR
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+VND TI
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0107
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+VPL_MPN LM3208TLX
+VPL_VND NATIONAL
+MPN LM3208TLX
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+VND NATIONAL
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN CONNECTORPAD
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+VPL_MPN 1037411
+VPL_VND AMP
+MPN 1037411
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+VND AMP
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-7847
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+VPL_MPN NT2520SA26.00MNSA3400C
+VPL_VND NDK
+MPN NT2520SA26.00MNSA3400C
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+VND NDK
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0311
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+VPL_MPN NLFC201614
+VPL_VND TDK
+MPN NLFC201614
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+VND TDK
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0252
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+VPL_MPN NLFC201614
+VPL_VND TDK
+MPN NLFC201614
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+VND TDK
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0246
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+VPL_MPN NLFC201614
+VPL_VND TDK
+MPN NLFC201614
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+VND TDK
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6903
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+VPL_MPN NLFC201614
+VPL_VND TDK
+MPN NLFC201614
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+VND TDK
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-2277
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+VPL_MPN NLFC201614
+VPL_VND TDK
+MPN NLFC201614
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+VND TDK
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0294
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+VPL_MPN RKZ6.8B2KJ
+VPL_VND RNSS-TECH
+MPN RKZ6.8B2KJ
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+VND RNSS-TECH
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0087
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+VPL_MPN RKZ6.8B2KJ
+VPL_VND RNSS-TECH
+MPN RKZ6.8B2KJ
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+VND RNSS-TECH
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-7607
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+VPL_MPN RKZ6.8B2KJ
+VPL_VND RNSS-TECH
+MPN RKZ6.8B2KJ
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+VND RNSS-TECH
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0272
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+VPL_MPN RKZ6.8B2KJ
+VPL_VND RNSS-TECH
+MPN RKZ6.8B2KJ
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+VND RNSS-TECH
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-2065
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+VPL_MPN CPDQ5V0USPHF
+VPL_VND CTC
+MPN CPDQ5V0USPHF
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+VND CTC
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0282
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+VPL_MPN DF2B6.8FS
+VPL_VND TOSHIBA
+MPN DF2B6.8FS
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+VND TOSHIBA
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0286
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+VPL_MPN RUM002N05
+VPL_VND ROHM
+MPN RUM002N05
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+VND ROHM
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0271
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+VPL_MPN RUM002N05
+VPL_VND ROHM
+MPN RUM002N05
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+VND ROHM
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-8427
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+VPL_MPN RUM002N05
+VPL_VND ROHM
+MPN RUM002N05
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+VND ROHM
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0402
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+VPL_MPN RUM002N05
+VPL_VND ROHM
+MPN RUM002N05
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+VND ROHM
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0320
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+VPL_MPN PEMH10
+VPL_VND NXP-SC
+MPN PEMH10
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+VND NXP-SC
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0373
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+VPL_MPN R1163D181BTRFE
+VPL_VND RICOH
+MPN R1163D181BTRFE
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+VND RICOH
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0092
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+VPL_MPN B5818WSTP
+VPL_VND MCR-CMRCL
+MPN B5818WSTP
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+VND MCR-CMRCL
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0355
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+VPL_MPN B5818WSTP
+VPL_VND MCR-CMRCL
+MPN B5818WSTP
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+VND MCR-CMRCL
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0119
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+VPL_MPN B5818WSTP
+VPL_VND MCR-CMRCL
+MPN B5818WSTP
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+VND MCR-CMRCL
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-8451
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+VPL_MPN RCLAMP0582B.TCT
+VPL_VND SEMTECH
+MPN RCLAMP0582B.TCT
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+VND SEMTECH
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-1196
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+VPL_MPN MCP100T270I/TT
+VPL_VND MICROCHIP
+MPN MCP100T270I/TT
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+VND MICROCHIP
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-6309
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+VPL_MPN PUMD16
+VPL_VND PHILIPS
+MPN PUMD16
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+VND PHILIPS
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-2407
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+VPL_MPN MGA655T6BLKG
+VPL_VND AVG-TECH
+MPN MGA655T6BLKG
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+VND AVG-TECH
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0145
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+VPL_MPN CSD25310Q2
+VPL_VND TI
+MPN CSD25310Q2
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+VND TI
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-9031
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+VPL_MPN AA03S020VA1
+VPL_VND JAE
+MPN AA03S020VA1
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+VND JAE
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-8181
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+VPL_MPN CRS50013001F
+VPL_VND SMK
+MPN CRS50013001F
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+VND SMK
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-4584
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+VPL_MPN RCP0402S1M00
+VPL_VND IMS
+MPN RCP0402S1M00
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+VND IMS
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1001-0103
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+VPL_MPN 0402X105M6R3C
+VPL_VND WALSIN
+MPN 0402X105M6R3C
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+VND WALSIN
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0075
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0179
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0051
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0336
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6901
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-3612
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-9843
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0879
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1001-4017
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0062
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0156
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6049
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0052
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0071
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0264
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-6898
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-5865
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0360
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0317
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6124
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6103
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-9846
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-9845
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-2253
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQG15HN2N7S02
+VPL_VND MURATA
+MPN LQG15HN2N7S02
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0061
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0257
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6829
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0076
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0059
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0039
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-1876
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-1899
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0118
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+VPL_MPN WCRWCR0603LF1005
+VPL_VND IRC
+MPN WCRWCR0603LF1005
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+VND IRC
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN SPARK_GAP0.15MM_X0.23MM
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+VPL_MPN 225478846524
+VPL_VND PHILIPS
+MPN 225478846524
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+VND PHILIPS
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0181
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0056
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0048
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6882
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0067
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0045
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0175
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0265
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0231
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0069
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6073
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6203
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6838
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4063
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0066
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6082
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0050
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0382
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0249
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0243
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-2416
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4102
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4160
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0240
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6058
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0049
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4152
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0128
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0226
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0172
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6840
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0230
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6885
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0245
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-9194
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0060
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0178
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0338
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4046
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-4293
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0377
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0378
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-2414
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-6067
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0286
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0068
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0177
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4035
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4142
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4164
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0064
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0043
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0376
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4147
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-1061
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4057
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-4034
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0388
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1203-0723
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0047
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+VPL_MPN LQP03TN2N5B02
+VPL_VND MURATA
+MPN LQP03TN2N5B02
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+VND MURATA
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN STRAP
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+VPL_MPN C0603X5R1A682K030BA
+VPL_VND TDK
+MPN C0603X5R1A682K030BA
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+VND TDK
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1201-6833
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+VPL_MPN EXC24CE
+VPL_VND PANASONIC
+MPN EXC24CE
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+VND PANASONIC
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-1865
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+VPL_MPN DBF81F104CSR
+VPL_VND SOSHIN
+MPN DBF81F104CSR
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+VND SOSHIN
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1002-0000
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+VPL_MPN 68000402H
+VPL_VND FCI
+MPN 68000402H
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+VND FCI
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0660
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+VPL_MPN B39202B9414M410
+VPL_VND EPCOS
+MPN B39202B9414M410
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+VND EPCOS
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-0607
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+VPL_MPN B39202B9414M410
+VPL_VND EPCOS
+MPN B39202B9414M410
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+VND EPCOS
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0369
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+VPL_MPN TPS79901YZUR
+VPL_VND TI
+MPN TPS79901YZUR
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+VND TI
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1200-3994
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+VPL_MPN TPS79901YZUR
+VPL_VND TI
+MPN TPS79901YZUR
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+VND TI
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0372
+LNFILE 600 genesis186a7.inh-saram-lt.10516
+VPL_MPN RYT101947/2
+VPL_VND ON
+MPN RYT101947/2
+LNFILE 600 genesis186a7.inh-saram-lt.10516
+VND ON
+LNFILE 600 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0293
+LNFILE 601 genesis186a7.inh-saram-lt.10516
+VPL_MPN RYN123915/1
+VPL_VND ON
+MPN RYN123915/1
+LNFILE 601 genesis186a7.inh-saram-lt.10516
+VND ON
+LNFILE 601 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN 1000-0270
+LNFILE 602 genesis186a7.inh-saram-lt.10516
+VPL_MPN RYN901918/2
+VPL_VND ON
+MPN RYN901918/2
+LNFILE 602 genesis186a7.inh-saram-lt.10516
+VND ON
+LNFILE 602 genesis186a7.inh-saram-lt.10516
+QLF 0
+CHS 1
+PRIORITY 0
+
+CPN_MPN_END
+# customer parts and their descriptions
+CP
+CPN CPN
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG PACKAGE
+LNFILE 1 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 1
+
+CPN 1000-9075
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BYX101553_A
+LNFILE 2 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 2
+
+CPN FLEX_DOMEKEY
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG FLEX_DOMEKEY_ECSAATH
+LNFILE 3 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 3
+
+CPN 1200-1694
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_36_05_1_A
+LNFILE 28 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 4
+
+CPN 1200-0716
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA36_NAT_SEM
+LNFILE 29 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 5
+
+CPN 1000-8818
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_CSP_4_05_3_A
+LNFILE 30 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 6
+
+CPN 1200-0425
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_R_XBGA_N5_1_A
+LNFILE 31 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 7
+
+CPN 1200-0454
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_5_05_3_B
+LNFILE 32 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 8
+
+CPN 1200-0107
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_8_05_1_A
+LNFILE 33 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 9
+
+CPN CONNECTORPAD
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG CONNECTORPAD_2_5X3_1MM_NP
+LNFILE 34 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 10
+
+CPN 1200-7847
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG NT2520SA_1
+LNFILE 38 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 11
+
+CPN 1000-8142
+LNFILE 39 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_196_05_1_A
+LNFILE 39 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 12
+
+CPN 1200-0311
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG NK2003A_1_A
+LNFILE 40 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 13
+
+CPN 1000-0252
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0805BHD
+LNFILE 41 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 14
+
+CPN 1000-0246
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0805BHD
+LNFILE 42 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 15
+
+CPN 1000-6903
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0805HD_1
+LNFILE 44 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 16
+
+CPN 1200-2277
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG TWH104_HS
+LNFILE 45 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 17
+
+CPN 1000-0294
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG EMD2_2_A
+LNFILE 59 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 18
+
+CPN 1000-0087
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG EMD2_2_A
+LNFILE 60 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 19
+
+CPN 1000-7607
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG EMD2_2_A
+LNFILE 61 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 20
+
+CPN 1000-0272
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG EMD2_1_C
+LNFILE 62 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 21
+
+CPN 1200-2065
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG SOD923
+LNFILE 64 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 22
+
+CPN 1000-0282
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG DF2S68FS_D
+LNFILE 70 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 23
+
+CPN 1000-0286
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG VMT3_2_C
+LNFILE 71 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 24
+
+CPN 1000-0271
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG VMT3_1_B
+LNFILE 72 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 25
+
+CPN 1000-8427
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG VMT3_2_C
+LNFILE 73 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 26
+
+CPN 1000-0402
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG EM3
+LNFILE 74 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 27
+
+CPN 1200-0320
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG SOT666_B
+LNFILE 75 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 28
+
+CPN 1200-0373
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG SON6
+LNFILE 76 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 29
+
+CPN 1200-0092
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG DE2812C_1_A
+LNFILE 77 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 30
+
+CPN 1200-0355
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG DE2812C_1_A
+LNFILE 78 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 31
+
+CPN 1200-0119
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG DE2812C_1_A
+LNFILE 79 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 32
+
+CPN 1000-8451
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG ML_STD_883D
+LNFILE 81 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 33
+
+CPN 1200-1196
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG SUPERSOT3
+LNFILE 82 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 34
+
+CPN 1200-6309
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG UDFN6_2X2
+LNFILE 83 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 35
+
+CPN 1200-2407
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG LGA_PTSLP71_A
+LNFILE 84 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 36
+
+CPN 1200-0145
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG MO229_A
+LNFILE 85 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 37
+
+CPN 1000-9031
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BYX101542_B_SERENA_ONLY
+LNFILE 86 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 38
+
+CPN 1000-8181
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG CON_COAX_SWITCH_A
+LNFILE 87 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 39
+
+CPN 1201-4584
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG VMN2_ROHM_REV
+LNFILE 88 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 40
+
+CPN 1001-0103
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BYX101243_A
+LNFILE 90 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 41
+
+CPN 1000-0075
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 91 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 42
+
+CPN 1000-0179
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402D_HD
+LNFILE 92 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 43
+
+CPN 1000-0051
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 93 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 44
+
+CPN 1000-0336
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 94 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 45
+
+CPN 1000-6901
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 96 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 46
+
+CPN 1000-3612
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG MCIUHF2_HD
+LNFILE 98 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 47
+
+CPN 1201-9843
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 101 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 48
+
+CPN 1200-0879
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 103 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 49
+
+CPN 1001-4017
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 104 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 50
+
+CPN 1000-0062
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 105 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 51
+
+CPN 1000-0156
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 106 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 52
+
+CPN 1000-6049
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 110 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 53
+
+CPN 1000-0052
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 111 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 54
+
+CPN 1000-0071
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 113 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 55
+
+CPN 1000-0264
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402D_HD
+LNFILE 124 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 56
+
+CPN 1200-6898
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 127 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 57
+
+CPN 1000-5865
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402D_HD
+LNFILE 130 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 58
+
+CPN 1000-0360
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG MCIUHF2_HD
+LNFILE 133 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 59
+
+CPN 1200-0317
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 136 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 60
+
+CPN 1000-6124
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 138 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 61
+
+CPN 1000-6103
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 143 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 62
+
+CPN 1201-9846
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 152 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 63
+
+CPN 1201-9845
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0402C_HD
+LNFILE 153 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 64
+
+CPN 1201-2253
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BSOD882_ST_B
+LNFILE 164 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 65
+
+CPN 1000-0061
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 169 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 66
+
+CPN 1000-0257
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603A_HD
+LNFILE 170 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 67
+
+CPN 1000-6829
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 171 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 68
+
+CPN 1000-0076
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 172 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 69
+
+CPN 1000-0059
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 174 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 70
+
+CPN 1000-0039
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 175 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 71
+
+CPN 1000-1876
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 181 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 72
+
+CPN 1000-1899
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 183 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 73
+
+CPN 1000-0118
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0603_HD
+LNFILE 195 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 74
+
+CPN SPARK_GAP0.15MM_X0.23MM
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG SPARK_GAP_0.15MM_X0.23MM
+LNFILE 199 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 75
+
+CPN 1000-0181
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 201 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 76
+
+CPN 1000-0056
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 202 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 77
+
+CPN 1000-0048
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 203 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 78
+
+CPN 1000-6882
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 205 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 79
+
+CPN 1000-0067
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 207 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 80
+
+CPN 1000-0045
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 208 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 81
+
+CPN 1000-0175
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 210 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 82
+
+CPN 1000-0265
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 211 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 83
+
+CPN 1000-0231
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 212 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 84
+
+CPN 1000-0069
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 214 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 85
+
+CPN 1000-6073
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 220 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 86
+
+CPN 1000-6203
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 221 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 87
+
+CPN 1000-6838
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 222 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 88
+
+CPN 1000-4063
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 223 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 89
+
+CPN 1000-0066
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 229 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 90
+
+CPN 1000-6082
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 232 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 91
+
+CPN 1000-0050
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 242 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 92
+
+CPN 1000-0382
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 248 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 93
+
+CPN 1000-0249
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 255 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 94
+
+CPN 1000-0243
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 265 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 95
+
+CPN 1200-2416
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 268 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 96
+
+CPN 1000-4102
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 274 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 97
+
+CPN 1000-4160
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 279 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 98
+
+CPN 1000-0240
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 282 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 99
+
+CPN 1000-6058
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 289 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 100
+
+CPN 1000-0049
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 294 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 101
+
+CPN 1000-4152
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 296 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 102
+
+CPN 1000-0128
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 302 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 103
+
+CPN 1000-0226
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 303 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 104
+
+CPN 1000-0172
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 312 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 105
+
+CPN 1000-6840
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 317 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 106
+
+CPN 1000-0230
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 319 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 107
+
+CPN 1000-6885
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 321 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 108
+
+CPN 1000-0245
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 330 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 109
+
+CPN 1201-9194
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 331 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 110
+
+CPN 1000-0060
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 332 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 111
+
+CPN 1000-0178
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 334 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 112
+
+CPN 1000-0338
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 348 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 113
+
+CPN 1000-4046
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 357 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 114
+
+CPN 1200-4293
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 366 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 115
+
+CPN 1000-0377
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 383 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 116
+
+CPN 1000-0378
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 391 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 117
+
+CPN 1200-2414
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 396 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 118
+
+CPN 1000-6067
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 401 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 119
+
+CPN 1200-0286
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 407 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 120
+
+CPN 1000-0068
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 411 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 121
+
+CPN 1200-0177
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 432 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 122
+
+CPN 1000-4035
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 438 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 123
+
+CPN 1000-4142
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 457 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 124
+
+CPN 1000-4164
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 462 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 125
+
+CPN 1000-0064
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 475 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 126
+
+CPN 1000-0043
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 477 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 127
+
+CPN 1000-0376
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 480 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 128
+
+CPN 1000-4147
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 482 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 129
+
+CPN 1200-1061
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 492 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 130
+
+CPN 1000-4057
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 507 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 131
+
+CPN 1000-4034
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 534 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 132
+
+CPN 1000-0388
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201_HD
+LNFILE 535 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 133
+
+CPN 1203-0723
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 544 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 134
+
+CPN 1000-0047
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG K0201A_HD
+LNFILE 547 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 135
+
+CPN STRAP
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG JOIN0201_HD
+LNFILE 558 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 136
+
+CPN 1201-6833
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG TCM1210_B
+LNFILE 593 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 137
+
+CPN 1200-1865
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG FILTER_TDK_8PIN
+LNFILE 594 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 138
+
+CPN 1002-0000
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG US_FLAT_B
+LNFILE 595 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 139
+
+CPN 1200-0660
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG LGA_QCS5F
+LNFILE 596 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 140
+
+CPN 1200-0607
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG LGA_QCS5F
+LNFILE 597 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 141
+
+CPN 1000-0369
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_FLIPCHIP5_1_A
+LNFILE 598 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 142
+
+CPN 1200-3994
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG BGA_5_05_6_A
+LNFILE 599 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 143
+
+CPN 1000-0372
+LNFILE 600 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 144
+
+CPN 1000-0293
+LNFILE 601 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 145
+
+CPN 1000-0270
+LNFILE 602 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 146
+
+CPN TESTPOINT
+LNFILE 603 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 147
+
+CPN SERVICEPOINT
+LNFILE 604 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 148
+
+CPN 1200-0568
+LNFILE 614 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 149
+
+CPN 1200-0245
+LNFILE 616 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 150
+
+CPN 1200-0484
+LNFILE 617 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 151
+
+CPN 1200-0822
+LNFILE 622 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 152
+
+CPN 1000-8271
+LNFILE 629 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 153
+
+CPN 1200-6182
+LNFILE 633 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 154
+
+CPN 1200-0823
+LNFILE 634 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 155
+
+CPN 1200-0186
+LNFILE 642 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 156
+
+CPN 1200-0158
+LNFILE 646 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 157
+
+CPN 1200-0308
+LNFILE 648 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 158
+
+CPN 1200-3231
+LNFILE 653 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 159
+
+CPN 1200-9764
+LNFILE 657 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 160
+
+CPN 1000-8911
+LNFILE 671 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 161
+
+CPN 1200-0700
+LNFILE 672 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 162
+
+CPN 1200-0544
+LNFILE 683 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 163
+
+CPN 1000-0198
+LNFILE 684 genesis186a7.inh-saram-lt.10516
+IPN 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+PKG 
+LNFILE 0 genesis186a7.inh-saram-lt.10516
+QNT 0.000000
+ITEM 164
+
+CP_END
+FILE_END

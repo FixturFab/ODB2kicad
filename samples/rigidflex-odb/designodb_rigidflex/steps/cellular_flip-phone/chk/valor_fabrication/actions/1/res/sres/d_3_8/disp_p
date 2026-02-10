@@ -1,0 +1,17 @@
+DISPLAY {
+    L0 = d_3_8
+}
+DISPLAY {
+    L0 = signal_3
+    L1 = signal_8
+    L2 = d_3_8
+}
+DISPLAY {
+    L0 = d_3_8
+    L1 = signal_3
+    L2 = signal_8
+}
+DISPLAY {
+    L0 = d_3_8
+    L1 = rout
+}

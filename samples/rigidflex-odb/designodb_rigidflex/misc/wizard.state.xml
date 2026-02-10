@@ -1,0 +1,128 @@
+<wfState parentWizardPath="C:/beta/vNPI_DIR/sys//wizards/valornpi.xmlz" >
+    <variables>
+        <variable value="inch" name="oApplicationUnits" />
+        <variable value="" name="tTmpDesignName" />
+        <variable value="system" name="oSystemOrDesignCenter" />
+        <variable value="" name="eCPLTopTemplate" />
+        <variable value="metadata_normal" name="oUseMetadata" />
+        <variable value="true" name="bDPRS" />
+        <variable value="no" name="oboard_merge_break_none" />
+        <variable value="1" name="textCOMANS" />
+        <variable value="place" name="olibrary_merge_dubious_match" />
+        <variable value="cellular_flip-phone" name="elSTEP" />
+        <variable value="C:/SangeethaRam/odb_example/designodb_rigidflex/misc/dpw.pm" name="tVARPath" />
+        <variable value="false" name="bCEChecklist" />
+        <variable value="true" name="bCompMapping" />
+        <variable value="cellular_flip-phone" name="tStepName" />
+        <variable value="C:/SangeethaRam/odb_example/designodb_rigidflex" name="tActualDesignPath" />
+        <variable value="" name="tBOMPath" />
+        <variable value="yes" name="oFlowDirection" />
+        <variable value="true" name="oShowChecklistPopup" />
+        <variable value="exist" name="oDataSource" />
+        <variable value="true" name="bHideAnalysis" />
+        <variable value="yes" name="obom_merge_attributes" />
+        <variable value="false" name="bSilentRunning" />
+        <variable value="" name="tlibrary_merge_top_ref_layer" />
+        <variable value="yes" name="obom_merge_not_in_bom" />
+        <variable value="" name="eCPLBottomTemplate" />
+        <variable value="true" name="bRunningToolkit" />
+        <variable value="0" name="intSTATUS" />
+        <variable value="" name="eJobs" />
+        <variable value="simple" name="oDrillToolsManager" />
+        <variable value="odbg" name="oEDA" />
+        <variable value="mra_results_only" name="oUseChecklistMRA" />
+        <variable value="${pDefaultSourcePath}" name="pBottomCPLSourcePath" />
+        <variable value="true" name="boolIsDirectMode" />
+        <variable value="" name="tTmpCheckName" />
+        <variable value="*analysis*" name="tFabChecklist" />
+        <variable value="search" name="oCPLSearchLibrary" />
+        <variable value="designodb_rigidflex" name="elJOB" />
+        <variable value="yes" name="obom_merge_no_pop" />
+        <variable value="${pDefaultSourcePath}" name="pTopCPLSourcePath" />
+        <variable value="gencad" name="oASM" />
+        <variable value="C:/SangeethaRam/odb_example/designodb_rigidflex/misc/cpl_error_rpt.txt" name="tCPLErrorPath" />
+        <variable value="" name="pODBSourcePath" />
+        <variable value="designodb_rigidflex" name="tDesignName" />
+        <variable value="false" name="bProdMod" />
+        <variable value="" name="listDBList" />
+        <variable value="" name="pBOMAVLFile" />
+        <variable value="no" name="oboard_merge_calculate_comp_mount_type" />
+        <variable value="" name="pDefaultDBPath" />
+        <variable value="" name="pODBPath" />
+        <variable value="true" name="bCompPA" />
+        <variable value="a" name="tBOMName" />
+        <variable value="false" name="bReviewChecklistBeforeRunning" />
+        <variable value="unsupported" name="oInvocationMode" />
+        <variable value="C:/SangeethaRam/odb_example/designodb_rigidflex/misc/bom_error_rpt.txt" name="tBOMErrorPath" />
+        <variable value="" name="eAVLTemplate" />
+        <variable value="yes" name="obom_merge_vpl_packages" />
+        <variable value="" name="tlibrary_merge_bottom_ref_layer" />
+        <variable value="" name="tChecklist" />
+        <variable value="no" name="oboard_merge_keep_original_net_data" />
+        <variable value="none" name="oCPL_File" />
+        <variable value="" name="pBOMFile" />
+        <variable value="analysis" name="eFabChecklist1" />
+        <variable value="" name="eRefJobs" />
+        <variable value="false" name="bCompAA" />
+        <variable value="false" name="bVPL_Usage" />
+        <variable value="false" name="bPM_attr" />
+        <variable value="search" name="oSearchLibrary" />
+        <variable value="false" name="bBOM_Manager" />
+        <variable value="" name="textCurrentDC" />
+        <variable value="false" name="bOutAuto" />
+        <variable value="show_netlist_results_in_mra" name="oReviewNetlistResults" />
+        <variable value="" name="eSteps" />
+        <variable value="no" name="oboard_merge_pads_only_mode" />
+        <variable value="$[GENESIS_DIR]/sys/eda/all/libs" name="pCAALibraryPath" />
+        <variable value="" name="pDefaultSourcePath" />
+        <variable value="" name="eBOMTemplate" />
+        <variable value="" name="pAVLFile" />
+        <variable value="${pDefaultDBPath}" name="pDesignDirVar" />
+        <variable value="false" name="bMasterAVL" />
+        <variable value="silent" name="textCurrentMode" />
+        <variable value="" name="elDPRS" />
+        <variable value="false" name="bBOMSilentRunning" />
+        <variable value="combined" name="oBOMAVLFile" />
+        <variable value="" name="tTmpStepName" />
+        <variable value="true" name="bNetlist" />
+        <variable value="consistent" name="olibrary_merge_orientation" />
+    </variables>
+    <stages>
+        <stage name="Design_Creation" >
+            <variables>
+                <variable value="true" name="bJobExist" />
+                <variable value="false" name="bStepExist" />
+                <variable value="" name="tTempDB" />
+            </variables>
+        </stage>
+        <stage name="Design_Input" >
+            <variables>
+                <variable value="1" name="iNumSteps" />
+                <variable value="*tar;*zip" name="CFG_get_inp_exclude" />
+                <variable value="" name="tTempStepName" />
+                <variable value="" name="tFirstEntity" />
+                <variable value="" name="tTempText" />
+            </variables>
+        </stage>
+        <stage name="PM_Attr_Assign" >
+            <variables>
+                <variable value="0" name="iNumSteps" />
+            </variables>
+        </stage>
+        <stage name="Design_Preparation_Setup" >
+            <variables>
+                <variable value="displayed" name="tDPDisplayMode" />
+                <variable value="1" name="iCompClassPopupOpened" />
+                <variable value="-1" name="iFlowDirectionPageID" />
+            </variables>
+        </stage>
+        <stage name="Perform_Requested_Analysis" >
+            <variables>
+                <variable value="false" name="bRefStepExist" />
+                <variable value="false" name="bRefJobExist" />
+                <variable value="" name="tEdtDisplayMode" />
+            </variables>
+        </stage>
+    </stages>
+    <executionState nextCmdIndex="9" nextStageIndex="13" executionMode="silent" designCenter="" nextStageName="Design_Preparation_Setup" running="true" nextBlockIndex="0" />
+</wfState>

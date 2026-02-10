@@ -1,0 +1,33 @@
+UNITS=MM
+#
+#Num Features
+#
+F 7
+
+#
+#Feature symbol names
+#
+$0 r300.0
+$1 r1143.0
+$2 r1524.0
+
+#
+#Feature attribute names
+#
+@0 .drill
+@1 .geometry
+
+#
+#Feature attribute text strings
+#
+&0 VIA_ROUNDD600000
+#
+#Layer features
+#
+P 120.0 -102.0 0 P 0 8 0.0 ;0=2,1=0
+P 118.0 -102.0 0 P 0 8 0.0 ;0=2,1=0
+P 120.0 -103.50 0 P 0 8 0.0 ;0=2,1=0
+P 112.20 -65.35 1 P 0 8 0.0 ;0=0
+P 88.30 -71.44 2 P 0 8 90.0 ;0=0
+P 99.50 -65.35 1 P 0 8 0.0 ;0=0
+P 88.30 -66.36 2 P 0 8 90.0 ;0=0

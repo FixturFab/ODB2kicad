@@ -1,0 +1,694 @@
+CPN                     Refdes Package                   Manufacturer MPN                   
+1000-9075               X14    BYX101553_A               CNTNTL-DVC   1N4757                
+FLEX_DOMEKEY            S13    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S19    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S4     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S15    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S21    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S3     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S2     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S5     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S9     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S25    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S24    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S20    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S16    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S1     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S22    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S7     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S18    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S12    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S8     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S23    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S10    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S11    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S17    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S6     FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+FLEX_DOMEKEY            S14    FLEX_DOMEKEY_ECSAATH      PANASONIC    EEUFC1E470            
+1200-1694               D5     BGA_36_05_1_A             ST-ERCSSN    ISP1716A0ETTM         
+1200-0716               D3     BGA36_NAT_SEM             ST-ERCSSN    ISP1716A0ETTM         
+1000-8818               N8     BGA_CSP_4_05_3_A          TI           CSD13201W10           
+1200-0425               D4     BGA_R_XBGA_N5_1_A         TI           SN74LVC1G06YZPR       
+1200-0454               N10    BGA_5_05_3_B              TI           SN74LVC1G06YZPR       
+1200-0107               N9     BGA_8_05_1_A              NATIONAL     LM3208TLX             
+CONNECTORPAD            X6     CONNECTORPAD_2_5x3_1mm_NP AMP          1037411               
+CONNECTORPAD            X10    ELLEN_BT_ANTENNA_PAD      AMP          1037411               
+CONNECTORPAD            X9     ELLEN_BT_ANTENNA_PAD      AMP          1037411               
+CONNECTORPAD            X7     CONNECTORPAD_2_5x3_1mm_NP AMP          1037411               
+1200-7847               B1     NT2520SA_1                NDK          NT2520SA26.00MNSA3400C
+1000-8142               N1     BGA_196_05_1_A                                               
+1200-0311               C286   NK2003A_1_A               TDK          NLFC201614            
+1000-0252               R136   K0805BHD                  TDK          NLFC201614            
+1000-0246               R127   K0805BHD                  TDK          NLFC201614            
+1200-0311               C287   NK2003A_1_A               TDK          NLFC201614            
+1000-6903               C240   K0805HD_1                 TDK          NLFC201614            
+1200-2277               V12    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V11    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V18    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V17    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V10    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V19    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V20    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V14    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V8     TWH104_HS                 TDK          NLFC201614            
+1200-2277               V15    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V7     TWH104_HS                 TDK          NLFC201614            
+1200-2277               V16    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V13    TWH104_HS                 TDK          NLFC201614            
+1200-2277               V9     TWH104_HS                 TDK          NLFC201614            
+1000-0294               V2     EMD2_2_A                  RNSS-TECH    RKZ6.8B2KJ            
+1000-0087               V22    EMD2_2_A                  RNSS-TECH    RKZ6.8B2KJ            
+1000-7607               V31    EMD2_2_A                  RNSS-TECH    RKZ6.8B2KJ            
+1000-0272               V28    EMD2_1_C                  RNSS-TECH    RKZ6.8B2KJ            
+1000-0272               V27    EMD2_1_C                  RNSS-TECH    RKZ6.8B2KJ            
+1200-2065               V36    SOD923                    CTC          CPDQ5V0USPHF          
+1200-2065               V33    SOD923                    CTC          CPDQ5V0USPHF          
+1200-2065               V34    SOD923                    CTC          CPDQ5V0USPHF          
+1200-2065               V35    SOD923                    CTC          CPDQ5V0USPHF          
+1200-2065               V37    SOD923                    CTC          CPDQ5V0USPHF          
+1200-2065               V32    SOD923                    CTC          CPDQ5V0USPHF          
+1000-0282               V24    DF2S68FS_D                TOSHIBA      DF2B6.8FS             
+1000-0286               V25    VMT3_2_C                  ROHM         RUM002N05             
+1000-0271               V29    VMT3_1_B                  ROHM         RUM002N05             
+1000-8427               V4     VMT3_2_C                  ROHM         RUM002N05             
+1000-0402               V1     EM3                       ROHM         RUM002N05             
+1200-0320               V5     SOT666_B                  NXP-SC       PEMH10                
+1200-0373               N6     SON6                      RICOH        R1163D181BTRFE        
+1200-0092               L18    DE2812C_1_A               MCR-CMRCL    B5818WSTP             
+1200-0355               L17    DE2812C_1_A               MCR-CMRCL    B5818WSTP             
+1200-0119               L15    DE2812C_1_A               MCR-CMRCL    B5818WSTP             
+1200-0119               L14    DE2812C_1_A               MCR-CMRCL    B5818WSTP             
+1000-8451               B4     ML_STD_883D               SEMTECH      RCLAMP0582B.TCT       
+1200-1196               V3     SUPERSOT3                 MICROCHIP    MCP100T270I/TT        
+1200-6309               N11    UDFN6_2x2                 PHILIPS      PUMD16                
+1200-2407               N2     LGA_PTSLP71_A             AVG-TECH     MGA655T6BLKG          
+1200-0145               V23    MO229_A                   TI           CSD25310Q2            
+1000-9031               X2     BYX101542_B_SERENA_ONLY   JAE          AA03S020VA1           
+1000-8181               X8     CON_COAX_SWITCH_A         SMK          CRS50013001F          
+1201-4584               V38    VMN2_ROHM_REV             IMS          RCP0402S1M00          
+1201-4584               V39    VMN2_ROHM_REV             IMS          RCP0402S1M00          
+1001-0103               L2     BYX101243_A               WALSIN       0402X105M6R3C         
+1000-0075               C283   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R53    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C126   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C203   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R45    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-6901               C256   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C120   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-3612               L4     MCIUHF2_HD                MURATA       LQG15HN2N7S02         
+1000-0051               C118   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R49    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1201-9843               C3     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C113   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-0879               C260   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1001-4017               L1     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0062               C267   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0156               C270   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C123   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C125   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C204   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6049               C282   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C132   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C119   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0071               C275   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C128   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C138   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R51    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C114   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C198   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C131   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C202   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C127   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C200   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6901               C259   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0264               R69    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C121   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C137   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-6898               L23    K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C205   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-6898               L24    K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-5865               R154   K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C115   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R46    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0360               L12    MCIUHF2_HD                MURATA       LQG15HN2N7S02         
+1000-0071               C274   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C122   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-0317               L11    K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C117   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6124               C147   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C124   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C116   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0071               C273   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C133   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6103               C1     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C206   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R48    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-5865               R155   K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R52    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C130   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C135   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6901               C255   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0360               L13    MCIUHF2_HD                MURATA       LQG15HN2N7S02         
+1201-9846               L3     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1201-9845               C2     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R47    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C199   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C136   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6901               C257   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0179               R50    K0402D_HD                 MURATA       LQG15HN2N7S02         
+1000-0052               C134   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0071               C272   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0336               C201   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-6901               C258   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0051               C129   K0402C_HD                 MURATA       LQG15HN2N7S02         
+1201-2253               V26    BSOD882_ST_B              MURATA       LQG15HN2N7S02         
+1200-0317               L10    K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-0317               L9     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-0317               L8     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1200-0317               L7     K0402C_HD                 MURATA       LQG15HN2N7S02         
+1000-0061               C241   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0257               R128   K0603A_HD                 IRC          WCRWCR0603LF1005      
+1000-6829               C271   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0076               C235   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C246   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0059               C238   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C146   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C142   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C139   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C140   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0076               C236   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C248   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-1876               L26    K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C145   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-1899               L22    K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C144   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C245   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C143   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C251   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C247   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-1876               L25    K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C242   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C252   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C250   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C249   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0039               C141   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0118               L19    K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C244   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0059               C237   K0603_HD                  IRC          WCRWCR0603LF1005      
+1000-0061               C243   K0603_HD                  IRC          WCRWCR0603LF1005      
+SPARK_GAP0.15mm_X0.23mm F2     SPARK_GAP_0.15mm_x0.23mm  PHILIPS      225478846524          
+SPARK_GAP0.15mm_X0.23mm F1     SPARK_GAP_0.15mm_x0.23mm  PHILIPS      225478846524          
+1000-0181               R77    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C173   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C67    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R86    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6882               C264   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C161   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C225   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0045               C18    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C179   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R3     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0265               R138   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R21    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C23    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0069               C288   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C20    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C155   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C217   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0265               R137   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C171   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-6073               C4     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-6203               C232   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-6838               C5     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4063               R147   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0175               R8     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C168   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C74    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C156   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C97    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0066               C10    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C222   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C65    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-6082               C230   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C175   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R29    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R101   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C79    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R96    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0066               C11    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C151   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C94    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R97    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0050               C265   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R92    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R105   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C38    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C163   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0045               C13    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0382               R153   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0067               C213   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C47    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R75    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C61    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R1     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R80    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0249               R133   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R107   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0175               R7     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0249               R134   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C31    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R70    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R14    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C96    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R16    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C58    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R59    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R102   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C184   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1200-2416               L5     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R18    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C167   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C196   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C36    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C152   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4102               R41    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C165   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C87    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C73    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R5     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4160               R67    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R84    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R87    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0240               R143   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C104   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R54    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C191   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C29    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4063               R145   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R28    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6058               C209   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C93    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R108   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C172   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C43    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0049               C109   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R4     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4152               R158   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0243               R60    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R91    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0049               C112   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C44    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R58    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0128               L16    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0226               R156   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C41    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C42    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0049               C110   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C154   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C159   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0249               R132   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C72    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R74    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0172               R152   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C174   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C224   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C35    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R78    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6840               C285   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R98    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0230               R149   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C85    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-6885               C239   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R62    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R36    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0067               C227   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0049               C107   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R71    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R13    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C178   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R85    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0245               R64    K0201_HD                  MURATA       LQP03TN2N5B02         
+1201-9194               C148   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0060               C277   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C185   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0178               R148   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R72    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C71    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R33    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C33    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C30    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C101   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0245               R65    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0049               C106   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C86    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C214   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C158   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0060               C281   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0050               C266   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0338               C7     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C54    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C98    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R9     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R12    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C69    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C81    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0049               C108   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C105   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4046               R66    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C76    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C51    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R55    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C34    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C218   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R37    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C50    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C95    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1200-4293               C228   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4063               R146   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C77    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R40    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0066               C8     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R25    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C149   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C215   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-6082               C229   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C66    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C48    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C164   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R57    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R79    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C82    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C177   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C169   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0377               R126   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C60    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C25    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C55    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C26    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C194   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C216   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R26    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0378               R140   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C166   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C103   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C49    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C68    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1200-2414               L6     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C28    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C180   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0172               R151   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R32    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6067               C208   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C88    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C220   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R20    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C83    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0377               R125   K0201_HD                  MURATA       LQP03TN2N5B02         
+1200-0286               C233   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R38    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C187   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C219   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0068               C261   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0243               R61    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C37    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R10    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0249               R130   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C195   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C221   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0060               C280   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R76    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C193   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R88    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C39    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R34    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0060               C276   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R15    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C53    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C64    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C45    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C188   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C59    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0226               R157   K0201_HD                  MURATA       LQP03TN2N5B02         
+1200-0177               L20    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R24    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C89    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C223   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R109   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C99    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4035               R141   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C57    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0045               C16    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R104   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0068               C262   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C52    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1200-0286               C234   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C27    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C91    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C40    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R99    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C21    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C176   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0060               C279   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C84    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C170   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0067               C226   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C70    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R39    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4142               R124   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R94    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C181   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R31    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R90    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4164               R139   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R95    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0067               C211   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R93    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0240               R142   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C32    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C80    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C75    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C63    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4102               R43    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R73    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C102   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0066               C9     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0064               C253   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R81    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0043               C284   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R35    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0060               C278   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0376               R135   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6067               C207   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4147               R144   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6203               C231   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0245               R63    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C62    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C78    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C24    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R27    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C46    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4102               R42    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C189   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1200-1061               R68    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0181               R103   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-6882               C263   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R82    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R19    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0067               C212   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C157   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0338               C6     K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C190   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R100   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C182   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C153   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R106   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0064               C254   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C22    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4057               R123   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0243               R56    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C160   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0049               C111   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0175               R6     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C56    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C162   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C100   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R89    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0067               C210   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0249               R129   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0172               R150   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0175               R2     K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0175               R11    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0231               R30    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C183   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0048               C90    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R17    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C186   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C197   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R23    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C19    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0056               C192   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0231               R22    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0048               C92    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0181               R83    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4102               R44    K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R118   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0388               R160   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R115   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0045               C14    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0045               C17    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0045               C12    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4034               R120   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R110   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R112   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R121   K0201_HD                  MURATA       LQP03TN2N5B02         
+1203-0723               L21    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4034               R114   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0249               R131   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0047               C269   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4034               R111   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R117   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0056               C150   K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-4034               R119   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R116   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R122   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0045               C15    K0201A_HD                 MURATA       LQP03TN2N5B02         
+1000-0388               R159   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-4034               R113   K0201_HD                  MURATA       LQP03TN2N5B02         
+1000-0047               C268   K0201A_HD                 MURATA       LQP03TN2N5B02         
+Strap                   ST5    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST26   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST31   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST4    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST30   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST29   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST18   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST8    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST34   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST2    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST11   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST1    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST9    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST35   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST15   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST19   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST16   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST21   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST25   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST6    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST28   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST32   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST7    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST17   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST12   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST13   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST33   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST14   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST10   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST24   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST22   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST3    JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST23   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST27   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+Strap                   ST20   JOIN0201_HD               TDK          C0603X5R1A682K030BA   
+1201-6833               Z4     TCM1210_B                 PANASONIC    EXC24CE               
+1200-1865               Z3     FILTER_TDK_8PIN           SOSHIN       DBF81F104CSR          
+1002-0000               V21    US_FLAT_B                 FCI          68000402H             
+1200-0660               Z1     LGA_QCS5F                 EPCOS        B39202B9414M410       
+1200-0607               Z2     LGA_QCS5F                 EPCOS        B39202B9414M410       
+1000-0369               N12    BGA_FLIPCHIP5_1_A         TI           TPS79901YZUR          
+1200-3994               N7     BGA_5_05_6_A              TI           TPS79901YZUR          
+1000-0372               N13                              ON           RYT101947/2           
+1000-0293               V6                               ON           RYN123915/1           
+1000-0270               V30                              ON           RYN901918/2           
+TESTPOINT               TP3                                                                 
+SERVICEPOINT            SP46                                                                
+SERVICEPOINT            SP38                                                                
+SERVICEPOINT            SP29                                                                
+SERVICEPOINT            SP30                                                                
+SERVICEPOINT            SP13                                                                
+SERVICEPOINT            SP35                                                                
+SERVICEPOINT            SP7                                                                 
+SERVICEPOINT            SP2                                                                 
+CONNECTORPAD            X4                                                                  
+SERVICEPOINT            SP27                                                                
+1200-0568               XD1                                                                 
+TESTPOINT               TP7                                                                 
+1200-0245               N4                                                                  
+1200-0484               X11                                                                 
+SERVICEPOINT            SP50                                                                
+SERVICEPOINT            SP32                                                                
+CONNECTORPAD            X5                                                                  
+SERVICEPOINT            SP31                                                                
+1200-0822               E2                                                                  
+SERVICEPOINT            SP39                                                                
+SERVICEPOINT            SP47                                                                
+SERVICEPOINT            SP10                                                                
+TESTPOINT               TP14                                                                
+TESTPOINT               TP17                                                                
+SERVICEPOINT            SP41                                                                
+1000-8271               B2                                                                  
+SERVICEPOINT            SP22                                                                
+SERVICEPOINT            SP34                                                                
+CONNECTORPAD            X3                                                                  
+1200-6182               N3                                                                  
+1200-0823               E1                                                                  
+SERVICEPOINT            SP33                                                                
+SERVICEPOINT            SP12                                                                
+SERVICEPOINT            SP24                                                                
+SERVICEPOINT            SP19                                                                
+SERVICEPOINT            SP36                                                                
+TESTPOINT               TP9                                                                 
+TESTPOINT               TP8                                                                 
+1200-0186               D1                                                                  
+SERVICEPOINT            SP48                                                                
+SERVICEPOINT            SP49                                                                
+SERVICEPOINT            SP42                                                                
+1200-0158               N5                                                                  
+SERVICEPOINT            SP1                                                                 
+1200-0308               B5                                                                  
+SERVICEPOINT            SP5                                                                 
+SERVICEPOINT            SP8                                                                 
+SERVICEPOINT            SP6                                                                 
+TESTPOINT               TP11                                                                
+1200-3231               B3                                                                  
+SERVICEPOINT            SP43                                                                
+SERVICEPOINT            SP11                                                                
+SERVICEPOINT            SP21                                                                
+1200-9764               X12                                                                 
+SERVICEPOINT            SP16                                                                
+SERVICEPOINT            SP9                                                                 
+SERVICEPOINT            SP14                                                                
+SERVICEPOINT            SP37                                                                
+TESTPOINT               TP4                                                                 
+SERVICEPOINT            SP18                                                                
+TESTPOINT               TP10                                                                
+TESTPOINT               TP12                                                                
+SERVICEPOINT            SP20                                                                
+SERVICEPOINT            SP3                                                                 
+SERVICEPOINT            SP44                                                                
+TESTPOINT               TP13                                                                
+SERVICEPOINT            SP25                                                                
+1000-8911               X13                                                                 
+1200-0700               D2                                                                  
+SERVICEPOINT            SP4                                                                 
+SERVICEPOINT            SP17                                                                
+SERVICEPOINT            SP40                                                                
+SERVICEPOINT            SP23                                                                
+SERVICEPOINT            SP28                                                                
+SERVICEPOINT            SP15                                                                
+SERVICEPOINT            SP45                                                                
+TESTPOINT               TP18                                                                
+SERVICEPOINT            SP26                                                                
+TESTPOINT               TP15                                                                
+1200-0544               X1                                                                  
+1000-0198               N14                                                                 
+TESTPOINT               TP20                                                                
+TESTPOINT               TP1                                                                 
+TESTPOINT               TP6                                                                 
+TESTPOINT               TP19                                                                
+TESTPOINT               TP16                                                                
+TESTPOINT               TP21                                                                
+TESTPOINT               TP23                                                                
+TESTPOINT               TP5                                                                 
+TESTPOINT               TP2                                                                 
+TESTPOINT               TP22                                                                

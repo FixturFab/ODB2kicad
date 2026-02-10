@@ -1,0 +1,23 @@
+DISPLAY {
+    L0 = coverbottom
+}
+DISPLAY {
+    L0 = coverbottom
+    L1 = signal_10
+}
+DISPLAY {
+    L0 = coverbottom
+    L1 = d_3_8
+}
+DISPLAY {
+    L0 = coverbottom
+    L1 = d_1_10
+}
+DISPLAY {
+    L0 = coverbottom
+    L1 = d_9_10
+}
+DISPLAY {
+    L0 = coverbottom
+    L1 = rout
+}

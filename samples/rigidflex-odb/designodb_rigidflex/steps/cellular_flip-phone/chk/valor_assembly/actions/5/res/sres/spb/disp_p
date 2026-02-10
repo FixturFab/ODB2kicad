@@ -1,0 +1,37 @@
+DISPLAY {
+    L0 = spb
+}
+DISPLAY {
+    L0 = spb
+    L1 = signal_10
+}
+DISPLAY {
+    L0 = spb
+    L1 = signal_10
+    L2 = covertop
+    L3 = comp_+_bot
+}
+DISPLAY {
+    L0 = spb
+    L1 = covertop
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = spb
+    L1 = comp_+_bot
+}
+DISPLAY {
+    L0 = spb
+    L1 = rout
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = spb
+    L1 = d_9_10
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = spb
+    L1 = d_1_10
+    L2 = comp_+_bot
+}

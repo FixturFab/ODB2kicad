@@ -1,0 +1,6 @@
+SHOW_REF_LAYER=0
+FROM_REP=0
+SOLVED_CHK=0
+SIGNATURE=valor_assembly_fiducial_STD;valor_assembly_component_STD;valor_assembly_padstack_STD;valor_assembly_testpoint_STD;valor_assembly_solderpaste_STD;valor_assembly_pin2pad_STD
+RAN_IN_SAFE_MODE=0
+REP_RANGE_TYPE=0

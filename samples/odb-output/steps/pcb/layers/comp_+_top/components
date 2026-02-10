@@ -1,0 +1,26 @@
+UNITS=MM
+
+#
+#Feature attribute names
+#
+@0 .comp_mount_type
+
+#
+#Feature attribute text strings
+#
+# CMP 0
+CMP 0 100.0 -100.0 0 N R1 Resistor_SMD_R_0805_2012Metric ;0=1
+PRP Datasheet ''
+PRP Description ''
+PRP Value '10k'
+TOP 0 99.09 -100.0 0.0 N 3 0 1
+TOP 1 100.91 -100.0 0.0 N 2 0 2
+#
+# CMP 1
+CMP 0 120.0 -100.0 0 N R2 Resistor_SMD_R_0805_2012Metric ;0=1
+PRP Datasheet ''
+PRP Description ''
+PRP Value '4.7k'
+TOP 0 119.09 -100.0 0.0 N 2 1 1
+TOP 1 120.91 -100.0 0.0 N 1 0 2
+#

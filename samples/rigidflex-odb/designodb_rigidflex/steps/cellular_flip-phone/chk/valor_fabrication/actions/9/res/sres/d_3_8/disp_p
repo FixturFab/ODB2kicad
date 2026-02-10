@@ -1,0 +1,7 @@
+DISPLAY {
+    L0 = d_3_8
+}
+DISPLAY {
+    L0 = d_3_8
+    L1 = d_2_3
+}

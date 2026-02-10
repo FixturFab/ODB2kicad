@@ -1,0 +1,15 @@
+UNITS=INCH
+.cu_base=NO
+.eda_layers=rigid_area
+.inp_file=
+.lpol_done=NO
+.out_angle=0.0
+.out_comp=0
+.out_mirror=NO
+.out_polarity=Positive
+.out_x_scale=1
+.out_y_scale=1
+.comment=
+.layer_dielectric=0
+.layer_hdi_type=Core
+.copper_weight=0

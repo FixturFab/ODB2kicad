@@ -1,0 +1,87 @@
+DISPLAY {
+    L0 = signal_1
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = comp_+_top
+    L2 = comp_+_top
+    L3 = soldermask_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = comp_+_top
+    L2 = soldermask_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = comp_+_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = soldermask_top
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = soldermask_top
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = d_1_2
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = d_1_10
+}
+DISPLAY {
+    L0 = soldermask_top
+    L1 = signal_1
+}
+DISPLAY {
+    L0 = soldermask_top
+    L1 = signal_1
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = comp_+_top
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = rout
+    L2 = soldermask_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = rout
+    L2 = comp_+_top
+    L3 = soldermask_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = comp_+_top
+    L3 = soldermask_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = soldermask_top
+    L2 = comp_+_top
+    L3 = d_1_2
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = d_1_2
+    L2 = soldermask_top
+    L3 = comp_+_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = soldermask_top
+}
+DISPLAY {
+    L0 = signal_1
+    L1 = comp_+_top
+    L2 = d_1_2
+}

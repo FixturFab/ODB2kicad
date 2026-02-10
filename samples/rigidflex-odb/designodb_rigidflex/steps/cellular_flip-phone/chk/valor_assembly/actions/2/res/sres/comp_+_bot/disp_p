@@ -1,0 +1,38 @@
+DISPLAY {
+    L0 = comp_+_bot
+}
+DISPLAY {
+    L0 = comp_+_top
+    L1 = comp_+_bot
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = comp_+_bot
+    L2 = signal_10
+    L3 = covertop
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = comp_+_top
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = signal_1
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = signal_10
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = rout
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = d_1_10
+}
+DISPLAY {
+    L0 = comp_+_bot
+    L1 = signal_10
+    L2 = covertop
+}

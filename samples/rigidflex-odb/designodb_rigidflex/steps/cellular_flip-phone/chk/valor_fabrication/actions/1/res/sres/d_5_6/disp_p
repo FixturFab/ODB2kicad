@@ -1,0 +1,17 @@
+DISPLAY {
+    L0 = d_5_6
+}
+DISPLAY {
+    L0 = flex_5
+    L1 = flex_6
+    L2 = d_5_6
+}
+DISPLAY {
+    L0 = d_5_6
+    L1 = flex_5
+    L2 = flex_6
+}
+DISPLAY {
+    L0 = d_5_6
+    L1 = rout
+}

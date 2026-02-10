@@ -1,0 +1,22 @@
+UNITS=MM
+#
+#Num Features
+#
+F 1
+
+#
+#Feature symbol names
+#
+$0 donut_rc40050.0x20050.0x50.0xr25.0
+
+#
+#Feature attribute names
+#
+
+#
+#Feature attribute text strings
+#
+#
+#Layer features
+#
+P 110.0 -100.0 0 P 0 8 0.0 

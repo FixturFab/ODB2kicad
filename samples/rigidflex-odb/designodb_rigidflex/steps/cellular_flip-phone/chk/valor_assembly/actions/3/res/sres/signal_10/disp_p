@@ -1,0 +1,65 @@
+DISPLAY {
+    L0 = signal_10
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = comp_+_bot
+    L2 = covertop
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = comp_+_bot
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = covertop
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = covertop
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = d_9_10
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = d_1_10
+}
+DISPLAY {
+    L0 = covertop
+    L1 = signal_10
+}
+DISPLAY {
+    L0 = covertop
+    L1 = signal_10
+    L2 = comp_+_bot
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = comp_+_bot
+    L2 = comp_+_top
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = rout
+    L2 = covertop
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = comp_+_bot
+    L3 = covertop
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = covertop
+    L2 = comp_+_bot
+    L3 = d_9_10
+}
+DISPLAY {
+    L0 = signal_10
+    L1 = comp_+_bot
+    L2 = d_9_10
+}

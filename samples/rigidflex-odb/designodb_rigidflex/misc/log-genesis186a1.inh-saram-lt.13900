@@ -1,0 +1,373 @@
+*********** ERROR INTERNAL 24Oct2016.101506.143 valornpi 13900  9.8Beta D(5237876) Windows 7
+file/dir causing error : C:/beta/vNPI_HOME/.genesis/login
+*********** ERROR INTERNAL 24Oct2016.101506.143 valornpi 13900  9.8Beta D(5237876) Windows 7
+System fopen call error : No such file or directory at D:\anthill3\var\jobs\projects\65579_729491\s_dev\code\gen\gen_fs.c 2930
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/back_drill.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/brd_drill.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/drill.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/drillsum.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/embedded.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/etch.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/pd.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/pg.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/profile.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/signal.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/sm.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/smdsum.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/ss.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/analysis/surf.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/altparts.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/autoinsert.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/component.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/fiducial.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/padstack.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/pin2pad.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/sp.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/assembly/testpoint.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/cleanup/auto_subst.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/cleanup/auto_subst_step_II.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/cleanup/nomenclr.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/cleanup/ref_subst.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/cleanup/set_smd.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/balance.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/f_toutln.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/nfpr.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/pad_snap.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/punch_to_drill.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/sliver_fill.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/smooth.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/spo.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/ssclip.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/tan_elm.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/td.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dfm/txt_sliver.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/dft/accessibility.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/hdi/hdi_signal.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/hdi/hdi_sm.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/microvia/hdi_microvia_drill.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/microvia/hdi_microvia_signal.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/microvia/hdi_microvia_sm.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/panel/array.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/rf/flex_check.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/rf/inclusion.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/rf/rf_check.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/sqa/net_checks.erfz
+read file - C:/beta/vNPI_DIR/sys/valor_prog/utils/script.erfz
+Reading Mentor flow data. Please wait...
+Mentor flow data has been successfuly loaded.
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/stephdr
+read step profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/assemb/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/assemt/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/bend_area/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/comp_+_bot/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/comp_+_top/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/coverbottom/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/coverbottom/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/coverbottom/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/covertop/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/covertop/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/covertop/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_1_10/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_1_2/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_2_3/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_3_8/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_5_6/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_8_9/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_9_10/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_13/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_13/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_13/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_15/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_15/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_15/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_17/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_17/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_17/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_19/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_19/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_19/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_3/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_3/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_3/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_5/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_5/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_5/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_7/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_7/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_7/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_9/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_9/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/dielectric_9/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/fab_drc/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_5/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_5/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_5/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_6/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_6/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_6/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/flex_area/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/odb_board_outline/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/plane_4/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/plane_4/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/plane_4/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/polyimide_base_11/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/polyimide_base_11/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/polyimide_base_11/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/rigid_area/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/rout/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_1/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_1/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_1/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_10/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_10/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_10/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_2/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_2/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_2/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_3/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_3/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_3/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_7/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_7/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_7/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_8/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_8/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_8/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_9/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_9/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/signal_9/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/soldermask_bottom/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/soldermask_bottom/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/soldermask_bottom/attrlist
+read layer profile - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/soldermask_top/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/soldermask_top/profile
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/soldermask_top/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/spb/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/spt/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/netlists/cadnet/netlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/eda/data
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/zones
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/sc_join0201_hd/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/sc_join0201_hd_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/sc_join0201_hd_sm_50um/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/sc_join0201w_hd/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/sc_join0201w_hd_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/sc_join0201w_hd_sm_50um/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.300x0.330/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.440x0.560/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.440x0.560wide/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.500x0.800_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.510x0.560/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.540x0.660/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.540x0.660wide/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.560x0.680/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.584x0.900x2/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special0.770x0.840/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.000x1.000/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.100x1.100/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.120x1.120/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.150x1.650/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.250x1.750/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.270x1.770/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.500x2.600x2/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.800x1.800x4/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.900x2.000/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.900x2.000_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.900x2.500/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special1.900x2.500_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.100x3.100/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.100x3.100_b/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.100x3.100_b_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.100x3.100_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.100x3.500/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.100x3.500_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special2.25x3.50/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special5.2mm_outer_dia_2.8mm_inner_trim_4.2mm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special5.2mm_outer_dia_trim_4.2mm_cl/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special5.800x2.200_pb/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special5.800x2.350/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special5.900x2.450_sm_50um/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special5.920x2.470_radius0.18/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.300x0.330/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.440x0.560/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.440x0.560wide/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.510x0.560/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.540x0.660/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.540x0.660wide/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.670x0.950_nt2520/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.770x0.840/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_0.770x1.050_nt2520/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_1.150x1.650/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_1.250x1.750/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_1.900x2.000/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_1.900x2.000_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_1.900x2.500/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_1.900x2.500_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_5.200_outer_dia_2.800_inner_trim_4.200/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_5.200_outer_dia_2.800_inner_trim_4.200_cutout/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_5.200_outer_dia_2.800_inner_trim_4.200_cutout_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_5.200_outer_dia_2.800_inner_trim_4.200_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_alona_domekey_outer_b/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_alona_domekey_outer_c/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_alona_domekey_outer_sm_b/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_alona_domekey_outer_sm_c/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101134/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101134_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101141_sp/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101149/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101149_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101149_sm_50um/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101151_p6/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101151_p6_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101151_p7/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101151_p7_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101155/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101155_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101155_sp/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101208_c/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101208_c_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101208_c_sm50/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101517/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101517_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101517_sp/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_byx101517_sp_b/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_1/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_1_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_2/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_2_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_3/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_3_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_4/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_4_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_5/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_3mm_paris_5_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_4mm_sidecut/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_4mm_sidecut_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_5mm_sidecut/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_5mm_sidecut_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domekey_lena_shaved/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domkey_4.800_justine/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_domkey_4.800_justine_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_ellen_mic_paste/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_join0201w_hd/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_join0201w_hd_sm_50um/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_join0402_hd_sm_wide/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_join0402_hdwide/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_join_0603/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_mulan_domkey_outer_s2921_soldermask_050/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_samantha_domekey_outer/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_samantha_domekey_outer_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sania_speaker_cu/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sania_speaker_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_shinobu_domekey_outer/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_shinobu_domekey_outer_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_3000/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_3000sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_4237/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_4237sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_b/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_sm/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_sofia_domekey_outer_sm_b/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/symbols/special_spark_gap_0.457x0.229/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/matrix/matrix
+read file - C:/beta/vNPI_98/edir/all/lyr_types
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/misc/attrlist
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/misc/signature
+*********** WARNING  24Oct2016.101509.063 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Signature file valid
+***********  COMMAND 24Oct2016.101538.608 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+dpw_run,path=valornpi,init_file_path=C:/beta/vNPI_TMP/wfInit-genesis186a3.inh-saram-lt.13900,mode=silent,start=yes (-1)
+read file - C:/beta/vNPI_DIR/sys//wizards/valornpi.xmlz
+read file - C:/beta/vNPI_DIR/sys//wizards/bommgr.xmlz
+***********  COMMAND 24Oct2016.101538.684 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+dpw_show_page,show=no (-1)
+***********  COMMAND 24Oct2016.101538.689 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+clipb_window_do,winid=1,op=minimize (-1)
+***********  COMMAND 24Oct2016.101538.696 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+open_job,job=designodb_rigidflex (-1)
+***********  COMMAND 24Oct2016.101538.702 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+config_edit,name=get_def_units,value=inch,mode=user (-1)
+*********** WARNING  24Oct2016.101538.705 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: BOM / AVL Information
+*********** WARNING  24Oct2016.101538.706 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: BOM Manager and Component Place List Data Selection
+***********  COMMAND 24Oct2016.101538.713 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+open_job,job=designodb_rigidflex (-1)
+***********  COMMAND 24Oct2016.101538.717 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+save_job,job=designodb_rigidflex,override=no (-1)
+write file - C:/SangeethaRam/odb_example/designodb_rigidflex/misc/info
+***********  COMMAND 24Oct2016.101538.794 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+get_job_path,job=designodb_rigidflex (-1)
+***********  COMMAND 24Oct2016.101538.826 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+entity_exist,type=step,name=*,parent_job=designodb_rigidflex,parent_step=,op=count (-1)
+***********  COMMAND 24Oct2016.101538.839 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+entity_exist,type=step,name=*,parent_job=designodb_rigidflex,parent_step=,op=first (-1)
+*********** WARNING  24Oct2016.101538.864 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: Product Model Attribute Assignment
+***********  COMMAND 24Oct2016.101538.870 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+open_entity,job=designodb_rigidflex,type=step,name=cellular_flip-phone,iconic=no (-1)
+***********  COMMAND 24Oct2016.101539.192 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+units,type=inch,force_set=yes (0)
+***********  COMMAND 24Oct2016.101539.192 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+set_group,group=0 (-1)
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/comp_+_top/components
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/comp_+_bot/components
+***********  COMMAND 24Oct2016.101539.272 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+display_comp_outline_mode,mode=Body (0)
+***********  COMMAND 24Oct2016.101539.286 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+set_group,group=0 (0)
+***********  COMMAND 24Oct2016.101707.634 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+dpw_do,op=continue (-1)
+***********  COMMAND 24Oct2016.101707.666 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+editor_page_close (0)
+***********  COMMAND 24Oct2016.101707.684 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+open_entity,job=designodb_rigidflex,type=step,name=cellular_flip-phone,iconic=no (-1)
+***********  COMMAND 24Oct2016.101707.986 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+units,type=inch,force_set=yes (0)
+***********  COMMAND 24Oct2016.101707.994 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+display_comp_outline_mode,mode=Body (0)
+***********  COMMAND 24Oct2016.101708.007 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+set_group,group=0 (0)
+***********  COMMAND 24Oct2016.101708.012 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+tools_show,mode=simple (0)
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_1_2/features
+read file - C:/SangeethaRam/odb_example/designodb_rigidflex/steps/cellular_flip-phone/layers/d_1_2/tools
+***********  COMMAND 24Oct2016.101708.293 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+work_layer,name=d_1_2 (0)
+***********  COMMAND 24Oct2016.101710.025 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+dpw_do,op=continue (-1)
+***********  COMMAND 24Oct2016.101710.056 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+tools_close (0)
+***********  COMMAND 24Oct2016.101710.074 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+editor_page_close (0)
+*********** WARNING  24Oct2016.101710.085 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: Translate the BOM / AVL
+*********** WARNING  24Oct2016.101710.088 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: Obtain VPL Data
+*********** WARNING  24Oct2016.101710.092 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: Save and Close BOM Manager
+*********** WARNING  24Oct2016.101710.094 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+Skipping stage: Assembly Merge
+***********  COMMAND 24Oct2016.101710.108 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+open_entity,job=designodb_rigidflex,type=step,name=cellular_flip-phone,iconic=no (-1)
+***********  COMMAND 24Oct2016.101710.368 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+units,type=inch,force_set=yes (0)
+***********  COMMAND 24Oct2016.101710.376 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+display_comp_outline_mode,mode=Body (0)
+***********  COMMAND 24Oct2016.101710.390 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+set_group,group=0 (0)
+***********  COMMAND 24Oct2016.101710.394 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+editor_hidden_mode,mode=displayed (0)
+***********  COMMAND 24Oct2016.101710.398 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+comp_atr_from_prop,file_name=prop2attr_rules.xml (0)
+***********  COMMAND 24Oct2016.101710.487 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+comp_attr_ass_popup_open (0)
+***********  COMMAND 24Oct2016.101712.905 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+dpw_do,op=stop (-1)
+***********  COMMAND 24Oct2016.101716.169 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+editor_page_close (0)
+***********  COMMAND 24Oct2016.101725.084 valornpi 13900 saram 9.8Beta D(5237876) Windows 7
+close_toolkit,save_log=no (-1)

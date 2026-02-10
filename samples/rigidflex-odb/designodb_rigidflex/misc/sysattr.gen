@@ -1,0 +1,36 @@
+UNITS=INCH
+
+TEXT {
+  NAME    = .color
+  ENTITY  = FEATURE;COMPONENT;PACKAGE
+  MIN_LEN = 0
+  MAX_LEN = 1000
+  GROUP   = Feature
+  PROMPT  = HPGL Output Color
+}
+
+BOOLEAN {
+  NAME    = .dxf_dimension
+  ENTITY  = FEATURE
+  GROUP   = Feature
+  PROMPT  = DXF Dimension
+}
+
+INTEGER {
+  NAME    = .orig_surf
+  ENTITY  = FEATURE
+  DEF     = 0
+  MIN_VAL = 0
+  MAX_VAL = 2147483647
+  GROUP   = Feature
+  PROMPT  = Original Contour Index
+}
+
+INTEGER {
+  NAME    = .output_dcode
+  ENTITY  = FEATURE
+  MIN_VAL = 0
+  MAX_VAL = 1000000
+  GROUP   = Feature
+  PROMPT  = General Output Dcode
+}
