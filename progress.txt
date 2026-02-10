@@ -571,7 +571,7 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 
 ### Next: Stage 6 - Archive Extraction Support
 
-## 2026-02-10: Stage 6 - Archive Extraction Support IN PROGRESS
+## 2026-02-10: Stage 6 - Archive Extraction Support COMPLETE
 
 - 6.1: Installed fflate dependency (v0.8.2) for .tgz/.zip extraction
 - 6.2: Implemented convertOdbArchive() in index.mjs with parseTar(), extractArchive(), stripCommonPrefix()
@@ -579,3 +579,28 @@ node --experimental-wasm-threads test/test-wasm.mjs /root/kicad-test/samples/tes
 - 6.4: Updated browser.html with archive tab (tab-switching UI, .tgz/.zip file input, inline extraction)
 - 6.5: Added 6 archive tests to test-node.mjs (tgz simple, zip simple, tgz kitchen-sink, zip kitchen-sink, invalid, empty)
 - 6.6: All 11 tests pass — archive output byte-identical to directory-based conversion
+
+## 2026-02-10: Stage 7 - Optimize and Package COMPLETE
+
+### What was done:
+- 7.1: Added -Oz (size-optimized) and -flto (link-time optimization) to CMakeLists.txt WASM build
+- 7.2: WASM binary reduced from 364KB → 236KB (37% reduction, well under 500KB target)
+- 7.3: wasm-opt tested but only saved 176 bytes on top of -Oz -flto (negligible, skipped)
+- 7.4: Updated package.json with engines field (node >= 18)
+- 7.5: All tests pass with optimized build:
+  - 11 Node.js tests (directory + archive conversion, parity, error handling, sequential)
+  - 60+ WASM smoke test assertions (nets, components, layers, vias, zones, etc.)
+  - Byte-identical parity between WASM and native CLI output confirmed
+  - Native build still works, all native smoke tests pass
+- 7.6: npm pack produces odb2kicad-wasm-0.1.0.tgz (126.5KB compressed, 326.3KB unpacked)
+  - 5 files: dist/index.mjs, dist/index.d.ts, dist/odb2kicad_wasm.mjs, dist/odb2kicad_wasm.wasm, package.json
+
+### Binary size summary:
+- odb2kicad_wasm.wasm: 236KB (target was <500KB)
+- odb2kicad_wasm.mjs: 80KB (Emscripten JS glue)
+- index.mjs: 7.8KB (JS wrapper)
+- index.d.ts: 1.6KB (TypeScript declarations)
+- npm tarball: 126.5KB compressed
+
+### All Stage 7 success criteria met
+### ALL STAGES 1-7 COMPLETE — PRD fully implemented

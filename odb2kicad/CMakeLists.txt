@@ -27,9 +27,15 @@ if(EMSCRIPTEN)
     add_executable(odb2kicad_wasm src/wasm_bindings.cpp)
     target_link_libraries(odb2kicad_wasm PRIVATE odb2kicad_core)
 
+    # Size optimization: -Oz for smallest binary, -flto for link-time optimization
+    target_compile_options(odb2kicad_core PRIVATE -Oz -flto)
+    target_compile_options(odb2kicad_wasm PRIVATE -Oz -flto)
+
     set_target_properties(odb2kicad_wasm PROPERTIES
         SUFFIX ".mjs"
         LINK_FLAGS "\
+            -Oz \
+            -flto \
             -s MODULARIZE=1 \
             -s EXPORT_ES6=1 \
             -s EXPORTED_RUNTIME_METHODS=['FS'] \
