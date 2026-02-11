@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>odb2kicad — ODB++ to KiCad Converter</title>
+<style>
+/* ── Reset & Base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #eff6ff;
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --error: #dc2626;
+  --error-bg: #fef2f2;
+  --code-bg: #0d1117;
+  --code-gutter: #21262d;
+  --code-line-num: #484f58;
+  --code-text: #e6edf3;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+  --transition: 0.2s ease;
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --bg-secondary: #1e293b;
+  --text: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --border-hover: #475569;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-light: #1e293b;
+  --success: #22c55e;
+  --success-bg: #052e16;
+  --error: #ef4444;
+  --error-bg: #450a0a;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.hero {
+  border-bottom: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-left { display: flex; align-items: center; gap: 16px; }
+
+.hero h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 span { color: var(--accent); }
+
+.hero-tagline {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.hero-actions { display: flex; align-items: center; gap: 12px; }
+
+.gh-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color var(--transition), color var(--transition);
+}
+.gh-link:hover { border-color: var(--border-hover); color: var(--text); }
+.gh-link svg { width: 16px; height: 16px; fill: currentColor; }
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  transition: border-color var(--transition), color var(--transition);
+}
+.theme-toggle:hover { border-color: var(--border-hover); color: var(--text); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Main Layout ────────────────────────────────────────────── */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 16px 20px; }
+  .container { padding: 16px 20px; }
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Panel ──────────────────────────────────────────────────── */
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.panel-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.panel-body { padding: 18px; }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s, box-shadow var(--transition);
+  font-family: inherit;
+}
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(37,99,235,0.3);
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg-secondary); color: var(--text); }
+
+.btn-try {
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 28px;
+  font-size: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+.btn-try:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 4px 16px rgba(37,99,235,0.3); }
+.btn-try:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Try It Now section ─────────────────────────────────────── */
+.try-section {
+  text-align: center;
+  padding: 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.try-section p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+/* ── Drop Zone ──────────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.drop-zone input { display: none; }
+
+.drop-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
+  opacity: 0.6;
+}
+
+.drop-zone .primary-text {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.drop-zone .secondary-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.format-pills {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+.or-divider::before, .or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.dir-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  transition: background var(--transition);
+  font-family: inherit;
+}
+.dir-upload-btn:hover { background: var(--accent-light); }
+.dir-upload-btn input { display: none; }
+
+/* ── Status ─────────────────────────────────────────────────── */
+.status-bar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  transition: background var(--transition);
+}
+.status-bar.visible { display: flex; }
+.status-bar.info { background: var(--accent-light); color: var(--accent); }
+.status-bar.success { background: var(--success-bg); color: var(--success); }
+.status-bar.error { background: var(--error-bg); color: var(--error); }
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.checkmark::before { content: '\2713'; font-weight: 700; }
+.errormark::before { content: '\2717'; font-weight: 700; }
+
+/* ── Output Viewer ──────────────────────────────────────────── */
+.output-panel .panel-header { background: #161b22; border-color: #30363d; }
+.output-panel .panel-title { color: #8b949e; }
+.output-panel { border-color: #30363d; }
+
+.output-toolbar { display: flex; gap: 6px; }
+
+.toolbar-btn {
+  background: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.toolbar-btn:hover { background: #30363d; }
+.toolbar-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toolbar-btn.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+.code-viewer {
+  background: var(--code-bg);
+  overflow: auto;
+  max-height: 600px;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  counter-reset: line;
+}
+
+.code-viewer .line {
+  display: flex;
+  min-height: 1.55em;
+}
+
+.code-viewer .line-num {
+  display: inline-block;
+  width: 52px;
+  min-width: 52px;
+  padding: 0 10px 0 0;
+  text-align: right;
+  color: var(--code-line-num);
+  user-select: none;
+  background: var(--code-gutter);
+  flex-shrink: 0;
+}
+
+.code-viewer .line-content {
+  padding: 0 16px;
+  white-space: pre;
+  color: var(--code-text);
+  flex: 1;
+  min-width: 0;
+}
+
+.code-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #484f58;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.show-all-bar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  cursor: pointer;
+  color: #58a6ff;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.show-all-bar:hover { background: #1c2128; }
+.show-all-bar.visible { display: flex; }
+
+/* ── Stats Bar ──────────────────────────────────────────────── */
+.stats-bar {
+  display: none;
+  padding: 8px 18px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+  font-size: 0.78rem;
+  color: #8b949e;
+  gap: 18px;
+}
+.stats-bar.visible { display: flex; flex-wrap: wrap; }
+.stats-bar .stat { display: inline-flex; align-items: center; gap: 4px; }
+.stats-bar .stat strong { color: #c9d1d9; font-weight: 600; }
+
+/* ── Syntax Highlighting ────────────────────────────────────── */
+.tok-paren { color: #6e7681; }
+.tok-keyword { color: #d2a8ff; }
+.tok-string { color: #7ee787; }
+.tok-number { color: #ffa657; }
+.tok-layer { color: #79c0ff; }
+.tok-comment { color: #6e7681; font-style: italic; }
+.tok-property { color: #ff7b72; }
+.tok-uuid { color: #6e7681; }
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  border-top: 1px solid var(--border);
+  margin-top: 32px;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* ── Focus Visible ──────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+</style>
+</head>
+<body>
+
+<!-- ─── Hero ─────────────────────────────────────────────── -->
+<header class="hero" role="banner">
+  <div class="hero-left">
+    <div>
+      <h1><span>odb2kicad</span></h1>
+      <p class="hero-tagline">Convert ODB++ to KiCad .kicad_pcb — entirely in your browser</p>
+    </div>
+  </div>
+  <div class="hero-actions">
+    <a class="gh-link" href="https://github.com/nicjohnson145/odb2kicad" target="_blank" rel="noopener" aria-label="View on GitHub">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+      <span id="themeIcon" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<!-- ─── Main ─────────────────────────────────────────────── -->
+<div class="container">
+  <div class="main-grid">
+
+    <!-- ── Input Panel ───────────────────────────────────── -->
+    <div class="panel" id="inputPanel">
+      <div class="panel-header">
+        <span class="panel-title">Input</span>
+        <span id="inputLabel" style="font-size:0.8rem; color:var(--text-secondary)"></span>
+      </div>
+
+      <!-- Try It Now -->
+      <div class="try-section">
+        <p>No ODB++ file? Try with a built-in sample.</p>
+        <button class="btn btn-try" id="tryBtn" aria-label="Load sample ODB++ and convert">
+          Try it now
+        </button>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="panel-body">
+        <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Drop ODB++ archive or directory here">
+          <span class="drop-icon" aria-hidden="true">&#128230;</span>
+          <p class="primary-text">Drop ODB++ archive here</p>
+          <p class="secondary-text">or click to browse for a file</p>
+          <div class="format-pills">
+            <span class="pill">.tgz</span>
+            <span class="pill">.tar.gz</span>
+            <span class="pill">.zip</span>
+            <span class="pill">.tar</span>
+          </div>
+          <input type="file" id="archiveInput" accept=".tgz,.tar.gz,.tar,.zip,.gz" aria-hidden="true">
+        </div>
+
+        <div class="or-divider">or upload a directory</div>
+
+        <label class="dir-upload-btn" tabindex="0" role="button" aria-label="Upload ODB++ directory">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z"/></svg>
+          Choose folder
+          <input type="file" id="dirInput" webkitdirectory multiple aria-hidden="true">
+        </label>
+      </div>
+
+      <!-- Status bar -->
+      <div class="status-bar" id="statusBar" role="status" aria-live="polite">
+        <div class="spinner" id="statusSpinner" aria-hidden="true"></div>
+        <span class="checkmark" id="statusCheck" aria-hidden="true" style="display:none"></span>
+        <span class="errormark" id="statusError" aria-hidden="true" style="display:none"></span>
+        <span id="statusText"></span>
+      </div>
+    </div>
+
+    <!-- ── Output Panel ──────────────────────────────────── -->
+    <div class="panel output-panel" id="outputPanel">
+      <div class="panel-header">
+        <span class="panel-title">Output — .kicad_pcb</span>
+        <div class="output-toolbar" id="outputToolbar" style="display:none">
+          <button class="toolbar-btn" id="copyBtn" aria-label="Copy output to clipboard">Copy</button>
+          <button class="toolbar-btn" id="downloadBtn" aria-label="Download .kicad_pcb file">Download</button>
+        </div>
+      </div>
+      <div class="code-viewer" id="codeViewer" role="region" aria-label="Conversion output">
+        <div class="code-empty" id="codePlaceholder">
+          Output will appear here after conversion
+        </div>
+        <div id="codeLines"></div>
+      </div>
+      <div class="show-all-bar" id="showAllBar" role="button" tabindex="0" aria-label="Show all lines">
+        <span id="showAllText"></span>
+      </div>
+      <div class="stats-bar" id="statsBar">
+        <span class="stat"><strong id="statFiles">0</strong>&nbsp;files</span>
+        <span class="stat"><strong id="statTime">0</strong>&nbsp;ms</span>
+        <span class="stat"><strong id="statSize">0</strong>&nbsp;chars</span>
+        <span class="stat"><strong id="statLines">0</strong>&nbsp;lines</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── Footer ───────────────────────────────────────────── -->
+<footer class="footer" role="contentinfo">
+  Powered by <a href="https://github.com/nicjohnson145/odb2kicad">odb2kicad</a> compiled to WebAssembly.
+  All processing happens locally in your browser — no data leaves your machine.
+</footer>
+
+<script type="module">
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Imports
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { gunzipSync, unzipSync } from 'https://cdn.jsdelivr.net/npm/fflate@0.8/esm/browser.js';
+
+const wasmUrl = new URL('./odb2kicad_wasm.mjs', import.meta.url).href;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Theme
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+
+function getSystemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeIcon.textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+}
+
+const savedTheme = localStorage.getItem('odb2kicad-theme');
+applyTheme(savedTheme || getSystemTheme());
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  if (!localStorage.getItem('odb2kicad-theme')) applyTheme(e.matches ? 'dark' : 'light');
+});
+
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('odb2kicad-theme', next);
+  applyTheme(next);
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  DOM refs
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const dropZone = document.getElementById('dropZone');
+const archiveInput = document.getElementById('archiveInput');
+const dirInput = document.getElementById('dirInput');
+const tryBtn = document.getElementById('tryBtn');
+const inputLabel = document.getElementById('inputLabel');
+const statusBar = document.getElementById('statusBar');
+const statusSpinner = document.getElementById('statusSpinner');
+const statusCheck = document.getElementById('statusCheck');
+const statusError = document.getElementById('statusError');
+const statusText = document.getElementById('statusText');
+const codeViewer = document.getElementById('codeViewer');
+const codePlaceholder = document.getElementById('codePlaceholder');
+const codeLines = document.getElementById('codeLines');
+const showAllBar = document.getElementById('showAllBar');
+const showAllText = document.getElementById('showAllText');
+const statsBar = document.getElementById('statsBar');
+const outputToolbar = document.getElementById('outputToolbar');
+const copyBtn = document.getElementById('copyBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  State
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let Module = null;
+let rawOutput = '';
+let allOutputLines = [];
+let truncated = false;
+const MAX_VISIBLE_LINES = 500;
+let converting = false;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Status helpers
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function setStatus(msg, type) {
+  statusBar.className = 'status-bar visible ' + type;
+  statusText.textContent = msg;
+  statusSpinner.style.display = type === 'info' ? 'block' : 'none';
+  statusCheck.style.display = type === 'success' ? 'inline' : 'none';
+  statusError.style.display = type === 'error' ? 'inline' : 'none';
+}
+
+function clearStatus() {
+  statusBar.className = 'status-bar';
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Tar parser
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function parseTar(data) {
+  const files = [];
+  const decoder = new TextDecoder();
+  let offset = 0;
+  while (offset + 512 <= data.length) {
+    const header = data.subarray(offset, offset + 512);
+    if (header.every(b => b === 0)) break;
+    let name = decoder.decode(header.subarray(0, 100)).replace(/\0.*/s, '');
+    const magic = decoder.decode(header.subarray(257, 263)).replace(/\0.*/s, '');
+    if (magic === 'ustar') {
+      const prefix = decoder.decode(header.subarray(345, 500)).replace(/\0.*/s, '');
+      if (prefix) name = prefix + '/' + name;
+    }
+    const sizeStr = decoder.decode(header.subarray(124, 136)).replace(/\0.*/s, '').trim();
+    const size = parseInt(sizeStr, 8) || 0;
+    const type = header[156];
+    offset += 512;
+    if ((type === 0x30 || type === 0) && size > 0 && name) {
+      files.push({ path: name, content: decoder.decode(data.subarray(offset, offset + size)) });
+    }
+    offset += Math.ceil(size / 512) * 512;
+  }
+  return files;
+}
+
+function extractArchive(data) {
+  if (data[0] === 0x1f && data[1] === 0x8b) {
+    return parseTar(gunzipSync(data));
+  }
+  if (data[0] === 0x50 && data[1] === 0x4b && data[2] === 0x03 && data[3] === 0x04) {
+    const entries = unzipSync(data);
+    const files = [];
+    const decoder = new TextDecoder();
+    for (const [name, content] of Object.entries(entries)) {
+      if (name.endsWith('/')) continue;
+      files.push({ path: name, content: decoder.decode(content) });
+    }
+    return files;
+  }
+  if (data.length > 262) {
+    const magic = new TextDecoder().decode(data.subarray(257, 263)).replace(/\0.*/s, '');
+    if (magic === 'ustar') return parseTar(data);
+  }
+  throw new Error('Unrecognized archive format. Expected .tgz, .tar.gz, .zip, or .tar');
+}
+
+function stripCommonPrefix(files) {
+  if (files.length === 0) return files;
+  const paths = files.map(f => f.path);
+  const firstParts = paths[0].split('/');
+  let commonDepth = 0;
+  for (let i = 0; i < firstParts.length - 1; i++) {
+    const prefix = firstParts.slice(0, i + 1).join('/') + '/';
+    if (paths.every(p => p.startsWith(prefix))) commonDepth = i + 1;
+    else break;
+  }
+  if (commonDepth === 0) return files;
+  const prefixLen = firstParts.slice(0, commonDepth).join('/').length + 1;
+  return files.map(f => ({ path: f.path.substring(prefixLen), content: f.content })).filter(f => f.path.length > 0);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  WASM init
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function getModule() {
+  if (!Module) {
+    setStatus('Loading WASM module\u2026', 'info');
+    const { default: initModule } = await import(wasmUrl);
+    Module = await initModule();
+  }
+  return Module;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  MEMFS helpers
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function mkdirp(FS, path) {
+  const parts = path.split('/').filter(Boolean);
+  let current = '';
+  for (const part of parts) {
+    current += '/' + part;
+    try { FS.mkdir(current); } catch (_) {}
+  }
+}
+
+function rmrf(FS, path) {
+  try {
+    const entries = FS.readdir(path).filter(e => e !== '.' && e !== '..');
+    for (const entry of entries) {
+      const full = path + '/' + entry;
+      const stat = FS.stat(full);
+      if (FS.isDir(stat.mode)) rmrf(FS, full);
+      else FS.unlink(full);
+    }
+    FS.rmdir(path);
+  } catch (_) {}
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Syntax highlighter
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const KEYWORDS = new Set([
+  'kicad_pcb', 'version', 'generator', 'generator_version', 'general',
+  'thickness', 'legacy_teardrops', 'paper', 'layers', 'setup',
+  'pad_to_mask_clearance', 'allow_soldermask_bridges_in_footprints',
+  'pcbplotparams', 'layerselection', 'plot_on_all_layers_selection',
+  'net', 'footprint', 'layer', 'tstamp', 'at', 'property', 'attr',
+  'fp_text', 'fp_line', 'effects', 'font', 'size', 'start', 'end',
+  'stroke', 'width', 'type', 'pad', 'smd', 'thru_hole', 'roundrect',
+  'rect', 'circle', 'oval', 'layers', 'roundrect_rratio', 'net',
+  'segment', 'gr_rect', 'gr_line', 'gr_circle', 'gr_arc', 'gr_poly',
+  'fill', 'via', 'zone', 'polygon', 'pts', 'xy', 'arc', 'drill',
+  'reference', 'value', 'model', 'offset', 'scale', 'rotate',
+  'fp_arc', 'fp_circle', 'fp_rect', 'fp_poly',
+]);
+
+const LAYERS = new Set([
+  'F.Cu', 'B.Cu', 'F.Paste', 'B.Paste', 'F.Mask', 'B.Mask',
+  'F.SilkS', 'B.SilkS', 'F.Fab', 'B.Fab', 'F.CrtYd', 'B.CrtYd',
+  'F.Adhes', 'B.Adhes', 'Edge.Cuts', 'Dwgs.User', 'Cmts.User',
+  'In1.Cu', 'In2.Cu', 'In3.Cu', 'In4.Cu',
+  'F.Silkscreen', 'B.Silkscreen', 'F.Courtyard', 'B.Courtyard',
+  'F.Adhesive', 'B.Adhesive', 'User.Drawings', 'User.Comments',
+]);
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function highlightLine(text) {
+  // Tokenize with a single-pass regex
+  const re = /("(?:[^"\\]|\\.)*")|([()])|(\b(?:yes|no|none|signal|user|solid|default)\b)|([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})|(-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)|([a-zA-Z_][a-zA-Z0-9_.]*)/g;
+  let result = '';
+  let lastIndex = 0;
+  let match;
+
+  while ((match = re.exec(text)) !== null) {
+    // Append any unmatched text before this token
+    if (match.index > lastIndex) {
+      result += escapeHtml(text.slice(lastIndex, match.index));
+    }
+    lastIndex = re.lastIndex;
+
+    if (match[1]) {
+      // String literal
+      const inner = match[1].slice(1, -1);
+      if (LAYERS.has(inner)) {
+        result += '"<span class="tok-layer">' + escapeHtml(inner) + '</span>"';
+      } else {
+        result += '<span class="tok-string">' + escapeHtml(match[1]) + '</span>';
+      }
+    } else if (match[2]) {
+      // Parenthesis
+      result += '<span class="tok-paren">' + match[2] + '</span>';
+    } else if (match[3]) {
+      // Boolean/enum keyword
+      result += '<span class="tok-keyword">' + escapeHtml(match[3]) + '</span>';
+    } else if (match[4]) {
+      // UUID
+      result += '<span class="tok-uuid">' + escapeHtml(match[4]) + '</span>';
+    } else if (match[5]) {
+      // Number
+      result += '<span class="tok-number">' + escapeHtml(match[5]) + '</span>';
+    } else if (match[6]) {
+      // Identifier — check if keyword
+      if (KEYWORDS.has(match[6])) {
+        result += '<span class="tok-keyword">' + escapeHtml(match[6]) + '</span>';
+      } else {
+        result += '<span class="tok-property">' + escapeHtml(match[6]) + '</span>';
+      }
+    }
+  }
+
+  // Append any remaining text
+  if (lastIndex < text.length) {
+    result += escapeHtml(text.slice(lastIndex));
+  }
+
+  return result;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Render output
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function renderOutput(text) {
+  rawOutput = text;
+  allOutputLines = text.split('\n');
+  truncated = allOutputLines.length > MAX_VISIBLE_LINES;
+
+  codePlaceholder.style.display = 'none';
+  outputToolbar.style.display = 'flex';
+
+  renderLines(truncated ? allOutputLines.slice(0, MAX_VISIBLE_LINES) : allOutputLines);
+
+  if (truncated) {
+    showAllText.textContent = `Show all ${allOutputLines.length.toLocaleString()} lines (${(allOutputLines.length - MAX_VISIBLE_LINES).toLocaleString()} hidden)`;
+    showAllBar.classList.add('visible');
+  } else {
+    showAllBar.classList.remove('visible');
+  }
+
+  statsBar.classList.add('visible');
+}
+
+function renderLines(lines) {
+  const fragment = document.createDocumentFragment();
+  for (let i = 0; i < lines.length; i++) {
+    const div = document.createElement('div');
+    div.className = 'line';
+    const num = document.createElement('span');
+    num.className = 'line-num';
+    num.textContent = String(i + 1);
+    const content = document.createElement('span');
+    content.className = 'line-content';
+    content.innerHTML = highlightLine(lines[i]);
+    div.appendChild(num);
+    div.appendChild(content);
+    fragment.appendChild(div);
+  }
+  codeLines.innerHTML = '';
+  codeLines.appendChild(fragment);
+}
+
+showAllBar.addEventListener('click', () => {
+  renderLines(allOutputLines);
+  showAllBar.classList.remove('visible');
+  truncated = false;
+});
+
+showAllBar.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showAllBar.click(); }
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Copy & Download
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+copyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(rawOutput);
+    copyBtn.textContent = 'Copied!';
+    copyBtn.classList.add('copied');
+    setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1500);
+  } catch {
+    copyBtn.textContent = 'Failed';
+    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+  }
+});
+
+downloadBtn.addEventListener('click', () => {
+  const blob = new Blob([rawOutput], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'output.kicad_pcb';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  File input handlers
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let pendingFiles = null;
+let pendingArchive = null;
+
+// Archive drop zone
+dropZone.addEventListener('click', () => archiveInput.click());
+dropZone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); archiveInput.click(); }
+});
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', async e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+
+  // Check if it's a directory drop
+  if (e.dataTransfer.items) {
+    for (const item of e.dataTransfer.items) {
+      const entry = item.webkitGetAsEntry?.();
+      if (entry && entry.isDirectory) {
+        await handleDirectoryEntry(entry);
+        return;
+      }
+    }
+  }
+
+  // Otherwise treat as archive
+  if (e.dataTransfer.files.length > 0) {
+    await handleArchiveFile(e.dataTransfer.files[0]);
+  }
+});
+
+archiveInput.addEventListener('change', async () => {
+  if (archiveInput.files.length > 0) {
+    await handleArchiveFile(archiveInput.files[0]);
+  }
+});
+
+// Directory input
+dirInput.addEventListener('change', () => {
+  if (dirInput.files.length > 0) handleFileList(dirInput.files);
+});
+
+async function handleArchiveFile(file) {
+  pendingFiles = null;
+  pendingArchive = new Uint8Array(await file.arrayBuffer());
+  const sizeKB = (pendingArchive.length / 1024).toFixed(1);
+  inputLabel.textContent = `${file.name} (${sizeKB} KB)`;
+  await runConversion();
+}
+
+function handleFileList(fileList) {
+  pendingArchive = null;
+  pendingFiles = [];
+  const promises = [];
+  for (const file of fileList) {
+    const relPath = file.webkitRelativePath || file.name;
+    const parts = relPath.split('/');
+    const path = parts.length > 1 ? parts.slice(1).join('/') : parts[0];
+    promises.push(file.text().then(content => { pendingFiles.push({ path, content }); }));
+  }
+  Promise.all(promises).then(async () => {
+    inputLabel.textContent = `${pendingFiles.length} files loaded`;
+    await runConversion();
+  });
+}
+
+async function handleDirectoryEntry(entry) {
+  pendingArchive = null;
+  pendingFiles = [];
+  await readEntry(entry, '');
+  inputLabel.textContent = `${pendingFiles.length} files loaded`;
+  await runConversion();
+}
+
+function readEntry(entry, basePath) {
+  return new Promise(resolve => {
+    if (entry.isFile) {
+      entry.file(file => {
+        file.text().then(content => {
+          const path = basePath ? basePath + '/' + entry.name : entry.name;
+          pendingFiles.push({ path, content });
+          resolve();
+        });
+      });
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const allEntries = [];
+      const readBatch = () => {
+        reader.readEntries(async entries => {
+          if (entries.length === 0) {
+            for (const e of allEntries) {
+              const dirPath = basePath ? basePath + '/' + entry.name : entry.name;
+              await readEntry(e, dirPath);
+            }
+            resolve();
+          } else {
+            allEntries.push(...entries);
+            readBatch();
+          }
+        });
+      };
+      readBatch();
+    } else {
+      resolve();
+    }
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Try it now
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+tryBtn.addEventListener('click', async () => {
+  if (converting) return;
+  tryBtn.disabled = true;
+  setStatus('Fetching sample ODB++ archive\u2026', 'info');
+  try {
+    const resp = await fetch(new URL('./test-odb.tgz', import.meta.url).href);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    pendingArchive = new Uint8Array(await resp.arrayBuffer());
+    pendingFiles = null;
+    inputLabel.textContent = 'test-odb.tgz (sample)';
+    await runConversion();
+  } catch (err) {
+    setStatus('Failed to load sample: ' + err.message, 'error');
+  }
+  tryBtn.disabled = false;
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Conversion
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function runConversion() {
+  if (converting) return;
+  converting = true;
+  tryBtn.disabled = true;
+
+  try {
+    let filesToConvert;
+
+    if (pendingArchive) {
+      setStatus('Extracting archive\u2026', 'info');
+      // yield to UI
+      await new Promise(r => setTimeout(r, 0));
+      filesToConvert = stripCommonPrefix(extractArchive(pendingArchive));
+      if (filesToConvert.length === 0) {
+        setStatus('Archive contains no files.', 'error');
+        converting = false;
+        tryBtn.disabled = false;
+        return;
+      }
+    } else if (pendingFiles && pendingFiles.length > 0) {
+      filesToConvert = pendingFiles;
+    } else {
+      clearStatus();
+      converting = false;
+      tryBtn.disabled = false;
+      return;
+    }
+
+    const fileCount = filesToConvert.length;
+    setStatus(`Loading converter (${fileCount} files ready)\u2026`, 'info');
+    const mod = await getModule();
+    const FS = mod.FS;
+    const mountPoint = '/odb';
+
+    setStatus(`Writing ${fileCount} files to virtual filesystem\u2026`, 'info');
+    rmrf(FS, mountPoint);
+    mkdirp(FS, mountPoint);
+
+    for (const file of filesToConvert) {
+      const fullPath = mountPoint + '/' + file.path;
+      const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+      mkdirp(FS, dir);
+      FS.writeFile(fullPath, file.content);
+    }
+
+    setStatus('Converting ODB++ to .kicad_pcb\u2026', 'info');
+    await new Promise(r => setTimeout(r, 0));
+
+    const t0 = performance.now();
+    const raw = mod.convertOdb(mountPoint);
+    const elapsed = (performance.now() - t0).toFixed(0);
+
+    rmrf(FS, mountPoint);
+
+    if (raw.startsWith('ERROR: ')) {
+      const msg = raw.substring(7);
+      setStatus('Conversion failed: ' + msg, 'error');
+      converting = false;
+      tryBtn.disabled = false;
+      return;
+    }
+
+    const lines = raw.split('\n').length;
+    setStatus(`Converted in ${elapsed} ms`, 'success');
+
+    document.getElementById('statFiles').textContent = fileCount;
+    document.getElementById('statTime').textContent = elapsed;
+    document.getElementById('statSize').textContent = raw.length.toLocaleString();
+    document.getElementById('statLines').textContent = lines.toLocaleString();
+
+    renderOutput(raw);
+
+  } catch (err) {
+    setStatus('Error: ' + err.message + '. Try a different file or reload the page.', 'error');
+    console.error(err);
+  }
+
+  converting = false;
+  tryBtn.disabled = false;
+}
+</script>
+</body>
+</html>

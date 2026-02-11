@@ -1,0 +1,4 @@
+# Symlinks for local dev serving (CI copies real files into public/)
+odb2kicad_wasm.mjs
+odb2kicad_wasm.wasm
+test-odb.tgz

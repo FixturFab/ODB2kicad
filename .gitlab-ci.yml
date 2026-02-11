@@ -1,7 +1,11 @@
 pages:
   stage: deploy
   script:
-    - echo "Deploying to GitLab Pages"
+    - mkdir -p public
+    - cp wasm/demo/index.html public/
+    - cp wasm/dist/odb2kicad_wasm.mjs public/
+    - cp wasm/dist/odb2kicad_wasm.wasm public/
+    - cp samples/test-odb.tgz public/
   artifacts:
     paths:
       - public
