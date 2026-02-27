@@ -6,7 +6,7 @@ pages:
     - cp wasm/dist/odb2kicad_wasm.mjs public/
     - cp wasm/dist/odb2kicad_wasm.wasm public/
     - cp samples/test-odb.tgz public/
-    - cd wasm && npm pack && cp odb2kicad-wasm-*.tgz ../public/odb2kicad-wasm.tgz && cd ..
+    - cp wasm/odb2kicad-wasm.tgz public/
   artifacts:
     paths:
       - public
