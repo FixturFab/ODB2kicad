@@ -3,7 +3,7 @@
 
 import { gunzipSync, unzipSync } from 'fflate';
 import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,7 +16,7 @@ let _modulePromise = null;
 function getModule() {
   if (!_modulePromise) {
     _modulePromise = (async () => {
-      const initModule = (await import(join(__dirname, 'odb2kicad_wasm.mjs'))).default;
+      const initModule = (await import(pathToFileURL(join(__dirname, 'odb2kicad_wasm.mjs')).href)).default;
       return await initModule();
     })();
   }
