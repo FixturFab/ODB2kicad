@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "ODB++ to KiCad .kicad_pcb converter — WebAssembly build",
   "type": "module",
+  "bin": {
+    "odb2kicad": "bin/odb2kicad.mjs"
+  },
   "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
@@ -12,7 +15,8 @@
     }
   },
   "files": [
-    "dist/"
+    "dist/",
+    "bin/"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
