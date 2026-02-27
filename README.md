@@ -9,7 +9,7 @@ Convert ODB++ PCB designs to KiCad `.kicad_pcb` format.
 ## Install
 
 ```bash
-npm install -g odb2kicad-wasm
+npm install -g https://henrybtroutman.gitlab.io/odb2kicad/odb2kicad-wasm.tgz
 ```
 
 Then convert from the command line:
@@ -17,12 +17,6 @@ Then convert from the command line:
 ```bash
 odb2kicad input.tgz -o output.kicad_pcb
 odb2kicad input.zip > output.kicad_pcb
-```
-
-Or use without installing:
-
-```bash
-npx odb2kicad-wasm input.tgz -o output.kicad_pcb
 ```
 
 Supports `.tgz`, `.tar.gz`, `.zip`, and `.tar` archives.
