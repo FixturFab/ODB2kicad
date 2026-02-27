@@ -2,10 +2,6 @@
 // Wraps the Emscripten WASM module with a clean convertOdb() interface.
 
 import { gunzipSync, unzipSync } from 'fflate';
-import { dirname, join } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let _modulePromise = null;
 
@@ -16,7 +12,8 @@ let _modulePromise = null;
 function getModule() {
   if (!_modulePromise) {
     _modulePromise = (async () => {
-      const initModule = (await import(pathToFileURL(join(__dirname, 'odb2kicad_wasm.mjs')).href)).default;
+      const wasmModuleUrl = new URL('./odb2kicad_wasm.mjs', import.meta.url).href;
+      const initModule = (await import(wasmModuleUrl)).default;
       return await initModule();
     })();
   }
