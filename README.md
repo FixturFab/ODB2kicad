@@ -9,7 +9,7 @@ Convert ODB++ PCB designs to KiCad `.kicad_pcb` format.
 ## Install
 
 ```bash
-npm install -g https://henrybtroutman.gitlab.io/odb2kicad/odb2kicad-wasm.tgz
+npm install -g https://fixurfab.github.io/ODB2kicad/odb2kicad-wasm.tgz
 ```
 
 Then convert from the command line:
@@ -108,4 +108,4 @@ ODB++ archive (.tgz / .zip)
 
 ## License
 
-This project builds upon KiCad source code, which is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). See the [KiCad project](https://www.kicad.org/) for details.
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
