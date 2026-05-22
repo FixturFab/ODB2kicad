@@ -35,6 +35,13 @@ samples/
   odb-output/               # Simple 2-resistor test board
   odb-kitchen-sink/         # Complex board (vias, TH, zones, arcs, polygons)
   test-odb.tgz              # Archive of odb-output for archive tests
+  test.kicad_pcb            # Reference KiCad file for oracle comparison
+
+test/                       # Python oracle validation tests
+  valor_oracle.py           # ODB++ parser + Valor TCP client
+  compare_oracle.py         # Structural comparison tool
+  visual_compare.py         # Visual screenshot comparison
+  run_oracle_tests.py       # Unified test runner
 ```
 
 ## Building
@@ -102,6 +109,48 @@ Requires both native CLI and WASM to be built. Tests include:
 - WASM vs native byte-identical parity
 - Error handling (empty input, invalid archives)
 - Sequential conversion cleanup (MEMFS isolation)
+
+### Oracle Validation Tests (Python)
+
+Uses an independent ODB++ parser as an "oracle" to validate converter output. This catches parser bugs that would otherwise go undetected when comparing converter input/output.
+
+```
+test/
+├── valor_oracle.py      # ODB++ oracle parser + Siemens Valor TCP client
+├── compare_oracle.py    # Structural comparison (components, features, bbox)
+├── visual_compare.py    # Visual comparison (KiCad render + ODB viewer screenshots)
+└── run_oracle_tests.py  # Unified test runner
+```
+
+**Run all oracle tests:**
+```bash
+python test/run_oracle_tests.py
+```
+
+**Run structural comparison on a specific sample:**
+```bash
+python test/compare_oracle.py samples/odb-output samples/test.kicad_pcb --verbose
+```
+
+**Generate visual comparison (requires KiCad installed):**
+```bash
+python test/visual_compare.py samples/odb-output samples/test.kicad_pcb --output-dir test/output/visual
+```
+
+**What gets compared:**
+- Component count (oracle vs KiCad footprints)
+- Feature counts (pads, lines, arcs per layer)
+- Bounding box dimensions
+- Trace/segment counts on copper layers
+
+**Siemens ODB++ Viewer Integration:**
+
+The Valor TCP client (`valor_oracle.py`) can connect to a running Siemens ODB++ Viewer instance via TCP port 56753 for live structured data extraction. This requires:
+1. Launch ODB++ Viewer with your design
+2. Run `server.pl` within the viewer environment
+3. Connect via `ValorClient(host='localhost', port=56753)`
+
+Available INFO queries: `entity_type`, `data_type=LIMITS`, `data_type=SYMS_HIST`, etc.
 
 ## Architecture
 
