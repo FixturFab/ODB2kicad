@@ -47,7 +47,7 @@ class OracleTestRunner:
         self.output_dir = project_root / 'test' / 'output'
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Sample configurations
+        # Sample configurations (built-in samples)
         self.samples = {
             'simple': {
                 'odb_path': 'odb-output',
@@ -62,6 +62,20 @@ class OracleTestRunner:
                 'expected_nets': None
             }
         }
+
+        # Auto-discover private samples in samples/private/
+        private_dir = self.samples_dir / 'private'
+        if private_dir.exists():
+            for item in private_dir.iterdir():
+                if item.is_dir() and (item / 'matrix').exists():
+                    # Looks like an ODB++ directory
+                    sample_name = f"private/{item.name}"
+                    self.samples[sample_name] = {
+                        'odb_path': f'private/{item.name}',
+                        'description': f'Private sample: {item.name}',
+                        'expected_components': None,
+                        'expected_nets': None
+                    }
 
     def find_converter(self) -> Optional[Path]:
         """Find the odb2kicad converter executable"""
@@ -248,7 +262,9 @@ class OracleTestRunner:
 
 def main():
     parser = argparse.ArgumentParser(description='Oracle Test Runner for odb2kicad')
-    parser.add_argument('--sample', '-s', help='Run specific sample (simple, kitchen-sink)')
+    parser.add_argument('--sample', '-s', help='Run specific sample (simple, kitchen-sink, private/name)')
+    parser.add_argument('--odb', help='Direct path to ODB++ directory (alternative to --sample)')
+    parser.add_argument('--kicad', help='Path to KiCad file to compare against (use with --odb)')
     parser.add_argument('--convert', '-c', action='store_true',
                        help='Run converter (requires build)')
     parser.add_argument('--visual', '-v', action='store_true',
@@ -257,19 +273,88 @@ def main():
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     parser.add_argument('--redacted', '-r', action='store_true',
                        help='Redact sensitive design data for sharing with AI/others')
+    parser.add_argument('--list', '-l', action='store_true',
+                       help='List available samples and exit')
 
     args = parser.parse_args()
-
-    if args.redacted:
-        print("=" * 60)
-        print("REDACTED MODE: Design data (coordinates, names) will be hidden")
-        print("=" * 60)
 
     # Find project root
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
 
     runner = OracleTestRunner(project_root)
+
+    # List samples and exit
+    if args.list:
+        print("Available samples:")
+        for name, config in runner.samples.items():
+            print(f"  {name}: {config['description']}")
+        print("\nUsage:")
+        print("  python run_oracle_tests.py --sample simple")
+        print("  python run_oracle_tests.py --odb /path/to/odb --kicad /path/to/file.kicad_pcb")
+        sys.exit(0)
+
+    if args.redacted:
+        print("=" * 60)
+        print("REDACTED MODE: Design data (coordinates, names) will be hidden")
+        print("=" * 60)
+
+    # Direct path mode
+    if args.odb:
+        odb_path = Path(args.odb)
+        if not odb_path.exists():
+            print(f"Error: ODB++ path not found: {odb_path}")
+            sys.exit(1)
+
+        # Determine KiCad path
+        if args.kicad:
+            kicad_path = Path(args.kicad)
+        else:
+            # Auto-generate output path
+            kicad_path = runner.output_dir / f"{odb_path.name}_converted.kicad_pcb"
+            if not kicad_path.exists() and not args.convert:
+                print(f"Error: No KiCad file specified and none found at {kicad_path}")
+                print("Use --kicad to specify a file, or --convert to generate one")
+                sys.exit(1)
+
+        # Run direct comparison
+        from compare_oracle import OracleComparator, KiCadPcbParser
+
+        print(f"\n{'='*60}")
+        if args.redacted:
+            print("Testing: [DIRECT PATH - REDACTED]")
+        else:
+            print(f"Testing: {odb_path.name}")
+        print(f"{'='*60}")
+
+        if args.redacted:
+            print("Parsing ODB++ oracle: [REDACTED]")
+        else:
+            print(f"Parsing ODB++ oracle: {odb_path}")
+        oracle = DirectOdbOracle(str(odb_path))
+        oracle_data = oracle.parse()
+
+        if args.convert:
+            success, msg = runner.convert_odb_to_kicad(odb_path, kicad_path)
+            if not success:
+                print(f"Conversion failed: {msg if not args.redacted else 'see local output'}")
+                sys.exit(1)
+
+        if args.redacted:
+            print("Parsing KiCad output: [REDACTED]")
+        else:
+            print(f"Parsing KiCad output: {kicad_path}")
+        kicad_parser = KiCadPcbParser(str(kicad_path))
+        kicad_data = kicad_parser.parse()
+
+        print("Running comparison...")
+        comparator = OracleComparator(tolerance=0.1)
+        comparison_results = comparator.compare(oracle_data, kicad_data)
+
+        print_results(comparison_results, verbose=True, redacted=args.redacted)
+
+        failed = sum(1 for r in comparison_results if not r.passed)
+        sys.exit(0 if failed == 0 else 1)
 
     if args.sample:
         results = {args.sample: runner.run_test(
