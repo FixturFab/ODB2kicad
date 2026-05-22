@@ -425,14 +425,49 @@ class OracleComparator:
         ))
 
 
-def print_results(results: List[ComparisonResult], verbose: bool = False):
+def redact_message(message: str) -> str:
+    """Redact sensitive information from a message."""
+    import re
+
+    # Replace component references (R1, C2, U15, etc.)
+    message = re.sub(r'\b([RCUQJDLKMT]\d+)\b', 'CMP_XXX', message)
+
+    # Replace net names that look like identifiers
+    message = re.sub(r'\bnet[_\s]*["\']?[\w]+["\']?', 'NET_XXX', message, flags=re.IGNORECASE)
+
+    # Replace specific coordinate values with X.XXX
+    message = re.sub(r'[-]?\d+\.\d{2,}', 'X.XXX', message)
+
+    # Replace integer coordinates
+    message = re.sub(r'(?<=[\s(,=])\d{2,}(?=[\s),mm])', 'XXX', message)
+
+    return message
+
+
+def redact_value(value: Any) -> Any:
+    """Redact sensitive information from a value."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return "REDACTED"
+    if isinstance(value, str):
+        return redact_message(value)
+    if isinstance(value, dict):
+        return {k: "REDACTED" for k in value.keys()}
+    if isinstance(value, list):
+        return f"[{len(value)} items]"
+    return "REDACTED"
+
+
+def print_results(results: List[ComparisonResult], verbose: bool = False,
+                  redacted: bool = False):
     """Print comparison results in a readable format"""
     passed = sum(1 for r in results if r.passed)
     failed = sum(1 for r in results if not r.passed)
     info = sum(1 for r in results if r.expected is None and r.actual is None)
 
     print("\n" + "=" * 60)
-    print("ORACLE COMPARISON RESULTS")
+    print("ORACLE COMPARISON RESULTS" + (" [REDACTED]" if redacted else ""))
     print("=" * 60)
 
     for result in results:
@@ -442,11 +477,20 @@ def print_results(results: List[ComparisonResult], verbose: bool = False):
             status = "[FAIL]"
 
         print(f"\n{status} {result.category}")
-        print(f"  {result.message}")
+
+        if redacted:
+            # Show only category and pass/fail, with redacted message
+            print(f"  {redact_message(result.message)}")
+        else:
+            print(f"  {result.message}")
 
         if verbose and not result.passed:
-            print(f"  Expected: {result.expected}")
-            print(f"  Actual:   {result.actual}")
+            if redacted:
+                print(f"  Expected: {redact_value(result.expected)}")
+                print(f"  Actual:   {redact_value(result.actual)}")
+            else:
+                print(f"  Expected: {result.expected}")
+                print(f"  Actual:   {result.actual}")
             if result.tolerance_used:
                 print(f"  Tolerance: {result.tolerance_used}")
 
@@ -469,16 +513,24 @@ def main():
                        help='Verbose output')
     parser.add_argument('--json', action='store_true',
                        help='Output results as JSON')
+    parser.add_argument('--redacted', '-r', action='store_true',
+                       help='Redact sensitive design data (coordinates, names) for sharing')
 
     args = parser.parse_args()
 
     # Parse oracle data from ODB++
-    print(f"Parsing ODB++ oracle: {args.odb_path}")
+    if not args.redacted:
+        print(f"Parsing ODB++ oracle: {args.odb_path}")
+    else:
+        print("Parsing ODB++ oracle: [REDACTED]")
     oracle = DirectOdbOracle(args.odb_path)
     oracle_data = oracle.parse()
 
     # Parse KiCad output
-    print(f"Parsing KiCad output: {args.kicad_path}")
+    if not args.redacted:
+        print(f"Parsing KiCad output: {args.kicad_path}")
+    else:
+        print("Parsing KiCad output: [REDACTED]")
     kicad_parser = KiCadPcbParser(args.kicad_path)
     kicad_data = kicad_parser.parse()
 
@@ -488,29 +540,52 @@ def main():
     results = comparator.compare(oracle_data, kicad_data)
 
     if args.json:
-        output = {
-            'oracle': oracle_data,
-            'kicad': {
-                'footprint_count': len(kicad_data['footprints']),
-                'segment_count': len(kicad_data['segments']),
-                'via_count': len(kicad_data['vias']),
-                'layers': kicad_data['layers'],
-                'net_count': len(kicad_data['nets'])
-            },
-            'results': [
-                {
-                    'passed': r.passed,
-                    'category': r.category,
-                    'message': r.message,
-                    'expected': r.expected,
-                    'actual': r.actual
-                }
-                for r in results
-            ]
-        }
+        if args.redacted:
+            # Redacted JSON output - only counts and pass/fail
+            output = {
+                'summary': {
+                    'oracle_component_count': sum(
+                        layer.get('component_count', 0)
+                        for step in oracle_data.get('steps', {}).values()
+                        for layer in step.get('layers', {}).values()
+                    ),
+                    'kicad_footprint_count': len(kicad_data['footprints']),
+                    'kicad_segment_count': len(kicad_data['segments']),
+                    'kicad_layer_count': len(kicad_data['layers']),
+                },
+                'results': [
+                    {
+                        'passed': r.passed,
+                        'category': r.category,
+                        'error_type': 'mismatch' if not r.passed else None
+                    }
+                    for r in results
+                ]
+            }
+        else:
+            output = {
+                'oracle': oracle_data,
+                'kicad': {
+                    'footprint_count': len(kicad_data['footprints']),
+                    'segment_count': len(kicad_data['segments']),
+                    'via_count': len(kicad_data['vias']),
+                    'layers': kicad_data['layers'],
+                    'net_count': len(kicad_data['nets'])
+                },
+                'results': [
+                    {
+                        'passed': r.passed,
+                        'category': r.category,
+                        'message': r.message,
+                        'expected': r.expected,
+                        'actual': r.actual
+                    }
+                    for r in results
+                ]
+            }
         print(json.dumps(output, indent=2, default=str))
     else:
-        all_passed = print_results(results, verbose=args.verbose)
+        all_passed = print_results(results, verbose=args.verbose, redacted=args.redacted)
         sys.exit(0 if all_passed else 1)
 
 

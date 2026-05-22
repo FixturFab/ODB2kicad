@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).parent))
 
 from valor_oracle import DirectOdbOracle
-from compare_oracle import KiCadPcbParser, OracleComparator, print_results
+from compare_oracle import KiCadPcbParser, OracleComparator, print_results, redact_message
 
 
 class TestResult:
@@ -108,7 +108,8 @@ class OracleTestRunner:
         except Exception as e:
             return False, f"Converter error: {e}"
 
-    def run_test(self, sample_name: str, use_existing_kicad: bool = True) -> TestResult:
+    def run_test(self, sample_name: str, use_existing_kicad: bool = True,
+                  redacted: bool = False) -> TestResult:
         """Run oracle test on a sample"""
         result = TestResult(sample_name)
 
@@ -124,11 +125,17 @@ class OracleTestRunner:
             return result
 
         print(f"\n{'='*60}")
-        print(f"Testing: {sample_name} - {config['description']}")
+        if redacted:
+            print(f"Testing: {sample_name} [REDACTED]")
+        else:
+            print(f"Testing: {sample_name} - {config['description']}")
         print(f"{'='*60}")
 
         # Parse oracle data
-        print(f"Parsing ODB++ oracle: {odb_path}")
+        if redacted:
+            print("Parsing ODB++ oracle: [REDACTED]")
+        else:
+            print(f"Parsing ODB++ oracle: {odb_path}")
         try:
             oracle = DirectOdbOracle(str(odb_path))
             result.oracle_data = oracle.parse()
@@ -149,7 +156,10 @@ class OracleTestRunner:
             success, message = self.convert_odb_to_kicad(odb_path, kicad_path)
             if not success:
                 result.error = message
-                print(f"  Warning: {message}")
+                if not redacted:
+                    print(f"  Warning: {message}")
+                else:
+                    print("  Warning: conversion failed")
                 # Continue with existing file if available
                 if not kicad_path.exists():
                     return result
@@ -159,7 +169,10 @@ class OracleTestRunner:
             return result
 
         # Parse KiCad output
-        print(f"Parsing KiCad output: {kicad_path}")
+        if redacted:
+            print("Parsing KiCad output: [REDACTED]")
+        else:
+            print(f"Parsing KiCad output: {kicad_path}")
         try:
             kicad_parser = KiCadPcbParser(str(kicad_path))
             result.kicad_data = kicad_parser.parse()
@@ -177,24 +190,24 @@ class OracleTestRunner:
         result.passed = len(failures) == 0
 
         # Print results
-        print_results(result.comparison_results, verbose=True)
+        print_results(result.comparison_results, verbose=True, redacted=redacted)
 
         return result
 
-    def run_all_tests(self) -> Dict[str, TestResult]:
+    def run_all_tests(self, redacted: bool = False) -> Dict[str, TestResult]:
         """Run all sample tests"""
         results = {}
 
         for sample_name in self.samples:
-            results[sample_name] = self.run_test(sample_name)
+            results[sample_name] = self.run_test(sample_name, redacted=redacted)
 
         return results
 
-    def generate_report(self, results: Dict[str, TestResult]) -> str:
+    def generate_report(self, results: Dict[str, TestResult], redacted: bool = False) -> str:
         """Generate a summary report"""
         report = []
         report.append("\n" + "="*60)
-        report.append("ORACLE TEST SUMMARY")
+        report.append("ORACLE TEST SUMMARY" + (" [REDACTED]" if redacted else ""))
         report.append("="*60)
         report.append(f"Timestamp: {datetime.now().isoformat()}")
         report.append("")
@@ -216,7 +229,17 @@ class OracleTestRunner:
 
             report.append(f"  [{status}] {name}")
             if result.error:
-                report.append(f"       Error: {result.error}")
+                if redacted:
+                    # Redact file paths and specific details
+                    error_type = "file_not_found" if "not found" in result.error else "parse_error"
+                    report.append(f"       Error type: {error_type}")
+                else:
+                    report.append(f"       Error: {result.error}")
+
+            # For failures, show which checks failed (redacted-safe)
+            if not result.passed and not result.error and result.comparison_results:
+                failed_checks = [r.category for r in result.comparison_results if not r.passed]
+                report.append(f"       Failed checks: {', '.join(failed_checks)}")
 
         report.append("="*60)
 
@@ -232,8 +255,15 @@ def main():
                        help='Generate visual comparison (requires viewer)')
     parser.add_argument('--output', '-o', help='Output report file')
     parser.add_argument('--json', action='store_true', help='Output as JSON')
+    parser.add_argument('--redacted', '-r', action='store_true',
+                       help='Redact sensitive design data for sharing with AI/others')
 
     args = parser.parse_args()
+
+    if args.redacted:
+        print("=" * 60)
+        print("REDACTED MODE: Design data (coordinates, names) will be hidden")
+        print("=" * 60)
 
     # Find project root
     script_dir = Path(__file__).parent
@@ -242,12 +272,16 @@ def main():
     runner = OracleTestRunner(project_root)
 
     if args.sample:
-        results = {args.sample: runner.run_test(args.sample, use_existing_kicad=not args.convert)}
+        results = {args.sample: runner.run_test(
+            args.sample,
+            use_existing_kicad=not args.convert,
+            redacted=args.redacted
+        )}
     else:
-        results = runner.run_all_tests()
+        results = runner.run_all_tests(redacted=args.redacted)
 
     # Generate report
-    report = runner.generate_report(results)
+    report = runner.generate_report(results, redacted=args.redacted)
     print(report)
 
     # Output to file if requested
