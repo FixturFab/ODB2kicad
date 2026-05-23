@@ -394,10 +394,12 @@ class DirectOdbOracle:
         if features_path.exists():
             layer_data.update(self._parse_features(features_path))
 
-        # Count components
+        # Parse components (full data including position/rotation)
         components_path = layer_dir / 'components'
         if components_path.exists():
-            layer_data['component_count'] = self._count_components(components_path)
+            components = self._parse_components(components_path)
+            layer_data['component_count'] = len(components)
+            layer_data['components'] = components
 
         return layer_data
 
@@ -477,14 +479,69 @@ class DirectOdbOracle:
         limits['xmax'] = max(limits['xmax'], x)
         limits['ymax'] = max(limits['ymax'], y)
 
-    def _count_components(self, components_path: Path) -> int:
-        """Count components in a components file"""
-        count = 0
+    def _parse_components(self, components_path: Path) -> List[Dict]:
+        """Parse components file and extract full component data including terminals"""
+        components = []
+        units = 'MM'  # default
+        scale = 1.0
+        current_comp = None
+
         with open(components_path, 'r') as f:
             for line in f:
-                if line.strip().startswith('CMP '):
-                    count += 1
-        return count
+                line = line.strip()
+
+                # Units line
+                if line.startswith('UNITS='):
+                    units = line.split('=')[1].strip()
+                    scale = 25.4 if units == 'INCH' else 1.0
+
+                # CMP record: CMP pkgIdx x y rotation mirror refdes footprint ;attrs
+                elif line.startswith('CMP '):
+                    # Save previous component if exists
+                    if current_comp:
+                        components.append(current_comp)
+
+                    # Separate attrs from main part
+                    main_part = line
+                    if ';' in line:
+                        main_part = line.split(';')[0]
+
+                    parts = main_part[4:].split()
+                    if len(parts) >= 7:
+                        current_comp = {
+                            'pkg_idx': int(parts[0]),
+                            'x': float(parts[1]) * scale,
+                            'y': float(parts[2]) * scale,
+                            'rotation': float(parts[3]),
+                            'mirror': parts[4],  # 'N' or 'M'
+                            'refdes': parts[5],
+                            'footprint': parts[6],
+                            'terminals': []
+                        }
+                    else:
+                        current_comp = None
+
+                # TOP record: TOP termIdx x y rotation mirror netIdx symIdx pinNum
+                elif line.startswith('TOP ') and current_comp:
+                    parts = line[4:].split()
+                    if len(parts) >= 8:
+                        term = {
+                            'term_idx': int(parts[0]),
+                            'x': float(parts[1]) * scale,
+                            'y': float(parts[2]) * scale,
+                            'rotation': float(parts[3]),
+                            'mirror': parts[4],
+                            'net_idx': int(parts[5]),
+                            'sym_idx': int(parts[6]),
+                            'pin_num': parts[7]
+                        }
+                        current_comp['terminals'].append(term)
+
+            # Don't forget the last component
+            if current_comp:
+                components.append(current_comp)
+
+        return components
 
     def _parse_profile(self, profile_path: Path) -> Dict:
         """Parse board profile/outline"""

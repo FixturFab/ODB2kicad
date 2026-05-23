@@ -321,7 +321,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             fp.uuid = makeUuid(isBottom ? ci + 1000 : ci);
             fp.x = toKicadX(comp.x);
             fp.y = toKicadY(comp.y);
-            fp.angle = comp.rotation;  // Use as-is for top
+            // Set rotation to 0 - use direct coordinate offsets instead of rotation math
+            fp.angle = 0;
             fp.refdes = comp.refdes;
             fp.value = comp.properties.count("Value") ? comp.properties.at("Value") : "";
 
@@ -367,19 +368,20 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
                 pad.width = padSym.width;
                 pad.height = padSym.height;
+                // Ensure minimum pad size to avoid KiCad warnings
+                if (pad.width < 0.001) pad.width = 0.1;
+                if (pad.height < 0.001) pad.height = 0.1;
                 if (padSym.shape == OdbSymbol::ROUNDRECT && padSym.cornerRadius > 0) {
                     double minDim = std::min(padSym.width, padSym.height);
                     pad.roundrectRatio = (minDim > 0) ? padSym.cornerRadius / minDim : 0;
                 }
 
-                // Pad position: absolute -> relative to component
+                // Pad position: direct offset with Y-flip, no rotation math
+                // Since footprint rotation is 0, pad local position = world offset from component
                 double dx = term.x - comp.x;
                 double dy = term.y - comp.y;
-                double angleRad = degToRad(comp.rotation);
-                double relX =  dx * std::cos(angleRad) + dy * std::sin(angleRad);
-                double relY = -dx * std::sin(angleRad) + dy * std::cos(angleRad);
-                pad.x = relX;
-                pad.y = relY;  // Y-negate happens at footprint level
+                pad.x = dx;
+                pad.y = -dy;  // Negate Y for KiCad's Y-down coordinate system
 
                 // Pad type
                 pad.type = (comp.mountType == 2) ? "thru_hole" : "smd";
@@ -428,6 +430,21 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     processComponents(design.topComponents, false);
     processComponents(design.botComponents, true);
 
+    // Build a set of component terminal positions to exclude from via detection
+    // This prevents thermal vias/drills under pads from being created as standalone vias
+    std::set<std::pair<int, int>> terminalPositions;  // scaled to 0.01mm precision
+    auto addTerminals = [&](const OdbComponents& comps) {
+        for (auto& comp : comps.components) {
+            for (auto& term : comp.terminals) {
+                int ix = static_cast<int>(std::round(term.x * 100));
+                int iy = static_cast<int>(std::round(term.y * 100));
+                terminalPositions.insert({ix, iy});
+            }
+        }
+    };
+    addTerminals(design.topComponents);
+    addTerminals(design.botComponents);
+
     // 4. Detect vias from drill layer features
     // Build a set of via positions from drill layers
     struct ViaInfo {
@@ -443,6 +460,11 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         if (layerNameLower.find("drill") == std::string::npos) continue;
 
         for (auto& pad : features.pads) {
+            // Skip drill features at component terminal positions (thermal vias under pads)
+            int ix = static_cast<int>(std::round(pad.x * 100));
+            int iy = static_cast<int>(std::round(pad.y * 100));
+            if (terminalPositions.count({ix, iy})) continue;
+
             // Check if this drill pad has a .geometry attribute referencing a VIA string
             bool isVia = false;
             for (auto& [attrIdx, attrVal] : pad.attrs) {
@@ -517,6 +539,23 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     }
                 }
                 break;
+            }
+        }
+        // If still no net, try to find from any netlist point at this location
+        if (vi.netId == 0) {
+            for (auto& pt : design.netlist.points) {
+                if (std::abs(pt.x - vi.x) < 0.01 && std::abs(pt.y - vi.y) < 0.01) {
+                    for (auto& nd : design.netlist.nets) {
+                        if (nd.index == pt.netIdx) {
+                            auto it = netNameToId.find(nd.name);
+                            if (it != netNameToId.end()) {
+                                vi.netId = it->second;
+                                break;
+                            }
+                        }
+                    }
+                    if (vi.netId > 0) break;
+                }
             }
         }
     }
@@ -644,10 +683,50 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             pcb.segments.push_back(seg);
         }
+
+        // Process arcs on copper layers
+        for (auto& arc : features.arcs) {
+            KicadArc ka;
+            ka.xs = toKicadX(arc.xs);
+            ka.ys = toKicadY(arc.ys);
+            ka.xe = toKicadX(arc.xe);
+            ka.ye = toKicadY(arc.ye);
+
+            // Compute midpoint
+            double xm_odb, ym_odb;
+            computeArcMidpoint(arc.xs, arc.ys, arc.xe, arc.ye,
+                               arc.xc, arc.yc, arc.clockwise, xm_odb, ym_odb);
+            ka.xm = toKicadX(xm_odb);
+            ka.ym = toKicadY(ym_odb);
+
+            // Width from symbol
+            if (arc.symIdx < (int)features.symbols.size()) {
+                auto& sym = features.symbols[arc.symIdx];
+                if (sym.shape == OdbSymbol::ROUND) {
+                    ka.width = sym.diameter;
+                } else {
+                    ka.width = sym.width;
+                }
+            }
+
+            ka.layer = kicadLayer;
+
+            // Net assignment: check endpoints against pad and via positions
+            ka.netId = findNetAtPoint(ka.xs, ka.ys, kicadLayer);
+            if (ka.netId == 0) {
+                ka.netId = findNetAtPoint(ka.xe, ka.ye, kicadLayer);
+            }
+
+            pcb.arcs.push_back(ka);
+        }
     }
 
     // Propagate nets along connected traces (multi-hop)
     // Traces sharing an endpoint inherit each other's net
+    auto touches = [](double ax, double ay, double bx, double by) {
+        return std::abs(ax - bx) < 0.02 && std::abs(ay - by) < 0.02;
+    };
+
     bool changed = true;
     while (changed) {
         changed = false;
@@ -657,9 +736,6 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 if (i == j || pcb.segments[j].netId == 0) continue;
                 if (pcb.segments[i].layer != pcb.segments[j].layer) continue;
                 // Check if they share an endpoint
-                auto touches = [](double ax, double ay, double bx, double by) {
-                    return std::abs(ax - bx) < 0.02 && std::abs(ay - by) < 0.02;
-                };
                 if (touches(pcb.segments[i].x1, pcb.segments[i].y1, pcb.segments[j].x1, pcb.segments[j].y1) ||
                     touches(pcb.segments[i].x1, pcb.segments[i].y1, pcb.segments[j].x2, pcb.segments[j].y2) ||
                     touches(pcb.segments[i].x2, pcb.segments[i].y2, pcb.segments[j].x1, pcb.segments[j].y1) ||
@@ -668,6 +744,80 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     changed = true;
                     break;
                 }
+            }
+        }
+    }
+
+    // Propagate nets from segments back to vias
+    for (auto& via : pcb.vias) {
+        if (via.netId > 0) continue;
+        for (auto& seg : pcb.segments) {
+            if (seg.netId == 0) continue;
+            if (touches(via.x, via.y, seg.x1, seg.y1) ||
+                touches(via.x, via.y, seg.x2, seg.y2)) {
+                via.netId = seg.netId;
+                break;
+            }
+        }
+    }
+
+    // Also propagate from arcs to vias
+    for (auto& via : pcb.vias) {
+        if (via.netId > 0) continue;
+        for (auto& arc : pcb.arcs) {
+            if (arc.netId == 0) continue;
+            if (touches(via.x, via.y, arc.xs, arc.ys) ||
+                touches(via.x, via.y, arc.xe, arc.ye)) {
+                via.netId = arc.netId;
+                break;
+            }
+        }
+    }
+
+    // Propagate nets through vias (cross-layer propagation)
+    // If a via has a net, segments on any copper layer touching it get that net
+    changed = true;
+    while (changed) {
+        changed = false;
+        for (auto& seg : pcb.segments) {
+            if (seg.netId > 0) continue;
+            for (auto& via : pcb.vias) {
+                if (via.netId == 0) continue;
+                if (touches(via.x, via.y, seg.x1, seg.y1) ||
+                    touches(via.x, via.y, seg.x2, seg.y2)) {
+                    seg.netId = via.netId;
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        // Also propagate between segments on same layer again
+        for (size_t i = 0; i < pcb.segments.size(); i++) {
+            if (pcb.segments[i].netId > 0) continue;
+            for (size_t j = 0; j < pcb.segments.size(); j++) {
+                if (i == j || pcb.segments[j].netId == 0) continue;
+                if (pcb.segments[i].layer != pcb.segments[j].layer) continue;
+                if (touches(pcb.segments[i].x1, pcb.segments[i].y1, pcb.segments[j].x1, pcb.segments[j].y1) ||
+                    touches(pcb.segments[i].x1, pcb.segments[i].y1, pcb.segments[j].x2, pcb.segments[j].y2) ||
+                    touches(pcb.segments[i].x2, pcb.segments[i].y2, pcb.segments[j].x1, pcb.segments[j].y1) ||
+                    touches(pcb.segments[i].x2, pcb.segments[i].y2, pcb.segments[j].x2, pcb.segments[j].y2)) {
+                    pcb.segments[i].netId = pcb.segments[j].netId;
+                    changed = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Final pass: propagate from segments back to vias again
+    for (auto& via : pcb.vias) {
+        if (via.netId > 0) continue;
+        for (auto& seg : pcb.segments) {
+            if (seg.netId == 0) continue;
+            if (touches(via.x, via.y, seg.x1, seg.y1) ||
+                touches(via.x, via.y, seg.x2, seg.y2)) {
+                via.netId = seg.netId;
+                break;
             }
         }
     }
@@ -827,6 +977,23 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         }
     }
 
+    // Helper to check if a point is inside a polygon (ray casting)
+    auto pointInPolygon = [](double px, double py,
+                              const std::vector<std::pair<double,double>>& poly) -> bool {
+        if (poly.size() < 3) return false;
+        bool inside = false;
+        size_t n = poly.size();
+        for (size_t i = 0, j = n - 1; i < n; j = i++) {
+            double xi = poly[i].first, yi = poly[i].second;
+            double xj = poly[j].first, yj = poly[j].second;
+            if (((yi > py) != (yj > py)) &&
+                (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    };
+
     // 9. Copper fill zones from surface records on copper layers
     for (auto& [layerNameLower, features] : design.layerFeatures) {
         auto lmIt = layerMap.find(layerNameLower);
@@ -834,6 +1001,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         auto* mapping = lmIt->second;
         if (mapping->id > 31) continue; // copper only
         std::string kicadLayer = mapping->canonical;
+        int layerId = mapping->id;
 
         for (auto& surface : features.surfaces) {
             KicadZone zone;
@@ -841,8 +1009,22 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             zone.netId = 0;
             zone.netName = "";
 
-            // Collect all island (non-hole) contour points as outline
-            // and all contours as filled polygons
+            // Helper to compute bounding box area for a polygon
+            auto computeBBoxArea = [](const std::vector<std::pair<double,double>>& pts) -> double {
+                if (pts.empty()) return 0;
+                double minX = pts[0].first, maxX = pts[0].first;
+                double minY = pts[0].second, maxY = pts[0].second;
+                for (auto& [x, y] : pts) {
+                    minX = std::min(minX, x);
+                    maxX = std::max(maxX, x);
+                    minY = std::min(minY, y);
+                    maxY = std::max(maxY, y);
+                }
+                return (maxX - minX) * (maxY - minY);
+            };
+
+            // Collect all contours and find the largest non-hole for outline
+            double largestArea = 0;
             for (auto& contour : surface.contours) {
                 std::vector<std::pair<double,double>> polyPts;
                 for (size_t i = 1; i < contour.points.size(); i++) {
@@ -854,10 +1036,39 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     polyPts.push_back({toKicadX(contour.points[i].x),
                                        toKicadY(contour.points[i].y)});
                 }
-                if (!contour.isHole && zone.outlinePoints.empty()) {
-                    zone.outlinePoints = polyPts;
+
+                // Use largest non-hole contour as the zone outline
+                if (!contour.isHole) {
+                    double area = computeBBoxArea(polyPts);
+                    if (area > largestArea) {
+                        largestArea = area;
+                        zone.outlinePoints = polyPts;
+                    }
                 }
                 zone.filledPolygons.push_back(polyPts);
+            }
+
+            // Try to determine zone net by finding pads inside the zone outline
+            if (!zone.outlinePoints.empty() && zone.netId == 0) {
+                for (auto& pni : padLookup) {
+                    // Check if pad is on this layer (TH pads on any copper, SMD only on their layer)
+                    bool layerMatch = pni.throughHole || (layerId == 0) || (layerId == 31);
+                    if (!layerMatch) continue;
+
+                    if (pointInPolygon(pni.x, pni.y, zone.outlinePoints)) {
+                        if (pni.netId > 0) {
+                            zone.netId = pni.netId;
+                            // Find net name
+                            for (auto& net : pcb.nets) {
+                                if (net.id == zone.netId) {
+                                    zone.netName = net.name;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
             }
 
             if (!zone.outlinePoints.empty() || !zone.filledPolygons.empty()) {
@@ -1028,6 +1239,16 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             << "\") (net " << seg.netId << "))\n";
     }
 
+    // Copper arcs
+    for (auto& arc : pcb.arcs) {
+        out << "\n  (arc (start " << formatFloat(arc.xs) << " " << formatFloat(arc.ys)
+            << ") (mid " << formatFloat(arc.xm) << " " << formatFloat(arc.ym)
+            << ") (end " << formatFloat(arc.xe) << " " << formatFloat(arc.ye)
+            << ") (width " << formatFloat(arc.width)
+            << ") (layer \"" << arc.layer
+            << "\") (net " << arc.netId << "))\n";
+    }
+
     // Vias
     for (auto& via : pcb.vias) {
         out << "\n  (via (at " << formatFloat(via.x) << " " << formatFloat(via.y)
@@ -1062,19 +1283,27 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             << ") (type solid)) (layer \"" << ga.layer << "\"))\n";
     }
 
-    // Zones
+    // Zones (modern KiCad 8.0+ format)
+    int zoneIdx = 0;
     for (auto& zone : pcb.zones) {
+        // Skip zones without outline points
+        if (zone.outlinePoints.empty()) continue;
+
         out << "\n  (zone (net " << zone.netId << ") (net_name \"" << zone.netName
-            << "\") (layer \"" << zone.layer << "\")\n";
-        out << "    (fill (thermal_gap 0.5) (thermal_bridge_width 0.5))\n";
-        if (!zone.outlinePoints.empty()) {
-            out << "    (polygon\n      (pts\n";
-            for (auto& [x, y] : zone.outlinePoints) {
-                out << "        (xy " << formatFloat(x) << " " << formatFloat(y) << ")\n";
-            }
-            out << "      )\n    )\n";
+            << "\") (layer \"" << zone.layer << "\") (uuid \"" << makeUuid(10000 + zoneIdx++) << "\")\n";
+        out << "    (hatch edge 0.5)\n";
+        out << "    (connect_pads (clearance 0))\n";
+        out << "    (min_thickness 0.25)\n";
+        out << "    (filled_areas_thickness no)\n";
+        out << "    (fill yes (thermal_gap 0.5) (thermal_bridge_width 0.5))\n";
+        out << "    (polygon\n      (pts\n";
+        for (auto& [x, y] : zone.outlinePoints) {
+            out << "        (xy " << formatFloat(x) << " " << formatFloat(y) << ")\n";
         }
+        out << "      )\n    )\n";
+        // Include filled polygons so zones display immediately without refill
         for (auto& poly : zone.filledPolygons) {
+            if (poly.size() < 3) continue;
             out << "    (filled_polygon\n      (layer \"" << zone.layer << "\")\n      (pts\n";
             for (auto& [x, y] : poly) {
                 out << "        (xy " << formatFloat(x) << " " << formatFloat(y) << ")\n";

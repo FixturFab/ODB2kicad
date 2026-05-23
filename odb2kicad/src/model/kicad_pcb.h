@@ -56,6 +56,15 @@ struct KicadSegment {
     int netId = 0;
 };
 
+struct KicadArc {
+    double xs = 0, ys = 0;     // start
+    double xm = 0, ym = 0;     // mid
+    double xe = 0, ye = 0;     // end
+    double width = 0;
+    std::string layer;
+    int netId = 0;
+};
+
 struct KicadVia {
     double x = 0, y = 0;
     double size = 0;
@@ -101,6 +110,7 @@ struct KicadPcb {
     std::vector<KicadNet> nets;
     std::vector<KicadFootprint> footprints;
     std::vector<KicadSegment> segments;
+    std::vector<KicadArc> arcs;
     std::vector<KicadVia> vias;
     std::vector<KicadGrLine> grLines;
     std::vector<KicadGrRect> grRects;
