@@ -61,6 +61,23 @@ Produces `odb2kicad/build/odb2kicad`. Requires CMake 3.10+ and a C++17 compiler.
 ./odb2kicad/build/odb2kicad samples/odb-output
 ```
 
+### Docker Build (Cross-Platform)
+
+For Windows or when native build tools aren't available, use Docker:
+
+```bash
+# Build the Docker image (includes native CLI)
+docker build -t odb2kicad -f Dockerfile .
+
+# Convert an ODB++ directory (output to stdout)
+docker run --rm -v "$(pwd)/samples:/app/samples" odb2kicad odb2kicad samples/odb-output
+
+# Convert and save to file (use redirect since volume mounts can be tricky)
+docker run --rm -v "$(pwd)/samples:/app/samples" odb2kicad odb2kicad samples/odb-output > output.kicad_pcb
+```
+
+The Docker image uses Ubuntu 22.04 with GCC 11, providing a consistent build environment.
+
 ### WASM Build
 
 Requires Emscripten. The SDK env script is at `/root/emsdk/emsdk_env.sh`. All commands must run from the repo root (`/root/odb2kicad`).
@@ -79,6 +96,23 @@ Then copy artifacts into the npm package:
 ```bash
 cd wasm && node scripts/build.mjs
 ```
+
+### Docker WASM Build (Cross-Platform)
+
+For building WASM without a local Emscripten installation:
+
+```bash
+# Build the WASM Docker image
+docker build -t odb2kicad-wasm -f Dockerfile.wasm .
+
+# Extract WASM artifacts to wasm/dist/
+docker create --name wasm-extract odb2kicad-wasm
+docker cp wasm-extract:/app/odb2kicad/build-wasm/odb2kicad_wasm.wasm wasm/dist/
+docker cp wasm-extract:/app/odb2kicad/build-wasm/odb2kicad_wasm.mjs wasm/dist/
+docker rm wasm-extract
+```
+
+The Docker image uses `emscripten/emsdk:3.1.50` for consistent WASM builds.
 
 ### npm Package
 
