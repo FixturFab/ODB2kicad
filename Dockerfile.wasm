@@ -1,0 +1,16 @@
+# odb2kicad WASM build environment with Emscripten
+FROM emscripten/emsdk:3.1.50
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY odb2kicad/src/ /app/odb2kicad/src/
+COPY odb2kicad/CMakeLists.txt /app/odb2kicad/
+
+# Build WASM
+RUN emcmake cmake -S odb2kicad -B odb2kicad/build-wasm -DCMAKE_BUILD_TYPE=Release \
+    && emmake make -C odb2kicad/build-wasm -j$(nproc)
+
+# Output artifacts will be in /app/odb2kicad/build-wasm/
+CMD ["ls", "-la", "/app/odb2kicad/build-wasm/"]
