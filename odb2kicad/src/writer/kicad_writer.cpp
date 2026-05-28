@@ -207,11 +207,51 @@ static void computeArcMidpoint(double xs, double ys, double xe, double ye,
     }
 }
 
+// Helper to check if units string indicates inches
+static bool isInchUnits(const std::string& units) {
+    if (units.empty()) return true;  // ODB++ default is INCH when not specified
+    std::string upper = toUpper(units);
+    return upper == "INCH" || upper == "IN" || upper == "INCHES";
+}
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
+    // Determine unit scale factor (ODB++ can be INCH or MM, KiCad uses MM)
+    // Check various sources for unit specification
+    double unitScale = 1.0;  // Default: assume MM
+
+    // Check component units first (most reliable for component positions)
+    if (!design.topComponents.units.empty()) {
+        unitScale = isInchUnits(design.topComponents.units) ? 25.4 : 1.0;
+    } else if (!design.botComponents.units.empty()) {
+        unitScale = isInchUnits(design.botComponents.units) ? 25.4 : 1.0;
+    } else {
+        // Check layer features for units
+        for (auto& [name, features] : design.layerFeatures) {
+            if (!features.units.empty()) {
+                unitScale = isInchUnits(features.units) ? 25.4 : 1.0;
+                break;
+            }
+        }
+    }
+
+    // If still no units found, check if coordinates look like inches
+    // (values typically < 20 for inch boards, > 50 for mm boards)
+    if (unitScale == 1.0 && !design.topComponents.components.empty()) {
+        auto& comp = design.topComponents.components[0];
+        if (comp.x > 0 && comp.x < 20 && comp.y > 0 && comp.y < 20) {
+            unitScale = 25.4;  // Likely inches
+        }
+    }
+
     // Build layer name mapping (handles both KiCad and non-KiCad ODB++ sources)
     auto layerMap = buildLayerMap(design.layers);
+
+    // Coordinate transforms with unit scaling (ODB++ INCH -> KiCad MM)
+    auto scaleX = [unitScale](double x) { return x * unitScale; };
+    auto scaleY = [unitScale](double y) { return -y * unitScale; };  // Also negate Y for KiCad
+    auto scaleLen = [unitScale](double len) { return len * unitScale; };  // For widths, sizes
 
     // 1. Map layers
     for (auto& odbLayer : design.layers) {
@@ -319,8 +359,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             fp.layer = isBottom ? "B.Cu" : "F.Cu";
             fp.uuid = makeUuid(isBottom ? ci + 1000 : ci);
-            fp.x = toKicadX(comp.x);
-            fp.y = toKicadY(comp.y);
+            fp.x = scaleX(comp.x);
+            fp.y = scaleY(comp.y);
             // Set rotation to 0 - use direct coordinate offsets instead of rotation math
             fp.angle = 0;
             fp.refdes = comp.refdes;
@@ -366,8 +406,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     default: pad.shape = "roundrect"; break;
                 }
 
-                pad.width = padSym.width;
-                pad.height = padSym.height;
+                pad.width = scaleLen(padSym.width);
+                pad.height = scaleLen(padSym.height);
                 // Ensure minimum pad size to avoid KiCad warnings
                 if (pad.width < 0.001) pad.width = 0.1;
                 if (pad.height < 0.001) pad.height = 0.1;
@@ -380,8 +420,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 // Since footprint rotation is 0, pad local position = world offset from component
                 double dx = term.x - comp.x;
                 double dy = term.y - comp.y;
-                pad.x = dx;
-                pad.y = -dy;  // Negate Y for KiCad's Y-down coordinate system
+                pad.x = scaleLen(dx);
+                pad.y = -scaleLen(dy);  // Negate Y for KiCad's Y-down coordinate system
 
                 // Pad type
                 pad.type = (comp.mountType == 2) ? "thru_hole" : "smd";
@@ -406,7 +446,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                                 std::abs(drillPad.y - term.y) < 0.01) {
                                 if (drillPad.symIdx < (int)dlFeats.symbols.size()) {
                                     auto& ds = dlFeats.symbols[drillPad.symIdx];
-                                    pad.drill = (ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width;
+                                    pad.drill = scaleLen((ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width);
                                 }
                                 break;
                             }
@@ -491,13 +531,13 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             // Drill diameter from drill-layer symbol
             if (pad.symIdx < (int)features.symbols.size()) {
                 auto& sym = features.symbols[pad.symIdx];
-                vi.drillDiameter = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                vi.drillDiameter = scaleLen((sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width);
             } else {
-                vi.drillDiameter = 0.3; // default
+                vi.drillDiameter = 0.3; // default (mm)
             }
 
             // Find pad size from copper layer (F.Cu) at same position
-            vi.padSize = vi.drillDiameter + 0.3; // default annular ring
+            vi.padSize = vi.drillDiameter + 0.3; // default annular ring (already scaled)
             std::string fcuName;
             for (auto& [name, m] : layerMap) {
                 if (m->id == 0) { fcuName = name; break; }
@@ -509,9 +549,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                         if (cuPad.symIdx < (int)fcuIt->second.symbols.size()) {
                             auto& cuSym = fcuIt->second.symbols[cuPad.symIdx];
                             if (cuSym.shape == OdbSymbol::ROUND) {
-                                vi.padSize = cuSym.diameter;
+                                vi.padSize = scaleLen(cuSym.diameter);
                             } else {
-                                vi.padSize = std::max(cuSym.width, cuSym.height);
+                                vi.padSize = scaleLen(std::max(cuSym.width, cuSym.height));
                             }
                         }
                         break;
@@ -580,8 +620,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     // Emit vias
     for (auto& vi : viaInfos) {
         KicadVia kv;
-        kv.x = toKicadX(vi.x);
-        kv.y = toKicadY(vi.y);
+        kv.x = scaleX(vi.x);
+        kv.y = scaleY(vi.y);
         kv.size = vi.padSize;
         kv.drill = vi.drillDiameter;
         kv.fromLayer = "F.Cu";
@@ -615,8 +655,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     // Also add via positions to pad lookup for trace-to-via net propagation
     for (auto& vi : viaInfos) {
         PadNetInfo pni;
-        pni.x = toKicadX(vi.x);
-        pni.y = toKicadY(vi.y);
+        pni.x = scaleX(vi.x);
+        pni.y = scaleY(vi.y);
         pni.netId = vi.netId;
         pni.throughHole = true; // vias span all copper layers
         padLookup.push_back(pni);
@@ -658,18 +698,18 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
         for (auto& line : features.lines) {
             KicadSegment seg;
-            seg.x1 = toKicadX(line.x1);
-            seg.y1 = toKicadY(line.y1);
-            seg.x2 = toKicadX(line.x2);
-            seg.y2 = toKicadY(line.y2);
+            seg.x1 = scaleX(line.x1);
+            seg.y1 = scaleY(line.y1);
+            seg.x2 = scaleX(line.x2);
+            seg.y2 = scaleY(line.y2);
 
             // Width from symbol
             if (line.symIdx < (int)features.symbols.size()) {
                 auto& sym = features.symbols[line.symIdx];
                 if (sym.shape == OdbSymbol::ROUND) {
-                    seg.width = sym.diameter;
+                    seg.width = scaleLen(sym.diameter);
                 } else {
-                    seg.width = sym.width;
+                    seg.width = scaleLen(sym.width);
                 }
             }
 
@@ -687,25 +727,25 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         // Process arcs on copper layers
         for (auto& arc : features.arcs) {
             KicadArc ka;
-            ka.xs = toKicadX(arc.xs);
-            ka.ys = toKicadY(arc.ys);
-            ka.xe = toKicadX(arc.xe);
-            ka.ye = toKicadY(arc.ye);
+            ka.xs = scaleX(arc.xs);
+            ka.ys = scaleY(arc.ys);
+            ka.xe = scaleX(arc.xe);
+            ka.ye = scaleY(arc.ye);
 
             // Compute midpoint
             double xm_odb, ym_odb;
             computeArcMidpoint(arc.xs, arc.ys, arc.xe, arc.ye,
                                arc.xc, arc.yc, arc.clockwise, xm_odb, ym_odb);
-            ka.xm = toKicadX(xm_odb);
-            ka.ym = toKicadY(ym_odb);
+            ka.xm = scaleX(xm_odb);
+            ka.ym = scaleY(ym_odb);
 
             // Width from symbol
             if (arc.symIdx < (int)features.symbols.size()) {
                 auto& sym = features.symbols[arc.symIdx];
                 if (sym.shape == OdbSymbol::ROUND) {
-                    ka.width = sym.diameter;
+                    ka.width = scaleLen(sym.diameter);
                 } else {
-                    ka.width = sym.width;
+                    ka.width = scaleLen(sym.width);
                 }
             }
 
@@ -856,10 +896,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             }
             if (isRect) {
                 KicadGrRect rect;
-                rect.x1 = toKicadX(minX);
-                rect.y1 = toKicadY(maxY);
-                rect.x2 = toKicadX(maxX);
-                rect.y2 = toKicadY(minY);
+                rect.x1 = scaleX(minX);
+                rect.y1 = scaleY(maxY);
+                rect.x2 = scaleX(maxX);
+                rect.y2 = scaleY(minY);
                 rect.width = 0.05;
                 rect.type = "default";
                 rect.layer = "Edge.Cuts";
@@ -871,10 +911,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         // Non-rectangular or hole: emit individual line segments
         for (size_t i = 1; i < pts.size() - 1; i++) {
             KicadGrLine gl;
-            gl.x1 = toKicadX(pts[i].x);
-            gl.y1 = toKicadY(pts[i].y);
-            gl.x2 = toKicadX(pts[i + 1].x);
-            gl.y2 = toKicadY(pts[i + 1].y);
+            gl.x1 = scaleX(pts[i].x);
+            gl.y1 = scaleY(pts[i].y);
+            gl.x2 = scaleX(pts[i + 1].x);
+            gl.y2 = scaleY(pts[i + 1].y);
             gl.width = 0.05;
             gl.type = "default";
             gl.layer = "Edge.Cuts";
@@ -897,13 +937,13 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             auto& ecFeats = ecIt->second;
             for (auto& line : ecFeats.lines) {
                 KicadGrLine gl;
-                gl.x1 = toKicadX(line.x1);
-                gl.y1 = toKicadY(line.y1);
-                gl.x2 = toKicadX(line.x2);
-                gl.y2 = toKicadY(line.y2);
+                gl.x1 = scaleX(line.x1);
+                gl.y1 = scaleY(line.y1);
+                gl.x2 = scaleX(line.x2);
+                gl.y2 = scaleY(line.y2);
                 if (line.symIdx < (int)ecFeats.symbols.size()) {
                     auto& sym = ecFeats.symbols[line.symIdx];
-                    gl.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                    gl.width = scaleLen((sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width);
                 } else {
                     gl.width = 0.05;
                 }
@@ -913,18 +953,18 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             }
             for (auto& arc : ecFeats.arcs) {
                 KicadGrArc ga;
-                ga.xs = toKicadX(arc.xs);
-                ga.ys = toKicadY(arc.ys);
-                ga.xe = toKicadX(arc.xe);
-                ga.ye = toKicadY(arc.ye);
+                ga.xs = scaleX(arc.xs);
+                ga.ys = scaleY(arc.ys);
+                ga.xe = scaleX(arc.xe);
+                ga.ye = scaleY(arc.ye);
                 double xm_odb, ym_odb;
                 computeArcMidpoint(arc.xs, arc.ys, arc.xe, arc.ye,
                                    arc.xc, arc.yc, arc.clockwise, xm_odb, ym_odb);
-                ga.xm = toKicadX(xm_odb);
-                ga.ym = toKicadY(ym_odb);
+                ga.xm = scaleX(xm_odb);
+                ga.ym = scaleY(ym_odb);
                 if (arc.symIdx < (int)ecFeats.symbols.size()) {
                     auto& sym = ecFeats.symbols[arc.symIdx];
-                    ga.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                    ga.width = scaleLen((sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width);
                 } else {
                     ga.width = 0.05;
                 }
@@ -951,24 +991,25 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                         // KiCad gr_circle: (gr_circle (center x y) (end x+r y) ...)
                         // We'll use a full arc: start at right, mid at top, end at left...
                         // Actually, better to emit 2 half arcs
-                        double cx = toKicadX(pad.x);
-                        double cy = toKicadY(pad.y);
+                        double cx = scaleX(pad.x);
+                        double cy = scaleY(pad.y);
+                        double radiusMm = scaleLen(radius);
                         // First half: right -> top -> left
-                        ga.xs = cx + radius;
+                        ga.xs = cx + radiusMm;
                         ga.ys = cy;
                         ga.xm = cx;
-                        ga.ym = cy - radius;
-                        ga.xe = cx - radius;
+                        ga.ym = cy - radiusMm;
+                        ga.xe = cx - radiusMm;
                         ga.ye = cy;
                         ga.width = 0.05;
                         ga.layer = "Edge.Cuts";
                         pcb.grArcs.push_back(ga);
                         // Second half: left -> bottom -> right
-                        ga.xs = cx - radius;
+                        ga.xs = cx - radiusMm;
                         ga.ys = cy;
                         ga.xm = cx;
-                        ga.ym = cy + radius;
-                        ga.xe = cx + radius;
+                        ga.ym = cy + radiusMm;
+                        ga.xe = cx + radiusMm;
                         ga.ye = cy;
                         pcb.grArcs.push_back(ga);
                     }
@@ -1033,8 +1074,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                         std::abs(contour.points[i].x - contour.points[1].x) < 0.001 &&
                         std::abs(contour.points[i].y - contour.points[1].y) < 0.001)
                         continue;
-                    polyPts.push_back({toKicadX(contour.points[i].x),
-                                       toKicadY(contour.points[i].y)});
+                    polyPts.push_back({scaleX(contour.points[i].x),
+                                       scaleY(contour.points[i].y)});
                 }
 
                 // Use largest non-hole contour as the zone outline
@@ -1097,13 +1138,13 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
         for (auto& line : features.lines) {
             KicadGrLine gl;
-            gl.x1 = toKicadX(line.x1);
-            gl.y1 = toKicadY(line.y1);
-            gl.x2 = toKicadX(line.x2);
-            gl.y2 = toKicadY(line.y2);
+            gl.x1 = scaleX(line.x1);
+            gl.y1 = scaleY(line.y1);
+            gl.x2 = scaleX(line.x2);
+            gl.y2 = scaleY(line.y2);
             if (line.symIdx < (int)features.symbols.size()) {
                 auto& sym = features.symbols[line.symIdx];
-                gl.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                gl.width = scaleLen((sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width);
             } else {
                 gl.width = 0.1;
             }
@@ -1114,18 +1155,18 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
         for (auto& arc : features.arcs) {
             KicadGrArc ga;
-            ga.xs = toKicadX(arc.xs);
-            ga.ys = toKicadY(arc.ys);
-            ga.xe = toKicadX(arc.xe);
-            ga.ye = toKicadY(arc.ye);
+            ga.xs = scaleX(arc.xs);
+            ga.ys = scaleY(arc.ys);
+            ga.xe = scaleX(arc.xe);
+            ga.ye = scaleY(arc.ye);
             double xm_odb, ym_odb;
             computeArcMidpoint(arc.xs, arc.ys, arc.xe, arc.ye,
                                arc.xc, arc.yc, arc.clockwise, xm_odb, ym_odb);
-            ga.xm = toKicadX(xm_odb);
-            ga.ym = toKicadY(ym_odb);
+            ga.xm = scaleX(xm_odb);
+            ga.ym = scaleY(ym_odb);
             if (arc.symIdx < (int)features.symbols.size()) {
                 auto& sym = features.symbols[arc.symIdx];
-                ga.width = (sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width;
+                ga.width = scaleLen((sym.shape == OdbSymbol::ROUND) ? sym.diameter : sym.width);
             } else {
                 ga.width = 0.1;
             }

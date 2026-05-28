@@ -329,7 +329,7 @@ class DirectOdbOracle:
                 for line in f:
                     if line.startswith('UNITS='):
                         return line.split('=', 1)[1].strip().upper()
-        return 'INCH'  # Default to inch (mils) if not specified
+        return 'INCH'  # Default to inches if not specified
 
     def _parse_matrix(self) -> List[Dict]:
         """Parse matrix/matrix file for layer definitions"""
@@ -482,11 +482,11 @@ class DirectOdbOracle:
     def _parse_components(self, components_path: Path) -> List[Dict]:
         """Parse components file and extract full component data including terminals"""
         components = []
-        units = 'MM'  # default
-        scale = 1.0
+        units = 'INCH'  # ODB++ default is INCH when not specified
+        scale = 25.4  # Convert inches to mm
         current_comp = None
 
-        with open(components_path, 'r') as f:
+        with open(components_path, 'r', encoding='latin-1') as f:
             for line in f:
                 line = line.strip()
 
