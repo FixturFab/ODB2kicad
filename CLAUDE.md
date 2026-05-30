@@ -198,7 +198,7 @@ WASM bindings use Emscripten embind. The JS wrapper (`wasm/src/index.mjs`) handl
 
 - C++17, no external dependencies, POSIX filesystem calls only (opendir/readdir/stat)
 - Emscripten MEMFS handles filesystem calls transparently in WASM
-- Coordinates: ODB++ uses mils, converted to mm for KiCad
+- **Units**: ODB++ defaults to INCH when `UNITS=` line is not present (per ODB++ spec). The converter auto-detects units from component/feature files and scales to mm for KiCad (INCH × 25.4 = mm). Files with `UNITS=MM` are passed through without scaling.
 - Native and WASM outputs must be byte-identical (enforced by test 3)
 - `wasm/dist/` is committed — rebuild and commit after any C++ changes
 

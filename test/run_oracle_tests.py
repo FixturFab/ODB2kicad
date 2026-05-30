@@ -67,15 +67,22 @@ class OracleTestRunner:
         private_dir = self.samples_dir / 'private'
         if private_dir.exists():
             for item in private_dir.iterdir():
-                if item.is_dir() and (item / 'matrix').exists():
-                    # Looks like an ODB++ directory
-                    sample_name = f"private/{item.name}"
-                    self.samples[sample_name] = {
-                        'odb_path': f'private/{item.name}',
-                        'description': f'Private sample: {item.name}',
-                        'expected_components': None,
-                        'expected_nets': None
-                    }
+                if item.is_dir():
+                    # Check if ODB++ structure exists directly or in odb/ subdirectory
+                    odb_root = None
+                    if (item / 'matrix').exists():
+                        odb_root = f'private/{item.name}'
+                    elif (item / 'odb' / 'matrix').exists():
+                        odb_root = f'private/{item.name}/odb'
+
+                    if odb_root:
+                        sample_name = f"private/{item.name}"
+                        self.samples[sample_name] = {
+                            'odb_path': odb_root,
+                            'description': f'Private sample: {item.name}',
+                            'expected_components': None,
+                            'expected_nets': None
+                        }
 
     def find_converter(self) -> Optional[Path]:
         """Find the odb2kicad converter executable"""
