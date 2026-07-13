@@ -171,6 +171,27 @@ static std::string formatFloat(double v, int precision = 6) {
     return s;
 }
 
+// Escape a string for emission inside a quoted s-expression token.
+// ODB++ names can contain double quotes (e.g. `1/4"_Standoff`), backslashes
+// or control characters; emitting them raw produces a file KiCad's strict
+// parser rejects ("Failed to load board") even though lenient parsers such
+// as KiCanvas accept it. Mirrors KiCad's own OUTPUTFORMATTER quoting.
+static std::string escapeString(const std::string& in) {
+    std::string out;
+    out.reserve(in.size());
+    for (char c : in) {
+        switch (c) {
+            case '\\': out += "\\\\"; break;
+            case '"':  out += "\\\""; break;
+            case '\n': out += "\\n"; break;
+            case '\r': out += "\\r"; break;
+            case '\t': out += "\\t"; break;
+            default:   out += c;      break;
+        }
+    }
+    return out;
+}
+
 static std::string makeUuid(int index) {
     // Deterministic UUID from index
     char buf[64];
@@ -1198,8 +1219,8 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
     // Layers
     out << "  (layers\n";
     for (auto& layer : pcb.layers) {
-        out << "    (" << layer.id << " \"" << layer.canonicalName << "\" " << layer.type;
-        if (!layer.alias.empty()) out << " \"" << layer.alias << "\"";
+        out << "    (" << layer.id << " \"" << escapeString(layer.canonicalName) << "\" " << layer.type;
+        if (!layer.alias.empty()) out << " \"" << escapeString(layer.alias) << "\"";
         out << ")\n";
     }
     out << "  )\n";
@@ -1216,27 +1237,27 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
 
     // Nets
     for (auto& net : pcb.nets) {
-        out << "  (net " << net.id << " \"" << net.name << "\")\n";
+        out << "  (net " << net.id << " \"" << escapeString(net.name) << "\")\n";
     }
 
     // Footprints
     for (auto& fp : pcb.footprints) {
-        out << "\n  (footprint \"" << fp.library << "\" (layer \"" << fp.layer << "\")\n";
+        out << "\n  (footprint \"" << escapeString(fp.library) << "\" (layer \"" << escapeString(fp.layer) << "\")\n";
         out << "    (tstamp " << fp.uuid << ")\n";
         out << "    (at " << formatFloat(fp.x) << " " << formatFloat(fp.y);
         if (std::abs(fp.angle) > 0.001) out << " " << formatFloat(fp.angle);
         out << ")\n";
-        out << "    (property \"Reference\" \"" << fp.refdes << "\")\n";
-        out << "    (property \"Value\" \"" << fp.value << "\")\n";
+        out << "    (property \"Reference\" \"" << escapeString(fp.refdes) << "\")\n";
+        out << "    (property \"Value\" \"" << escapeString(fp.value) << "\")\n";
         out << "    (attr " << fp.attr << ")\n";
 
         // fp_text reference
-        out << "    (fp_text reference \"" << fp.refdes << "\" (at 0 -1.65) (layer \"F.SilkS\")\n";
+        out << "    (fp_text reference \"" << escapeString(fp.refdes) << "\" (at 0 -1.65) (layer \"F.SilkS\")\n";
         out << "      (effects (font (size 1 1) (thickness 0.15)))\n";
         out << "    )\n";
 
         // fp_text value
-        out << "    (fp_text value \"" << fp.value << "\" (at 0 1.65) (layer \"F.Fab\")\n";
+        out << "    (fp_text value \"" << escapeString(fp.value) << "\" (at 0 1.65) (layer \"F.Fab\")\n";
         out << "      (effects (font (size 1 1) (thickness 0.15)))\n";
         out << "    )\n";
 
@@ -1250,11 +1271,11 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
 
         // Pads
         for (auto& pad : fp.pads) {
-            out << "    (pad \"" << pad.pinNum << "\" " << pad.type << " " << pad.shape;
+            out << "    (pad \"" << escapeString(pad.pinNum) << "\" " << pad.type << " " << pad.shape;
             out << " (at " << formatFloat(pad.x) << " " << formatFloat(pad.y) << ")";
             out << " (size " << formatFloat(pad.width) << " " << formatFloat(pad.height) << ")";
             out << " (layers";
-            for (auto& l : pad.layerNames) out << " \"" << l << "\"";
+            for (auto& l : pad.layerNames) out << " \"" << escapeString(l) << "\"";
             out << ")";
             if (pad.shape == "roundrect" && pad.roundrectRatio > 0) {
                 out << " (roundrect_rratio " << formatFloat(pad.roundrectRatio) << ")";
@@ -1263,7 +1284,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
                 out << " (drill " << formatFloat(pad.drill) << ")";
             }
             if (pad.netId > 0) {
-                out << " (net " << pad.netId << " \"" << pad.netName << "\")";
+                out << " (net " << pad.netId << " \"" << escapeString(pad.netName) << "\")";
             }
             out << ")\n";
         }
@@ -1276,7 +1297,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         out << "\n  (segment (start " << formatFloat(seg.x1) << " " << formatFloat(seg.y1)
             << ") (end " << formatFloat(seg.x2) << " " << formatFloat(seg.y2)
             << ") (width " << formatFloat(seg.width)
-            << ") (layer \"" << seg.layer
+            << ") (layer \"" << escapeString(seg.layer)
             << "\") (net " << seg.netId << "))\n";
     }
 
@@ -1286,7 +1307,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             << ") (mid " << formatFloat(arc.xm) << " " << formatFloat(arc.ym)
             << ") (end " << formatFloat(arc.xe) << " " << formatFloat(arc.ye)
             << ") (width " << formatFloat(arc.width)
-            << ") (layer \"" << arc.layer
+            << ") (layer \"" << escapeString(arc.layer)
             << "\") (net " << arc.netId << "))\n";
     }
 
@@ -1295,7 +1316,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         out << "\n  (via (at " << formatFloat(via.x) << " " << formatFloat(via.y)
             << ") (size " << formatFloat(via.size)
             << ") (drill " << formatFloat(via.drill)
-            << ") (layers \"" << via.fromLayer << "\" \"" << via.toLayer
+            << ") (layers \"" << escapeString(via.fromLayer) << "\" \"" << escapeString(via.toLayer)
             << "\") (net " << via.netId << "))\n";
     }
 
@@ -1304,7 +1325,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         out << "\n  (gr_line (start " << formatFloat(gl.x1) << " " << formatFloat(gl.y1)
             << ") (end " << formatFloat(gl.x2) << " " << formatFloat(gl.y2)
             << ") (stroke (width " << formatFloat(gl.width)
-            << ") (type " << gl.type << ")) (fill none) (layer \"" << gl.layer << "\"))\n";
+            << ") (type " << gl.type << ")) (fill none) (layer \"" << escapeString(gl.layer) << "\"))\n";
     }
 
     // Graphic rects
@@ -1312,7 +1333,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         out << "\n  (gr_rect (start " << formatFloat(gr.x1) << " " << formatFloat(gr.y1)
             << ") (end " << formatFloat(gr.x2) << " " << formatFloat(gr.y2)
             << ") (stroke (width " << formatFloat(gr.width)
-            << ") (type " << gr.type << ")) (fill none) (layer \"" << gr.layer << "\"))\n";
+            << ") (type " << gr.type << ")) (fill none) (layer \"" << escapeString(gr.layer) << "\"))\n";
     }
 
     // Graphic arcs
@@ -1321,7 +1342,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             << ") (mid " << formatFloat(ga.xm) << " " << formatFloat(ga.ym)
             << ") (end " << formatFloat(ga.xe) << " " << formatFloat(ga.ye)
             << ") (stroke (width " << formatFloat(ga.width)
-            << ") (type solid)) (layer \"" << ga.layer << "\"))\n";
+            << ") (type solid)) (layer \"" << escapeString(ga.layer) << "\"))\n";
     }
 
     // Zones (modern KiCad 8.0+ format)
@@ -1330,8 +1351,8 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         // Skip zones without outline points
         if (zone.outlinePoints.empty()) continue;
 
-        out << "\n  (zone (net " << zone.netId << ") (net_name \"" << zone.netName
-            << "\") (layer \"" << zone.layer << "\") (uuid \"" << makeUuid(10000 + zoneIdx++) << "\")\n";
+        out << "\n  (zone (net " << zone.netId << ") (net_name \"" << escapeString(zone.netName)
+            << "\") (layer \"" << escapeString(zone.layer) << "\") (uuid \"" << makeUuid(10000 + zoneIdx++) << "\")\n";
         out << "    (hatch edge 0.5)\n";
         out << "    (connect_pads (clearance 0))\n";
         out << "    (min_thickness 0.25)\n";
@@ -1345,7 +1366,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         // Include filled polygons so zones display immediately without refill
         for (auto& poly : zone.filledPolygons) {
             if (poly.size() < 3) continue;
-            out << "    (filled_polygon\n      (layer \"" << zone.layer << "\")\n      (pts\n";
+            out << "    (filled_polygon\n      (layer \"" << escapeString(zone.layer) << "\")\n      (pts\n";
             for (auto& [x, y] : poly) {
                 out << "        (xy " << formatFloat(x) << " " << formatFloat(y) << ")\n";
             }
