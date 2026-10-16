@@ -386,6 +386,58 @@ TEST(eda_fid_records_and_feature_ordinals_are_parsed) {
     if (!f.surfaces.empty()) CHECK_EQ(f.surfaces[0].featIdx, 2);
 }
 
+// ---------------------------------------------------------------- NPTH
+
+// KiCad writes an NPTH as a 0.01 mm copper placeholder (r10) plus a hit on drill_non-plated (.drill
+// non_plated). It used to come back as a 0.1 mm roundrect SMD dot, or a PLATED hole on TH-tagged
+// parts. Now: np_thru_hole, circle the size of the hole, mask opening from the mask layers.
+TEST(npth_hit_makes_a_non_plated_hole_sized_to_the_drill) {
+    OdbDesign d = kicadDesign();
+    auto& dut = component(d, "DUT1", 0, 0, /*mountType=*/0);
+    terminal(dut, "NPTH0", 6, -10, 0);
+    auto& h = component(d, "H1", 0, 0, /*mountType=*/2);
+    terminal(h, "1", 20, -10, 0);
+    for (double x : {6.0, 20.0}) {
+        for (const char* cu : {"f.cu", "b.cu"}) flash(d, cu, x, -10, "r10.0", OdbSymbol::ROUND, 0.01);
+        flash(d, "drill_non-plated_f.cu-b.cu", x, -10, "r5000.0", OdbSymbol::ROUND, 5.0, -1, {{".drill", "1"}});
+    }
+    flash(d, "f.mask", 6, -10, "r5000.0", OdbSymbol::ROUND, 5.0);
+    flash(d, "b.mask", 6, -10, "r5000.0", OdbSymbol::ROUND, 5.0);
+    KicadPcb pcb = transformToKicad(d);
+    for (auto [ref, pin] : {std::pair<const char*, const char*>{"DUT1", "NPTH0"}, {"H1", "1"}}) {
+        const KicadPad* p = findPad(pcb, ref, pin);
+        CHECK(p);
+        if (!p) continue;
+        CHECK_EQ(p->type, std::string("np_thru_hole"));
+        CHECK_EQ(p->shape, std::string("circle"));
+        CHECK_NEAR(p->drill, 5.0, 1e-9);
+        CHECK_NEAR(p->width, 5.0, 1e-9);
+        CHECK_NEAR(p->height, 5.0, 1e-9);
+        CHECK(!hasLayer(*p, "F.Paste") && !hasLayer(*p, "B.Paste"));
+    }
+    const KicadPad* p = findPad(pcb, "DUT1", "NPTH0");
+    if (p) CHECK(hasLayer(*p, "F.Mask") && hasLayer(*p, "B.Mask"));
+    p = findPad(pcb, "H1", "1");
+    if (p) CHECK(!hasLayer(*p, "F.Mask") && !hasLayer(*p, "B.Mask"));
+    CHECK(writeString(pcb).find("(pad \"NPTH0\" np_thru_hole circle") != std::string::npos);
+}
+
+// Without a .drill attribute the layer name says non-plated (other exporters name it NPTH).
+TEST(npth_layer_name_without_drill_attribute) {
+    OdbDesign d = kicadDesign();
+    d.layers.push_back(layer(13, "DRILL", "NPTH"));
+    auto& h = component(d, "H2", 0, 0, 2);
+    terminal(h, "1", 3, -3, 0);
+    flash(d, "npth", 3, -3, "r3200.0", OdbSymbol::ROUND, 3.2);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadPad* p = findPad(pcb, "H2", "1");
+    CHECK(p);
+    if (p) {
+        CHECK_EQ(p->type, std::string("np_thru_hole"));
+        CHECK_NEAR(p->drill, 3.2, 1e-9);
+    }
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {

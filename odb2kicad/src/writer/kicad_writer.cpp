@@ -615,8 +615,17 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     pad.type = "thru_hole";
                     pad.drill = hit->size;
                 } else if (hit && hit->kind == DrillHit::NON_PLATED) {
-                    pad.type = (comp.mountType == 2) ? "thru_hole" : "smd";
-                    if (pad.type == "thru_hole") pad.drill = hit->size;
+                    // NPTH: KiCad exports it as a 0.01 mm copper placeholder flash plus the
+                    // non-plated hit. The hole is the pad; a real copper flash larger than the
+                    // hole keeps its size.
+                    pad.type = "np_thru_hole";
+                    pad.drill = hit->size;
+                    double flash = symPtr ? scaleLen(std::max(padSym.width, padSym.height)) : 0;
+                    if (flash < hit->size) {
+                        pad.shape = "circle";
+                        pad.width = pad.height = hit->size;
+                        pad.roundrectRatio = 0;
+                    }
                 } else {
                     pad.type = "smd";
                 }
@@ -624,12 +633,12 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 // Pad layers: copper from the pad type / flash side, mask and paste from
                 // the openings present on the mask/paste layers at the pad centre
                 bool padOnBottom = (pad.type == "smd") ? (isBottom != onOther) : isBottom;
-                if (pad.type == "thru_hole") {
+                if (pad.type == "thru_hole" || pad.type == "np_thru_hole") {
                     pad.layerNames = {"*.Cu"};
                 } else {
                     pad.layerNames = {padOnBottom ? "B.Cu" : "F.Cu"};
                 }
-                bool th = pad.type == "thru_hole";
+                bool th = pad.type == "thru_hole" || pad.type == "np_thru_hole";
                 if (havePaste) {
                     if ((th || !padOnBottom) && padFeatureAt(odbFPaste, term.x, term.y, nullptr))
                         pad.layerNames.push_back("F.Paste");
