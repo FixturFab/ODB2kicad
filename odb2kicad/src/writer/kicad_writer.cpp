@@ -49,8 +49,37 @@ static const LayerMapping* findLayerByOdbName(const std::string& odbName) {
     return nullptr;
 }
 
+// Inner copper layers In1.Cu..In30.Cu (KiCad ids 1..30)
+static const LayerMapping* innerLayerMapping(int n) {
+    static LayerMapping innerLayers[30];
+    static char names[30][16];
+    static bool init = false;
+    if (!init) {
+        for (int i = 0; i < 30; i++) {
+            snprintf(names[i], sizeof(names[i]), "In%d.Cu", i + 1);
+            innerLayers[i] = { i + 1, names[i], nullptr };
+        }
+        init = true;
+    }
+    return (n >= 1 && n <= 30) ? &innerLayers[n - 1] : nullptr;
+}
+
+static bool isCopperType(const std::string& type) {
+    std::string t = toUpper(type);
+    return t == "SIGNAL" || t == "POWER_GROUND" || t == "MIXED";
+}
+
+// "IN<n>.CU" (KiCad's ODB++ name for In<n>.Cu) -> n, else 0
+static int kicadInnerLayerNumber(const std::string& odbName) {
+    std::string u = toUpper(odbName);
+    if (u.size() < 6 || u.compare(0, 2, "IN") != 0 || u.compare(u.size() - 3, 3, ".CU") != 0) return 0;
+    std::string digits = u.substr(2, u.size() - 5);
+    if (digits.empty() || digits.find_first_not_of("0123456789") != std::string::npos) return 0;
+    return std::stoi(digits);
+}
+
 // Build layer name mapping from ODB++ matrix layer stack.
-// Handles both KiCad-generated (F.CU, B.CU) and non-KiCad (SIGNAL_1, SIGNAL_10, etc.) naming.
+// Handles both KiCad-generated (F.CU, IN1.CU, B.CU) and non-KiCad (SIGNAL_1, SIGNAL_10, etc.) naming.
 static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vector<OdbLayer>& layers) {
     std::map<std::string, const LayerMapping*> result;
 
@@ -62,13 +91,36 @@ static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vecto
         }
     }
 
-    // If we found F.Cu and B.Cu by name, we're done (KiCad source)
+    // If we found F.Cu and B.Cu by name, this is a KiCad source: its inner copper rows
+    // (IN<n>.CU) still need mapping, by name or else by row order between F.Cu and B.Cu.
     bool hasFCu = false, hasBCu = false;
     for (auto& [name, m] : result) {
         if (m->id == 0) hasFCu = true;
         if (m->id == 31) hasBCu = true;
     }
-    if (hasFCu && hasBCu) return result;
+    if (hasFCu && hasBCu) {
+        std::vector<std::pair<int, std::string>> unmapped; // row, name
+        std::set<int> used;
+        for (auto& layer : layers) {
+            if (!isCopperType(layer.type) || result.count(toLower(layer.name))) continue;
+            int n = kicadInnerLayerNumber(layer.name);
+            if (n >= 1 && n <= 30 && !used.count(n)) {
+                result[toLower(layer.name)] = innerLayerMapping(n);
+                used.insert(n);
+            } else {
+                unmapped.push_back({layer.row, layer.name});
+            }
+        }
+        std::sort(unmapped.begin(), unmapped.end());
+        int next = 1;
+        for (auto& [row, name] : unmapped) {
+            while (used.count(next)) next++;
+            if (next > 30) break;
+            result[toLower(name)] = innerLayerMapping(next);
+            used.insert(next);
+        }
+        return result;
+    }
 
     // Second pass: TYPE-based mapping for non-KiCad ODB++ files
     // Collect copper layers (SIGNAL and POWER_GROUND) in row order
@@ -76,11 +128,10 @@ static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vecto
     std::vector<std::pair<std::string, int>> maskLayers;
     std::vector<std::pair<std::string, int>> pasteLayers;
     std::vector<std::pair<std::string, int>> silkLayers;
-    std::vector<std::pair<std::string, int>> drillLayers;
 
     for (auto& layer : layers) {
         std::string type = toUpper(layer.type);
-        if (type == "SIGNAL" || type == "POWER_GROUND")
+        if (isCopperType(type))
             copperLayers.push_back({layer.name, layer.row});
         else if (type == "SOLDER_MASK")
             maskLayers.push_back({layer.name, layer.row});
@@ -88,8 +139,6 @@ static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vecto
             pasteLayers.push_back({layer.name, layer.row});
         else if (type == "SILK_SCREEN")
             silkLayers.push_back({layer.name, layer.row});
-        else if (type == "DRILL")
-            drillLayers.push_back({layer.name, layer.row});
     }
 
     // Sort by row
@@ -99,28 +148,14 @@ static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vecto
     std::sort(pasteLayers.begin(), pasteLayers.end(), byRow);
     std::sort(silkLayers.begin(), silkLayers.end(), byRow);
 
-    // Map copper: first = F.Cu (0), last = B.Cu (31), inner = In1.Cu through In28.Cu
+    // Map copper: first = F.Cu (0), last = B.Cu (31), inner = In1.Cu through In30.Cu
     if (!copperLayers.empty()) {
         result[toLower(copperLayers.front().first)] = &kLayerMappings[0]; // F.Cu
         if (copperLayers.size() > 1) {
             result[toLower(copperLayers.back().first)] = &kLayerMappings[1]; // B.Cu
         }
-        // Inner copper layers (KiCad IDs 1-30)
-        // We use a static array for inner layer mappings
-        static LayerMapping innerLayers[30];
-        static bool innerInit = false;
-        if (!innerInit) {
-            for (int i = 0; i < 30; i++) {
-                innerLayers[i].id = i + 1;
-                static char names[30][16];
-                snprintf(names[i], sizeof(names[i]), "In%d.Cu", i + 1);
-                innerLayers[i].canonical = names[i];
-                innerLayers[i].alias = nullptr;
-            }
-            innerInit = true;
-        }
         for (size_t i = 1; i + 1 < copperLayers.size() && i <= 30; i++) {
-            result[toLower(copperLayers[i].first)] = &innerLayers[i - 1];
+            result[toLower(copperLayers[i].first)] = innerLayerMapping((int)i);
         }
     }
 
@@ -798,21 +833,12 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
     // Helper to find net for a point on a given layer
     auto findNetAtPoint = [&](double kx, double ky, const std::string& layer) -> int {
-        int layerId = -1;
-        for (auto& m : kLayerMappings) {
-            if (m.canonical == layer) { layerId = m.id; break; }
-        }
-        bool isCopperLayer = (layerId >= 0 && layerId <= 31);
+        bool isCopperLayer = layer.size() > 3 && layer.compare(layer.size() - 3, 3, ".Cu") == 0;
         if (!isCopperLayer) return 0;
 
         for (auto& pni : padLookup) {
-            // Through-hole pads match on any copper layer
-            bool layerMatch = pni.throughHole ||
-                (layerId == 0 && !pni.throughHole) || // SMD on F.Cu
-                (layerId == 31 && !pni.throughHole);   // SMD on B.Cu (if the footprint is on B.Cu)
-            // Actually: SMD pad only matches on its own layer.
-            // For simplicity, TH pads match any copper layer, SMD pads always match
-            // since they were placed from the correct footprint layer.
+            // TH pads match any copper layer; SMD pads always match too, since they were
+            // placed from the correct footprint layer.
             if (std::abs(pni.x - kx) < 0.02 && std::abs(pni.y - ky) < 0.02) {
                 if (pni.netId > 0) return pni.netId;
             }

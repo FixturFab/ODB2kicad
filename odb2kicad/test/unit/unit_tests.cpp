@@ -6,6 +6,7 @@
 //   cmake --build build && ctest --test-dir build
 #include "model/odb_design.h"
 #include "model/kicad_pcb.h"
+#include "odb_parser/matrix_parser.h"
 #include "odb_parser/odb_parser.h"
 #include "writer/kicad_writer.h"
 #include <cmath>
@@ -236,6 +237,55 @@ TEST(th_tagged_component_without_drill_hit_is_smd) {
     CHECK_EQ(p->type, std::string("smd"));
     CHECK(hasLayer(*p, "F.Cu") && hasLayer(*p, "F.Mask"));
     CHECK(!hasLayer(*p, "F.Paste"));  // the design has paste layers but no opening here
+}
+
+// ---------------------------------------------------------------- inner copper layers
+
+static bool hasKicadLayer(const KicadPcb& pcb, int id, const std::string& name) {
+    for (auto& l : pcb.layers) if (l.id == id && l.canonicalName == name && l.type == "signal") return true;
+    return false;
+}
+
+// KiCad names its copper F.CU / IN1.CU / IN2.CU / B.CU. Finding F.Cu and B.Cu by name used to end
+// the mapping, so every IN*.CU feature (tracks, planes) was dropped. Read from a real matrix file.
+TEST(kicad_inner_layers_are_mapped_from_the_matrix) {
+    std::string dir = tempDir("inner_layers");
+    writeFile(dir + "/matrix/matrix",
+        "STEP {\n   COL=1\n   NAME=PCB\n}\n\n"
+        "LAYER {\n   ROW=1\n   CONTEXT=BOARD\n   TYPE=SIGNAL\n   NAME=F.CU\n   POLARITY=POSITIVE\n}\n"
+        "LAYER {\n   ROW=2\n   CONTEXT=BOARD\n   TYPE=DIELECTRIC\n   NAME=DIELECTRIC_1\n   POLARITY=POSITIVE\n}\n"
+        "LAYER {\n   ROW=3\n   CONTEXT=BOARD\n   TYPE=POWER_GROUND\n   NAME=IN1.CU\n   POLARITY=POSITIVE\n}\n"
+        "LAYER {\n   ROW=4\n   CONTEXT=BOARD\n   TYPE=SIGNAL\n   NAME=IN2.CU\n   POLARITY=POSITIVE\n}\n"
+        "LAYER {\n   ROW=5\n   CONTEXT=BOARD\n   TYPE=SIGNAL\n   NAME=B.CU\n   POLARITY=POSITIVE\n}\n");
+    OdbDesign d;
+    CHECK(parseMatrix(dir + "/matrix/matrix", d.stepName, d.layers));
+    CHECK_EQ(d.layers.size(), (size_t)5);
+    d.edaData.nets = {{"$NONE$"}, {"GND"}};
+    auto& in2 = d.layerFeatures["in2.cu"];
+    in2.units = "MM";
+    int sym = symbol(in2, "r250.0", OdbSymbol::ROUND, 0.25);
+    OdbLine ln;
+    ln.x1 = 1; ln.y1 = -1; ln.x2 = 5; ln.y2 = -1; ln.symIdx = sym; ln.polarity = "P";
+    in2.lines.push_back(ln);
+    KicadPcb pcb = transformToKicad(d);
+    CHECK(hasKicadLayer(pcb, 0, "F.Cu"));
+    CHECK(hasKicadLayer(pcb, 1, "In1.Cu"));
+    CHECK(hasKicadLayer(pcb, 2, "In2.Cu"));
+    CHECK(hasKicadLayer(pcb, 31, "B.Cu"));
+    CHECK_EQ(pcb.segments.size(), (size_t)1);
+    if (!pcb.segments.empty()) CHECK_EQ(pcb.segments[0].layer, std::string("In2.Cu"));
+}
+
+// Non-KiCad sources (SIGNAL_n naming) keep the row-order mapping: first/last outer, the rest inner.
+TEST(row_order_inner_layers_for_generic_names) {
+    OdbDesign d;
+    d.layers = {layer(1, "SIGNAL", "TOP"), layer(2, "POWER_GROUND", "PLANE_GND"),
+                layer(3, "MIXED", "SIG_3"), layer(4, "SIGNAL", "BOTTOM")};
+    KicadPcb pcb = transformToKicad(d);
+    CHECK(hasKicadLayer(pcb, 0, "F.Cu"));
+    CHECK(hasKicadLayer(pcb, 1, "In1.Cu"));
+    CHECK(hasKicadLayer(pcb, 2, "In2.Cu"));
+    CHECK(hasKicadLayer(pcb, 31, "B.Cu"));
 }
 
 // ---------------------------------------------------------------- main
