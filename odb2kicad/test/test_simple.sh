@@ -103,10 +103,11 @@ grep -q 'gr_line' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no g
 grep -q 'zone.*B.Cu' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no zones on B.Cu"; exit 1; }
 grep -q 'filled_polygon' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no filled polygons in zones"; exit 1; }
 
-# Stage D: Check arcs (Edge.Cuts cutouts + B.Fab arc)
+# Stage D: Check arcs and circles (the two donut_r Edge.Cuts cutouts are gr_circles, B.Fab has an arc)
 grep -q 'gr_arc' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no gr_arcs"; exit 1; }
-ARC_COUNT=$(grep -c 'gr_arc' /tmp/test-kitchen.kicad_pcb || true)
-[ "$ARC_COUNT" -ge 4 ] || { echo "FAIL: kitchen-sink expected >=4 arcs, got $ARC_COUNT"; exit 1; }
+CUTOUTS=$(grep -c 'gr_circle.*Edge.Cuts' /tmp/test-kitchen.kicad_pcb || true)
+[ "$CUTOUTS" -eq 2 ] || { echo "FAIL: kitchen-sink expected 2 Edge.Cuts circle cutouts, got $CUTOUTS"; exit 1; }
+grep -q '(gr_circle (center 224.6 97.7) (end 228.698315 97.7) (stroke (width 0.0375)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink cutout not on its centreline radius"; exit 1; }
 
 # Stage D: Check silkscreen graphics at board level
 grep -q 'gr_line.*F.SilkS' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no silkscreen gr_lines"; exit 1; }

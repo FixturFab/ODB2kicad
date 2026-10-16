@@ -1442,13 +1442,21 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                                         scaleLen(sym.lineWidth), "Edge.Cuts");
                         continue;
                     }
-                    // For donut symbols, use the outer diameter to draw a circle
-                    double radius = 0;
+                    // donut_r<od>x<id>: KiCad's Edge.Cuts circle, stroked at (od - id) / 2 around the
+                    // centreline radius (od + id) / 4
                     if (sym.donut && sym.shape == OdbSymbol::ROUND) {
-                        // donut_r<outer>x<inner> - extract outer diameter
-                        radius = sym.diameter / 2.0;
-                        if (radius <= 0) radius = sym.width / 2.0;
-                    } else if (sym.shape == OdbSymbol::ROUND) {
+                        KicadGrCircle gc;
+                        gc.cx = scaleX(pad.x);
+                        gc.cy = scaleY(pad.y);
+                        gc.r = scaleLen(sym.diameter - sym.lineWidth) / 2;
+                        gc.width = scaleLen(sym.lineWidth);
+                        gc.filled = false;
+                        gc.layer = "Edge.Cuts";
+                        pcb.grCircles.push_back(gc);
+                        continue;
+                    }
+                    double radius = 0;
+                    if (sym.shape == OdbSymbol::ROUND) {
                         radius = sym.diameter / 2.0;
                     }
                     if (radius > 0) {

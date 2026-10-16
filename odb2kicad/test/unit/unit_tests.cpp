@@ -523,9 +523,33 @@ TEST(donut_rc_on_edge_cuts_is_the_rectangle_it_describes) {
         CHECK_NEAR(g.width, 0.05, 1e-9);
         CHECK_EQ(g.layer, std::string("Edge.Cuts"));
     }
-    // the round donut is still a circle (two half arcs) of its outer radius
-    CHECK_EQ(pcb.grArcs.size(), (size_t)2);
-    if (pcb.grArcs.size() == 2) CHECK_NEAR(pcb.grArcs[0].xs - 10, 1.5, 1e-9);
+    // the round donut is still a circle
+    CHECK_EQ(pcb.grCircles.size(), (size_t)1);
+}
+
+// KiCad exports an Edge.Cuts circle (a cutout) as donut_r<od>x<id>: the stroke is (od - id) / 2
+// wide around radius (od + id) / 4. It was drawn at the outer radius od / 2 with a 0.05 stroke, so
+// every cutout grew by half a stroke (35 mm2 of outline area on a board with several cutouts).
+TEST(edge_cuts_donut_circle_on_its_centreline) {
+    OdbDesign d = kicadDesign();
+    auto& ec = d.layerFeatures["edge.cuts"];
+    ec.units = "MM";
+    ec.symbols = {decodeSymbol("donut_r28700.0x28550.0")};
+    OdbPad hole;
+    hole.x = 56.7; hole.y = -148.5; hole.symIdx = 0; hole.mirror = 8;
+    ec.pads = {hole};
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.grCircles.size(), (size_t)1);
+    CHECK_EQ(pcb.grArcs.size(), (size_t)0);
+    if (!pcb.grCircles.empty()) {
+        auto& c = pcb.grCircles[0];
+        CHECK_NEAR(c.cx, 56.7, 1e-9);
+        CHECK_NEAR(c.cy, 148.5, 1e-9);
+        CHECK_NEAR(c.r, 14.3125, 1e-9);
+        CHECK_NEAR(c.width, 0.075, 1e-9);
+        CHECK(!c.filled);
+        CHECK_EQ(c.layer, std::string("Edge.Cuts"));
+    }
 }
 
 // ---------------------------------------------------------------- outline written once
