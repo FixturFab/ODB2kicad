@@ -273,7 +273,8 @@ static bool isInchUnits(const std::string& units) {
 // A hit on a DRILL layer
 struct DrillHit {
     double x = 0, y = 0;    // raw ODB++ coordinates
-    double size = 0;        // mm
+    double size = 0;        // mm (slot: width)
+    double slotLength = 0;  // mm, oval drill symbol (slot) in KiCad pad orientation; 0 = round
     enum Kind { PLATED, NON_PLATED, VIA } kind = PLATED;
 };
 
@@ -565,6 +566,13 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             if (p.symIdx >= 0 && p.symIdx < (int)feats.symbols.size()) {
                 auto& ds = feats.symbols[p.symIdx];
                 h.size = scaleLen((ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width);
+                if (ds.shape == OdbSymbol::OVAL && std::abs(ds.width - ds.height) > 1e-6) {
+                    // slot: KiCad wants (drill oval <x> <y>) in the pad's frame
+                    double w = scaleLen(ds.width), hh = scaleLen(ds.height);
+                    if (std::lround(padAngleKicad(p) / 90.0) % 2 == 1) std::swap(w, hh);
+                    h.size = w;
+                    h.slotLength = hh;
+                }
             }
             h.kind = classifyDrill(feats, p.attrs, layerNonPlated);
             drillHits.push_back(h);
@@ -586,6 +594,30 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     // Mask/paste openings are read from the mask/paste layers when the design has them;
     // a design without them gets KiCad's defaults for the pad type.
     const bool haveMask = layerPresent(odbFMask) || layerPresent(odbBMask);
+    // An opening at a point: a pad flash there, or (for custom-pad anchors, whose copper is a
+    // 0.005 mm flash plus a surface) a positive surface covering the point.
+    auto openingAt = [&](const std::string& odbLayer, double x, double y, bool anchorOnly) -> bool {
+        if (padFeatureAt(odbLayer, x, y, nullptr)) return true;
+        if (!anchorOnly) return false;
+        auto it = design.layerFeatures.find(odbLayer);
+        if (odbLayer.empty() || it == design.layerFeatures.end()) return false;
+        for (auto& srf : it->second.surfaces) {
+            if (srf.polarity == "N") continue;
+            int depth = 0;
+            for (auto& c : srf.contours) {
+                bool in = false;
+                size_t n = c.points.size();
+                for (size_t i = 0, j = n - 1; i < n; j = i++) {
+                    auto& a = c.points[i];
+                    auto& b = c.points[j];
+                    if (((a.y > y) != (b.y > y)) && (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) in = !in;
+                }
+                if (in) depth += c.isHole ? -1 : 1;
+            }
+            if (depth > 0) return true;
+        }
+        return false;
+    };
     const bool havePaste = layerPresent(odbFPaste) || layerPresent(odbBPaste);
 
     // 3. Transform components -> footprints
@@ -665,6 +697,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 if (hit && hit->kind == DrillHit::PLATED) {
                     pad.type = "thru_hole";
                     pad.drill = hit->size;
+                    pad.drillHeight = hit->slotLength;
                 } else if (hit && hit->kind == DrillHit::NON_PLATED) {
                     // NPTH: KiCad exports it as a 0.01 mm copper placeholder flash plus the
                     // non-plated hit. The hole is the pad; a real copper flash larger than the
@@ -690,18 +723,20 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     pad.layerNames = {padOnBottom ? "B.Cu" : "F.Cu"};
                 }
                 bool th = pad.type == "thru_hole" || pad.type == "np_thru_hole";
+                // custom-shape pad: no copper flash (or a sub-0.02 mm anchor), its shape is a surface
+                bool anchor = !th && (!symPtr || std::max(padSym.width, padSym.height) * unitScale < 0.02);
                 if (havePaste) {
-                    if ((th || !padOnBottom) && padFeatureAt(odbFPaste, term.x, term.y, nullptr))
+                    if ((th || !padOnBottom) && openingAt(odbFPaste, term.x, term.y, anchor))
                         pad.layerNames.push_back("F.Paste");
-                    if ((th || padOnBottom) && padFeatureAt(odbBPaste, term.x, term.y, nullptr))
+                    if ((th || padOnBottom) && openingAt(odbBPaste, term.x, term.y, anchor))
                         pad.layerNames.push_back("B.Paste");
                 } else if (!th) {
                     pad.layerNames.push_back(padOnBottom ? "B.Paste" : "F.Paste");
                 }
                 if (haveMask) {
-                    if ((th || !padOnBottom) && padFeatureAt(odbFMask, term.x, term.y, nullptr))
+                    if ((th || !padOnBottom) && openingAt(odbFMask, term.x, term.y, anchor))
                         pad.layerNames.push_back("F.Mask");
-                    if ((th || padOnBottom) && padFeatureAt(odbBMask, term.x, term.y, nullptr))
+                    if ((th || padOnBottom) && openingAt(odbBMask, term.x, term.y, anchor))
                         pad.layerNames.push_back("B.Mask");
                 } else {
                     pad.layerNames.push_back(th ? "*.Mask" : (padOnBottom ? "B.Mask" : "F.Mask"));
@@ -1529,7 +1564,9 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             if (pad.shape == "roundrect" && pad.roundrectRatio > 0) {
                 out << " (roundrect_rratio " << formatFloat(pad.roundrectRatio) << ")";
             }
-            if (pad.drill > 0) {
+            if (pad.drill > 0 && pad.drillHeight > 0) {
+                out << " (drill oval " << formatFloat(pad.drill) << " " << formatFloat(pad.drillHeight) << ")";
+            } else if (pad.drill > 0) {
                 out << " (drill " << formatFloat(pad.drill) << ")";
             }
             if (pad.netId > 0) {

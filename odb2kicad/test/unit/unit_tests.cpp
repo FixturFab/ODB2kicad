@@ -155,6 +155,14 @@ static bool hasLayer(const KicadPad& p, const std::string& l) {
     return false;
 }
 
+// Square contour (OB + 4 OS back to the start), island or hole
+static OdbContour square(double x0, double y0, double x1, double y1, bool hole) {
+    OdbContour c;
+    c.isHole = hole;
+    c.points = {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}, {x0, y0}};
+    return c;
+}
+
 static std::string writeString(const KicadPcb& pcb) {
     std::ostringstream oss;
     writeKicadPcb(oss, pcb);
@@ -242,6 +250,54 @@ TEST(th_tagged_component_without_drill_hit_is_smd) {
     CHECK(!hasLayer(*p, "F.Paste"));  // the design has paste layers but no opening here
 }
 
+// A slotted TH pad (e.g. a USB-C shell): the drill symbol is an oval, written as
+// (drill oval w h) in the pad's frame. A 90-degree flash swaps the slot axes.
+TEST(slot_drill_keeps_its_oval) {
+    OdbDesign d = kicadDesign();
+    auto& j = component(d, "J12", 0, 0, 1);
+    terminal(j, "1", 4, -2, 1);
+    terminal(j, "2", 8, -2, 1);
+    for (const char* cu : {"f.cu", "b.cu"}) {
+        flash(d, cu, 4, -2, "oval1200.0x2000.0", OdbSymbol::OVAL, 1.2, 2.0);
+        flash(d, cu, 8, -2, "oval1200.0x2000.0", OdbSymbol::OVAL, 1.2, 2.0, {}, 90.0);
+    }
+    flash(d, "drill_plated_f.cu-b.cu", 4, -2, "oval800.0x1500.0", OdbSymbol::OVAL, 0.8, 1.5, {{".drill", "0"}});
+    flash(d, "drill_plated_f.cu-b.cu", 8, -2, "oval800.0x1500.0", OdbSymbol::OVAL, 0.8, 1.5, {{".drill", "0"}}, 90.0);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadPad* p = findPad(pcb, "J12", "1");
+    CHECK(p);
+    if (p) {
+        CHECK_EQ(p->type, std::string("thru_hole"));
+        CHECK_NEAR(p->drill, 0.8, 1e-9);
+        CHECK_NEAR(p->drillHeight, 1.5, 1e-9);
+    }
+    p = findPad(pcb, "J12", "2");
+    if (p) {
+        CHECK_NEAR(p->drill, 1.5, 1e-9);
+        CHECK_NEAR(p->drillHeight, 0.8, 1e-9);
+    }
+    CHECK(writeString(pcb).find("(drill oval 0.8 1.5)") != std::string::npos);
+}
+
+// A custom-shape SMD pad has no copper flash at its anchor (its copper, mask and paste are
+// surfaces): the mask/paste openings are found as surfaces covering the anchor.
+TEST(custom_pad_anchor_takes_mask_and_paste_from_surfaces) {
+    OdbDesign d = kicadDesign();
+    auto& j = component(d, "J12", 0, 0, 1);
+    terminal(j, "A1B12", 2, -2, 1);
+    for (const char* l : {"f.mask", "f.paste"}) {
+        OdbSurface srf;
+        srf.polarity = "P";
+        srf.contours = {square(1.5, -1.5, 2.5, -2.5, false)};
+        d.layerFeatures[l].units = "MM";
+        d.layerFeatures[l].surfaces.push_back(srf);
+    }
+    KicadPcb pcb = transformToKicad(d);
+    const KicadPad* p = findPad(pcb, "J12", "A1B12");
+    CHECK(p);
+    if (p) CHECK(hasLayer(*p, "F.Cu") && hasLayer(*p, "F.Mask") && hasLayer(*p, "F.Paste"));
+}
+
 // ---------------------------------------------------------------- inner copper layers
 
 static bool hasKicadLayer(const KicadPcb& pcb, int id, const std::string& name) {
@@ -293,13 +349,6 @@ TEST(row_order_inner_layers_for_generic_names) {
 
 // ---------------------------------------------------------------- zone nets from FID records
 
-// Square contour (OB + 4 OS back to the start), island or hole
-static OdbContour square(double x0, double y0, double x1, double y1, bool hole) {
-    OdbContour c;
-    c.isHole = hole;
-    c.points = {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}, {x0, y0}};
-    return c;
-}
 
 // A B.Cu GND pour encloses a 3V3 TH pad that sits in a clearance hole of
 // the pour. The old reader took the net of the first pad inside the outer outline (3V3).

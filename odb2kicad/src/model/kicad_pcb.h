@@ -27,7 +27,8 @@ struct KicadPad {
     double roundrectRatio = 0;
     int netId = 0;
     std::string netName;
-    double drill = 0;           // for thru_hole
+    double drill = 0;           // for thru_hole (round hole diameter, or slot width)
+    double drillHeight = 0;     // slot length when the hole is oval (0 = round)
 };
 
 struct KicadFpLine {
