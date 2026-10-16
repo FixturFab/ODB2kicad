@@ -422,6 +422,52 @@ static std::vector<std::pair<double,double>> keyhole(std::vector<std::pair<doubl
     return outer;
 }
 
+// Point (raw ODB++ coords) inside a surface: inside an island and not inside one of its holes
+static bool pointInSurface(const OdbSurface& srf, double x, double y) {
+    int depth = 0;
+    for (auto& c : srf.contours) {
+        bool in = false;
+        size_t n = c.points.size();
+        for (size_t i = 0, j = n - 1; i < n; j = i++) {
+            auto& a = c.points[i];
+            auto& b = c.points[j];
+            if (((a.y > y) != (b.y > y)) && (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) in = !in;
+        }
+        if (in) depth += c.isHole ? -1 : 1;
+    }
+    return depth > 0;
+}
+
+// A surface as simple polygons (KiCad coords via toKicad): one per island, holes keyholed in
+template <typename F>
+static std::vector<std::vector<std::pair<double,double>>> surfacePolygons(const OdbSurface& srf, F toKicad) {
+    std::vector<std::vector<std::pair<double,double>>> result;
+    std::vector<std::pair<double,double>> outer;
+    std::vector<std::vector<std::pair<double,double>>> holes;
+    auto flush = [&]() {
+        if (outer.size() >= 3) result.push_back(keyhole(outer, holes));
+        outer.clear();
+        holes.clear();
+    };
+    for (auto& c : srf.contours) {
+        std::vector<std::pair<double,double>> pts;
+        for (size_t i = 0; i < c.points.size(); i++) {
+            // drop the closing vertex (repeat of the OB start)
+            if (i + 1 == c.points.size() && i > 0 && std::abs(c.points[i].x - c.points[0].x) < 1e-9 &&
+                std::abs(c.points[i].y - c.points[0].y) < 1e-9) break;
+            pts.push_back(toKicad(c.points[i].x, c.points[i].y));
+        }
+        if (c.isHole) {
+            holes.push_back(pts);
+        } else {
+            flush();
+            outer = pts;
+        }
+    }
+    flush();
+    return result;
+}
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
@@ -665,23 +711,36 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         auto it = design.layerFeatures.find(odbLayer);
         if (odbLayer.empty() || it == design.layerFeatures.end()) return false;
         for (auto& srf : it->second.surfaces) {
-            if (srf.polarity == "N") continue;
-            int depth = 0;
-            for (auto& c : srf.contours) {
-                bool in = false;
-                size_t n = c.points.size();
-                for (size_t i = 0, j = n - 1; i < n; j = i++) {
-                    auto& a = c.points[i];
-                    auto& b = c.points[j];
-                    if (((a.y > y) != (b.y > y)) && (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) in = !in;
-                }
-                if (in) depth += c.isHole ? -1 : 1;
-            }
-            if (depth > 0) return true;
+            if (srf.polarity != "N" && pointInSurface(srf, x, y)) return true;
         }
         return false;
     };
     const bool havePaste = layerPresent(odbFPaste) || layerPresent(odbBPaste);
+
+    // Copper surfaces that are a pin's own shape (FID under SNT TOP <side> <comp> <toeprint>): a
+    // custom-shape pad, which KiCad exports as the surface alone (no flash at the anchor)
+    std::map<std::tuple<std::string, int, int>, std::vector<std::pair<std::string, const OdbSurface*>>> pinSurfaces;
+    std::set<std::pair<std::string, int>> padSurfaces;  // (layer, feature ordinal) folded into a pad
+    {
+        std::map<std::string, std::map<int, const OdbSurface*>> surfaceAt;
+        for (auto& [name, f] : design.layerFeatures) {
+            for (auto& srf : f.surfaces) surfaceAt[name][srf.featIdx] = &srf;
+        }
+        for (auto& fid : design.edaData.fids) {
+            if (fid.sntType != "TOP" || fid.type != "C") continue;
+            if (fid.layerIdx < 0 || fid.layerIdx >= (int)design.edaData.layers.size()) continue;
+            std::string ln = toLower(design.edaData.layers[fid.layerIdx]);
+            auto lit = surfaceAt.find(ln);
+            if (lit == surfaceAt.end()) continue;
+            auto sit = lit->second.find(fid.featIdx);
+            if (sit == lit->second.end()) continue;
+            auto& list = pinSurfaces[{fid.sntSide, fid.sntComp, fid.sntToeprint}];
+            bool dup = false;
+            for (auto& e : list) dup = dup || (e.first == ln && e.second == sit->second);
+            if (!dup) list.push_back({ln, sit->second});
+        }
+    }
+    std::vector<std::pair<double,double>> customAnchors;  // raw coords of custom pads
 
     // 3. Transform components -> footprints
     auto processComponents = [&](const OdbComponents& comps, bool isBottom) {
@@ -787,6 +846,34 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     }
                 } else {
                     pad.type = "smd";
+                }
+
+                // Custom-shape pad: no flash (or a sub-0.02 mm one) and the pin owns copper surfaces.
+                // The surfaces become the pad's primitives, in the pad frame; the anchor is a 0.01 mm
+                // circle inside them (the export does not keep the anchor's own shape).
+                auto psIt = pinSurfaces.find({isBottom ? "B" : "T", ci, term.pinIdx});
+                if (psIt != pinSurfaces.end() && pad.type == "smd" &&
+                    (!symPtr || std::max(padSym.width, padSym.height) * unitScale < 0.02)) {
+                    pad.shape = "custom";
+                    pad.width = pad.height = 0.01;
+                    pad.roundrectRatio = 0;
+                    if (!flashPad) pad.angle = normDeg(-term.rotation);
+                    double px = scaleX(term.x), py = scaleY(term.y);
+                    double pc = std::cos(degToRad(pad.angle)), ps = std::sin(degToRad(pad.angle));
+                    for (auto& [ln, srf] : psIt->second) {
+                        for (auto& poly : surfacePolygons(*srf, [&](double x, double y) {
+                                 return std::make_pair(scaleX(x), scaleY(y)); })) {
+                            std::vector<std::pair<double,double>> local;
+                            for (auto& [x, y] : poly) {
+                                double dx = x - px, dy = y - py;
+                                local.push_back({dx * pc - dy * ps, dx * ps + dy * pc});
+                            }
+                            pad.primitives.push_back(local);
+                        }
+                        padSurfaces.insert({ln, srf->featIdx});
+                        if (!flashPad) onOther = (ln == otherCu);
+                    }
+                    customAnchors.push_back({term.x, term.y});
                 }
 
                 // Pad layers: copper from the pad type / flash side, mask and paste from
@@ -1424,6 +1511,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         int layerId = mapping->id;
 
         for (auto& surface : features.surfaces) {
+            if (padSurfaces.count({layerNameLower, surface.featIdx})) continue;  // a custom pad's copper
             KicadZone zone;
             zone.layer = kicadLayer;
             zone.netId = 0;
@@ -1609,37 +1697,23 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             }
         }
 
-        // Surfaces (S records): filled polygons, one per island with its holes keyholed in
+        // Surfaces (S records): filled polygons, one per island with its holes keyholed in. On
+        // mask/paste layers a surface over a custom pad's anchor is that pad's opening.
         for (auto& srf : features.surfaces) {
             if (srf.polarity == "N") continue;
-            std::vector<std::pair<double,double>> outer;
-            std::vector<std::vector<std::pair<double,double>>> holes;
-            auto flush = [&]() {
-                if (outer.size() >= 3) {
-                    KicadGrPoly gp;
-                    gp.pts = keyhole(outer, holes);
-                    gp.layer = kicadLayer;
-                    pcb.grPolys.push_back(gp);
+            if (maskOrPaste) {
+                bool owned = false;
+                for (auto& [ax, ay] : customAnchors) {
+                    if (pointInSurface(srf, ax, ay)) { owned = true; break; }
                 }
-                outer.clear();
-                holes.clear();
-            };
-            for (auto& c : srf.contours) {
-                std::vector<std::pair<double,double>> pts;
-                for (size_t i = 0; i < c.points.size(); i++) {
-                    // drop the closing vertex (repeat of the OB start)
-                    if (i + 1 == c.points.size() && i > 0 && std::abs(c.points[i].x - c.points[0].x) < 1e-9 &&
-                        std::abs(c.points[i].y - c.points[0].y) < 1e-9) break;
-                    pts.push_back({scaleX(c.points[i].x), scaleY(c.points[i].y)});
-                }
-                if (c.isHole) {
-                    holes.push_back(pts);
-                } else {
-                    flush();
-                    outer = pts;
-                }
+                if (owned) continue;
             }
-            flush();
+            for (auto& poly : surfacePolygons(srf, [&](double x, double y) { return std::make_pair(scaleX(x), scaleY(y)); })) {
+                KicadGrPoly gp;
+                gp.pts = poly;
+                gp.layer = kicadLayer;
+                pcb.grPolys.push_back(gp);
+            }
         }
     }
 
@@ -1737,6 +1811,15 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             }
             if (pad.netId > 0) {
                 out << " (net " << pad.netId << " \"" << escapeString(pad.netName) << "\")";
+            }
+            if (pad.shape == "custom") {
+                out << "\n      (options (clearance outline) (anchor circle))\n      (primitives";
+                for (auto& prim : pad.primitives) {
+                    out << "\n        (gr_poly (pts";
+                    for (auto& [x, y] : prim) out << " (xy " << formatFloat(x) << " " << formatFloat(y) << ")";
+                    out << ") (width 0) (fill yes))";
+                }
+                out << "\n      )\n    ";
             }
             out << ")\n";
         }

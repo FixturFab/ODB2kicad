@@ -12,6 +12,8 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
     std::string line;
     OdbEdaPackage* currentPkg = nullptr;
     int currentNet = -1;    // FID records belong to the last NET
+    OdbEdaFid currentSnt;   // ... and to the last SNT
+    int sntCount = 0;
 
     while (std::getline(file, line)) {
         line = trim(line);
@@ -41,14 +43,25 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
             net.name = trim(netStr);
             edaData.nets.push_back(net);
             currentNet = (int)edaData.nets.size() - 1;
+            currentSnt = OdbEdaFid();
             currentPkg = nullptr;
             continue;
         }
 
         // FID <type> <layer_idx> <feature_idx>: a feature of the current net
+        // SNT <type> [TOP: <side> <comp> <toeprint>]: a subnet of the current net
+        if (startsWith(line, "SNT ") && currentNet >= 0) {
+            std::istringstream iss(line.substr(4));
+            currentSnt = OdbEdaFid();
+            currentSnt.sntIdx = sntCount++;
+            iss >> currentSnt.sntType;
+            if (currentSnt.sntType == "TOP") iss >> currentSnt.sntSide >> currentSnt.sntComp >> currentSnt.sntToeprint;
+            continue;
+        }
+
         if (startsWith(line, "FID ") && currentNet >= 0) {
             std::istringstream iss(line.substr(4));
-            OdbEdaFid fid;
+            OdbEdaFid fid = currentSnt;
             fid.netIdx = currentNet;
             if (iss >> fid.type >> fid.layerIdx >> fid.featIdx) edaData.fids.push_back(fid);
             continue;
@@ -78,7 +91,7 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
             continue;
         }
 
-        // Skip SNT (subnet headers; FID carries the mapping), CT, OB, OS, OE, CE records
+        // Skip CT, OB, OS, OE, CE records
     }
     return true;
 }

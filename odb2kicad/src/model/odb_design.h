@@ -155,6 +155,11 @@ struct OdbEdaPackage {
 // FID record: feature <featIdx> of layer LYR[<layerIdx>] belongs to net <netIdx>
 struct OdbEdaFid {
     int netIdx = 0;         // index into OdbEdaData::nets
+    int sntIdx = -1;        // ordinal of the SNT record it belongs to (one per subnet: a zone, a pin...)
+    std::string sntType;    // TOP (component pin), TRC, VIA, PLN (plane / zone)
+    std::string sntSide;    // TOP only: T or B
+    int sntComp = -1;       // TOP only: component index in comp_+_top / comp_+_bot
+    int sntToeprint = -1;   // TOP only: toeprint (pin) index within the component
     std::string type;       // C copper, L laminate, H hole
     int layerIdx = 0;       // index into OdbEdaData::layers (the LYR record)
     int featIdx = 0;        // ordinal of the feature in that layer's features file

@@ -716,6 +716,75 @@ TEST(non_copper_flashes_and_surfaces_become_graphics) {
     CHECK(out.find("(gr_circle (center 5 5) (end 5.95 5)") != std::string::npos);
 }
 
+// ---------------------------------------------------------------- custom-shape pads
+
+// KiCad exports a custom-shape pad as a copper surface owned by the pin (SNT TOP T <comp> <pin>),
+// with no flash at the anchor. It came back as a 0.1 mm roundrect pad plus a separate zone.
+TEST(pin_surface_becomes_the_custom_pad_shape) {
+    OdbDesign d = kicadDesign();
+    auto& j = component(d, "J12", 0, 0, 1);
+    terminal(j, "A5", 5, -5, 2);       // ordinary pad, pin 0
+    terminal(j, "A1B12", 2, -2, 1);    // custom pad, pin 1
+    flash(d, "f.cu", 5, -5, "rect300.0x1300.0", OdbSymbol::RECT, 0.3, 1.3);
+    auto& fcu = d.layerFeatures["f.cu"];
+    fcu.pads[0].featIdx = 0;
+    OdbSurface shape;
+    shape.polarity = "P";
+    shape.featIdx = 1;
+    shape.contours = {square(1.7, -1.35, 2.3, -2.65, false)};
+    fcu.surfaces.push_back(shape);
+    d.edaData.layers = {"f.cu"};
+    OdbEdaFid fid;
+    fid.netIdx = 1;
+    fid.sntType = "TOP";
+    fid.sntSide = "T";
+    fid.sntComp = 0;
+    fid.sntToeprint = 1;
+    fid.type = "C";
+    fid.layerIdx = 0;
+    fid.featIdx = 1;
+    d.edaData.fids.push_back(fid);
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.zones.size(), (size_t)0);
+    const KicadPad* p = findPad(pcb, "J12", "A1B12");
+    CHECK(p);
+    if (!p) return;
+    CHECK_EQ(p->shape, std::string("custom"));
+    CHECK_EQ(p->primitives.size(), (size_t)1);
+    if (!p->primitives.empty()) {
+        CHECK_EQ(p->primitives[0].size(), (size_t)4);
+        double area2 = 0;
+        auto& q = p->primitives[0];
+        for (size_t i = 0; i < q.size(); i++)
+            area2 += q[i].first * q[(i + 1) % q.size()].second - q[(i + 1) % q.size()].first * q[i].second;
+        CHECK_NEAR(std::abs(area2) / 2, 0.6 * 1.3, 1e-9);
+        for (auto& [x, y] : q) CHECK(std::abs(x) <= 0.3 + 1e-9 && std::abs(y) <= 0.65 + 1e-9);  // pad-relative
+    }
+    CHECK(hasLayer(*p, "F.Cu"));
+    const KicadPad* a5 = findPad(pcb, "J12", "A5");
+    if (a5) CHECK_EQ(a5->shape, std::string("rect"));
+    std::string out = writeString(pcb);
+    CHECK(out.find("(pad \"A1B12\" smd custom") != std::string::npos);
+    CHECK(out.find("(options (clearance outline) (anchor circle))") != std::string::npos);
+}
+
+TEST(snt_top_records_are_parsed) {
+    std::string dir = tempDir("snt_top");
+    writeFile(dir + "/eda/data",
+        "UNITS=MM\nLYR f.cu\nNET $NONE$\nNET GND\nSNT TOP T 3 7\nFID C 0 12\nSNT PLN\nFID C 0 13\n");
+    OdbEdaData eda;
+    CHECK(parseEdaData(dir + "/eda/data", eda));
+    CHECK_EQ(eda.fids.size(), (size_t)2);
+    if (eda.fids.size() == 2) {
+        CHECK_EQ(eda.fids[0].sntType, std::string("TOP"));
+        CHECK_EQ(eda.fids[0].sntSide, std::string("T"));
+        CHECK_EQ(eda.fids[0].sntComp, 3);
+        CHECK_EQ(eda.fids[0].sntToeprint, 7);
+        CHECK_EQ(eda.fids[1].sntType, std::string("PLN"));
+        CHECK(eda.fids[0].sntIdx != eda.fids[1].sntIdx);
+    }
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {

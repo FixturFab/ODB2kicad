@@ -30,6 +30,8 @@ struct KicadPad {
     std::string netName;
     double drill = 0;           // for thru_hole (round hole diameter, or slot width)
     double drillHeight = 0;     // slot length when the hole is oval (0 = round)
+    // custom shape: filled polygons in the pad frame (relative to the pad, unrotated)
+    std::vector<std::vector<std::pair<double,double>>> primitives;
 };
 
 struct KicadFpLine {
