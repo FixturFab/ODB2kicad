@@ -809,6 +809,42 @@ TEST(snt_top_records_are_parsed) {
     }
 }
 
+// ---------------------------------------------------------------- copper graphics are not zones
+
+// Every copper surface became a zone, so copper logos and drawn copper polygons came back as netless
+// zones (the first refill changes them). With an FID map, a surface the map does not mention is
+// such a graphic and is written as a filled gr_poly on its copper layer; mapped ones stay zones.
+TEST(copper_surface_without_fid_is_a_graphic) {
+    OdbDesign d = gndPourAroundClearance();  // B.Cu pour, feature 2
+    d.edaData.layers = {"b.cu"};
+    OdbEdaFid fid;
+    fid.netIdx = 1;
+    fid.sntType = "PLN";
+    fid.type = "C";
+    fid.layerIdx = 0;
+    fid.featIdx = d.layerFeatures["b.cu"].surfaces[0].featIdx;
+    d.edaData.fids.push_back(fid);
+    OdbSurface logo;
+    logo.polarity = "P";
+    logo.featIdx = 7;
+    logo.contours = {square(30, -30, 32, -32, false)};
+    d.layerFeatures["f.cu"].surfaces.push_back(logo);
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.zones.size(), (size_t)1);
+    if (!pcb.zones.empty()) CHECK_EQ(pcb.zones[0].netName, std::string("GND"));
+    int cuPolys = 0;
+    for (auto& p : pcb.grPolys) cuPolys += p.layer == "F.Cu";
+    CHECK_EQ(cuPolys, 1);
+}
+
+// No FID map (non-KiCad exporters without eda/data nets): surfaces stay zones as before.
+TEST(without_fids_copper_surfaces_stay_zones) {
+    OdbDesign d = gndPourAroundClearance();
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.zones.size(), (size_t)1);
+    CHECK_EQ(pcb.grPolys.size(), (size_t)0);
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {

@@ -1520,6 +1520,19 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
         for (auto& surface : features.surfaces) {
             if (padSurfaces.count({layerNameLower, surface.featIdx})) continue;  // a custom pad's copper
+            // With an FID map, a copper surface outside it belongs to no net at all: a copper graphic
+            // (logo, drawn polygon), not a zone. Without FIDs every surface stays a zone.
+            if (!design.edaData.fids.empty() && fidNet(layerNameLower, surface.featIdx) < 0) {
+                if (surface.polarity == "N") continue;
+                for (auto& poly : surfacePolygons(surface, [&](double x, double y) {
+                         return std::make_pair(scaleX(x), scaleY(y)); })) {
+                    KicadGrPoly gp;
+                    gp.pts = poly;
+                    gp.layer = kicadLayer;
+                    pcb.grPolys.push_back(gp);
+                }
+                continue;
+            }
             KicadZone zone;
             zone.layer = kicadLayer;
             zone.netId = 0;
