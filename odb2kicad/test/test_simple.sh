@@ -67,7 +67,11 @@ grep -q '"P2"' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no P2";
 # Check component positions
 grep -q '(at 125.2 90.9)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink R1 position wrong"; exit 1; }
 grep -q '(at 105.85 65.35)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink D1 position wrong"; exit 1; }
-grep -q '(at 88.3 68.9 90)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink P2 position/angle wrong"; exit 1; }
+# CMP rotation is clockwise (ODB++), KiCad's counter-clockwise: CMP 90 -> (at ... 270). With 270 the
+# bornier2 pads land at their library positions (pad 1 rect at -2.54 0); kicad-cli 9.0.9 exports a
+# 90 deg footprint as CMP 270.
+grep -q '(at 88.3 68.9 270)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink P2 position/angle wrong"; exit 1; }
+grep -q '(pad "1" thru_hole rect (at -2.54 0 270)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink P2 pad 1 not at its footprint-local position"; exit 1; }
 
 # Check vias
 VIA_COUNT=$(grep -c '^  (via' /tmp/test-kitchen.kicad_pcb || true)

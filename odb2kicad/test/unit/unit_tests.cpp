@@ -573,6 +573,73 @@ TEST(profile_is_the_outline_when_there_is_no_edge_layer_geometry) {
     }
 }
 
+// ---------------------------------------------------------------- rotation
+
+// Board position of a pad the way KiCad places it: pos + (x cos + y sin, -x sin + y cos)
+static std::pair<double, double> kicadAbs(const KicadFootprint& fp, const KicadPad& p) {
+    double c = std::cos(fp.angle * M_PI / 180), s = std::sin(fp.angle * M_PI / 180);
+    return {fp.x + p.x * c + p.y * s, fp.y - p.x * s + p.y * c};
+}
+
+static const KicadFootprint* findFp(const KicadPcb& pcb, const std::string& ref) {
+    for (auto& fp : pcb.footprints) if (fp.refdes == ref) return &fp;
+    return nullptr;
+}
+
+// Footprints were written at 0 deg with pads at board offsets, and a rotated rect pad kept its
+// unrotated size (a 0.8 x 0.95 pad at 270 deg came back at 0 deg). Top side: CMP/TOP and the
+// P record (orient 8) are clockwise.
+TEST(top_rotation_is_carried_to_footprint_and_pads) {
+    OdbDesign d = kicadDesign();
+    auto& r1 = component(d, "R1", 10, -20, 1, false, /*rotation=*/90.0);
+    terminal(r1, "1", 10, -19.2, 1, 90.0);
+    terminal(r1, "2", 10, -20.8, 2, 90.0);
+    flash(d, "f.cu", 10, -19.2, "rect800.0x950.0xr200.0", OdbSymbol::ROUNDRECT, 0.8, 0.95, {}, 90.0, 8);
+    flash(d, "f.cu", 10, -20.8, "rect800.0x950.0xr200.0", OdbSymbol::ROUNDRECT, 0.8, 0.95, {}, 90.0, 8);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadFootprint* fp = findFp(pcb, "R1");
+    CHECK(fp);
+    if (!fp) return;
+    CHECK_NEAR(fp->angle, 270.0, 1e-9);
+    for (auto& p : fp->pads) {
+        CHECK_NEAR(p.angle, 270.0, 1e-9);
+        CHECK_NEAR(p.width, 0.8, 1e-9);
+        CHECK_NEAR(p.height, 0.95, 1e-9);
+    }
+    const KicadPad* p1 = findPad(pcb, "R1", "1");
+    if (p1) {
+        auto [x, y] = kicadAbs(*fp, *p1);
+        CHECK_NEAR(x, 10.0, 1e-9);
+        CHECK_NEAR(y, 19.2, 1e-9);
+        CHECK_NEAR(p1->x, -0.8, 1e-9);  // the library pad 1 position of a 0603 at 0 deg
+        CHECK_NEAR(p1->y, 0.0, 1e-9);
+    }
+    std::string out = writeString(pcb);
+    CHECK(out.find("(at 10 20 270)") != std::string::npos);
+    CHECK(out.find("(pad \"1\" smd roundrect (at -0.8 0 270)") != std::string::npos);
+}
+
+// Bottom side, as kicad-cli 9.0.9 exports a flipped footprint at 30 deg: CMP 330 M, TOP 330 M,
+// copper flash orient 9 with angle 30 (the mirrored form carries KiCad's CCW angle).
+TEST(bottom_rotation_matches_kicad_export) {
+    OdbDesign d = kicadDesign();
+    auto& j5 = component(d, "J5", 140.47, -97.294999, 1, true, /*rotation=*/330.0);
+    terminal(j5, "1", 131.333534, -99.250175, 1, 330.0);
+    flash(d, "b.cu", 131.333534, -99.250175, "rect1244.60x4749.80", OdbSymbol::RECT, 1.2446, 4.7498, {}, 30.0, 9);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadFootprint* fp = findFp(pcb, "J5");
+    const KicadPad* p = findPad(pcb, "J5", "1");
+    CHECK(fp && p);
+    if (!fp || !p) return;
+    CHECK_EQ(fp->layer, std::string("B.Cu"));
+    CHECK_NEAR(fp->angle, 30.0, 1e-9);
+    CHECK_NEAR(p->angle, 30.0, 1e-9);
+    auto [x, y] = kicadAbs(*fp, *p);
+    CHECK_NEAR(x, 131.333534, 1e-6);
+    CHECK_NEAR(y, 99.250175, 1e-6);
+    CHECK(hasLayer(*p, "B.Cu"));
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {

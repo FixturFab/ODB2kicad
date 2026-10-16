@@ -308,6 +308,14 @@ static DrillHit::Kind classifyDrill(const OdbFeatures& feats, const std::map<int
     return DrillHit::PLATED;
 }
 
+// Angle in [0, 360)
+static double normDeg(double a) {
+    a = std::fmod(a, 360.0);
+    if (a < 0) a += 360.0;
+    if (a >= 360.0 - 1e-9) a = 0;
+    return a;
+}
+
 // KiCad orientation (degrees, CCW as seen from the top) of a P record. Orient 8 is a clockwise
 // angle; 9 is the mirrored form, whose angle KiCad's exporter writes counter-clockwise
 // (kicad-cli 9.0.9: a bottom pad at 30 deg exports as "9 30.0"). 0..7 are the legacy
@@ -318,10 +326,7 @@ static double padAngleKicad(const OdbPad& p) {
     else if (p.mirror == 8) a = -p.angle;
     else if (p.mirror >= 4 && p.mirror <= 7) a = (p.mirror - 4) * 90.0;
     else a = -(p.mirror % 4) * 90.0;
-    a = std::fmod(a, 360.0);
-    if (a < 0) a += 360.0;
-    if (std::abs(a - 360.0) < 1e-9) a = 0;
-    return a;
+    return normDeg(a);
 }
 
 // A stroked rectangle centred at (cx, cy) (KiCad coords): a gr_rect when axis-aligned, else four
@@ -637,8 +642,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             fp.uuid = makeUuid(isBottom ? ci + 1000 : ci);
             fp.x = scaleX(comp.x);
             fp.y = scaleY(comp.y);
-            // Set rotation to 0 - use direct coordinate offsets instead of rotation math
-            fp.angle = 0;
+            // ODB++ rotation is clockwise (both sides; bottom parts carry mirror M), KiCad's is
+            // counter-clockwise: kicad-cli 9.0.9 writes a 90 deg footprint as 270, top or bottom.
+            fp.angle = normDeg(-comp.rotation);
+            const double fpCos = std::cos(degToRad(fp.angle)), fpSin = std::sin(degToRad(fp.angle));
             fp.refdes = comp.refdes;
             fp.value = comp.properties.count("Value") ? comp.properties.at("Value") : "";
 
@@ -659,9 +666,13 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 // Pad shape from the copper flash at the terminal: component side first,
                 // then the far side (an SMD pad can sit on the opposite layer).
                 const OdbSymbol* symPtr = nullptr;
-                bool onSide = padFeatureAt(sideCu, term.x, term.y, &symPtr) != nullptr;
+                const OdbPad* flashPad = padFeatureAt(sideCu, term.x, term.y, &symPtr);
+                bool onSide = flashPad != nullptr;
                 bool onOther = false;
-                if (!onSide) onOther = padFeatureAt(otherCu, term.x, term.y, &symPtr) != nullptr;
+                if (!onSide) {
+                    flashPad = padFeatureAt(otherCu, term.x, term.y, &symPtr);
+                    onOther = flashPad != nullptr;
+                }
                 OdbSymbol padSym;
                 padSym.shape = OdbSymbol::ROUNDRECT; // default
                 if (symPtr) padSym = *symPtr;
@@ -685,12 +696,18 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     pad.roundrectRatio = (minDim > 0) ? padSym.cornerRadius / minDim : 0;
                 }
 
-                // Pad position: direct offset with Y-flip, no rotation math
-                // Since footprint rotation is 0, pad local position = world offset from component
-                double dx = term.x - comp.x;
-                double dy = term.y - comp.y;
-                pad.x = scaleLen(dx);
-                pad.y = -scaleLen(dy);  // Negate Y for KiCad's Y-down coordinate system
+                // Pad orientation: absolute, from the copper flash (the symbol is in the pad frame),
+                // else from the terminal record (clockwise like CMP)
+                pad.angle = flashPad ? padAngleKicad(*flashPad) : normDeg(-term.rotation);
+
+                // Pad position: board offset from the footprint origin (KiCad coords, Y down),
+                // rotated back into the footprint frame. KiCad places it with
+                // abs = pos + (x cos + y sin, -x sin + y cos); a flipped footprint's local
+                // coordinates are already mirrored, so no mirror term.
+                double dx = scaleLen(term.x - comp.x);
+                double dy = -scaleLen(term.y - comp.y);
+                pad.x = dx * fpCos - dy * fpSin;
+                pad.y = dx * fpSin + dy * fpCos;
 
                 // Pad type from the drill hit at the pad centre
                 const DrillHit* hit = drillAt(term.x, term.y);
@@ -935,8 +952,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         double sinA = std::sin(angleRad);
         for (auto& pad : fp.pads) {
             PadNetInfo pni;
-            pni.x = fp.x + pad.x * cosA - pad.y * sinA;
-            pni.y = fp.y + pad.x * sinA + pad.y * cosA;
+            pni.x = fp.x + pad.x * cosA + pad.y * sinA;
+            pni.y = fp.y - pad.x * sinA + pad.y * cosA;
             pni.netId = pad.netId;
             pni.throughHole = (pad.type == "thru_hole");
             padLookup.push_back(pni);
@@ -1556,7 +1573,9 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         // Pads
         for (auto& pad : fp.pads) {
             out << "    (pad \"" << escapeString(pad.pinNum) << "\" " << pad.type << " " << pad.shape;
-            out << " (at " << formatFloat(pad.x) << " " << formatFloat(pad.y) << ")";
+            out << " (at " << formatFloat(pad.x) << " " << formatFloat(pad.y);
+            if (std::abs(pad.angle) > 0.001) out << " " << formatFloat(pad.angle);
+            out << ")";
             out << " (size " << formatFloat(pad.width) << " " << formatFloat(pad.height) << ")";
             out << " (layers";
             for (auto& l : pad.layerNames) out << " \"" << escapeString(l) << "\"";

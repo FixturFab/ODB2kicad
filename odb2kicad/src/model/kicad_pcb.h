@@ -21,7 +21,8 @@ struct KicadPad {
     std::string pinNum;
     std::string type;           // "smd" or "thru_hole"
     std::string shape;          // "roundrect", "circle", "rect", "oval"
-    double x = 0, y = 0;       // relative to footprint
+    double x = 0, y = 0;       // relative to footprint, in its unrotated frame
+    double angle = 0;           // absolute orientation (KiCad stores pad angles board-relative)
     double width = 0, height = 0;
     std::vector<std::string> layerNames;
     double roundrectRatio = 0;
