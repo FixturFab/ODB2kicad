@@ -479,6 +479,51 @@ TEST(donut_rc_on_edge_cuts_is_the_rectangle_it_describes) {
     if (pcb.grArcs.size() == 2) CHECK_NEAR(pcb.grArcs[0].xs - 10, 1.5, 1e-9);
 }
 
+// ---------------------------------------------------------------- outline written once
+
+static OdbDesign boardWithProfile() {
+    OdbDesign d = kicadDesign();
+    OdbSurface s;
+    s.polarity = "P";
+    s.contours = {square(0, 0, 50, -30, false)};
+    d.profile.surfaces.push_back(s);
+    return d;
+}
+
+// KiCad exports the outline twice: the step profile and the Edge.Cuts layer. Both were written,
+// so overlapping duplicate segments broke KiCad's board outline (DRC 'malformed', zone fill, 3D).
+TEST(profile_is_skipped_when_edge_cuts_has_features) {
+    OdbDesign d = boardWithProfile();
+    auto& ec = d.layerFeatures["edge.cuts"];
+    ec.units = "MM";
+    int sym = symbol(ec, "r50.0", OdbSymbol::ROUND, 0.05);
+    double xy[5][2] = {{0, 0}, {50, 0}, {50, -30}, {0, -30}, {0, 0}};
+    for (int i = 0; i < 4; i++) {
+        OdbLine l;
+        l.x1 = xy[i][0]; l.y1 = xy[i][1]; l.x2 = xy[i + 1][0]; l.y2 = xy[i + 1][1];
+        l.symIdx = sym;
+        ec.lines.push_back(l);
+    }
+    KicadPcb pcb = transformToKicad(d);
+    int edge = 0;
+    for (auto& g : pcb.grLines) edge += g.layer == "Edge.Cuts";
+    for (auto& g : pcb.grRects) edge += g.layer == "Edge.Cuts";
+    CHECK_EQ(edge, 4);
+    CHECK_EQ(pcb.grRects.size(), (size_t)0);
+}
+
+// A design whose outline exists only as the profile still gets it.
+TEST(profile_is_the_outline_when_there_is_no_edge_layer_geometry) {
+    OdbDesign d = boardWithProfile();
+    d.layerFeatures["edge.cuts"].units = "MM";  // layer present, empty
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.grRects.size(), (size_t)1);
+    if (!pcb.grRects.empty()) {
+        CHECK_NEAR(pcb.grRects[0].x2 - pcb.grRects[0].x1, 50, 1e-9);
+        CHECK_NEAR(pcb.grRects[0].y2 - pcb.grRects[0].y1, 30, 1e-9);
+    }
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {

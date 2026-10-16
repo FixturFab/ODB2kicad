@@ -1171,7 +1171,19 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         }
     };
 
-    if (!design.profile.surfaces.empty()) {
+    // The outline is drawn once: from the Edge.Cuts layer when the design has one with features
+    // (KiCad exports both, and the layer keeps the arcs the profile flattens), else from the profile.
+    std::string edgeLayer = odbLayerFor(44);
+    if (edgeLayer.empty()) edgeLayer = "edge.cuts";
+    bool edgeLayerHasFeatures = false;
+    {
+        auto it = design.layerFeatures.find(edgeLayer);
+        if (it != design.layerFeatures.end()) {
+            auto& f = it->second;
+            edgeLayerHasFeatures = !f.lines.empty() || !f.arcs.empty() || !f.pads.empty() || !f.surfaces.empty();
+        }
+    }
+    if (!edgeLayerHasFeatures && !design.profile.surfaces.empty()) {
         for (auto& surface : design.profile.surfaces) {
             for (auto& contour : surface.contours) {
                 emitContourAsEdgeCuts(contour);
@@ -1181,7 +1193,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
     // 8. Edge.Cuts layer features (lines, arcs, circles from features file)
     {
-        auto ecIt = design.layerFeatures.find("edge.cuts");
+        auto ecIt = design.layerFeatures.find(edgeLayer);
         if (ecIt != design.layerFeatures.end()) {
             auto& ecFeats = ecIt->second;
             for (auto& line : ecFeats.lines) {
@@ -1383,7 +1395,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     for (auto& [name, m] : layerMap) {
         if (m->id <= 31) copperLayers.insert(name);
     }
-    std::set<std::string> skipLayers = {"edge.cuts"}; // already handled
+    std::set<std::string> skipLayers = {"edge.cuts", edgeLayer}; // already handled
     for (auto& [layerNameLower, features] : design.layerFeatures) {
         if (copperLayers.count(layerNameLower)) continue;
         if (skipLayers.count(layerNameLower)) continue;
