@@ -47,11 +47,12 @@ The API also exposes `convertOdb(files)` for pre-extracted file arrays — see t
 
 - **Components & pads** — SMD and through-hole placement with correct positioning, rotation, and pad shapes
 - **Net assignment** — pads, traces, and vias assigned to their correct nets
-- **Copper traces** — segments on F.Cu and B.Cu with proper width and net
+- **Copper traces** — segments on outer and inner copper layers with proper width and net
 - **Vias** — detected from drill layers with correct drill and pad sizing
-- **Copper fill zones** — imported as filled polygons from surface records
+- **Copper fill zones** — imported from surface records, nets taken from the eda/data FID records
+- **Custom-shape pads** — rebuilt from the pin's copper surface
 - **Board outline** — rectangular and polygonal profiles, including cutout holes
-- **Graphics** — silkscreen, fab, and courtyard lines and arcs on all layers
+- **Graphics** — silkscreen, mask, fab, courtyard and user-layer lines, arcs, flashes and filled shapes
 - **Layer mapping** — ODB++ layers mapped to KiCad canonical layer names
 
 ## Build from Source
@@ -71,19 +72,27 @@ The native CLI takes a pre-extracted ODB++ directory as input (use `tar xzf` or 
 ## Testing
 
 ```bash
-cd odb2kicad && bash test/test_simple.sh
+cd odb2kicad
+bash test/run_unit_tests.sh     # unit tests (plain g++, no cmake needed); or: ctest --test-dir build
+bash test/test_simple.sh        # end-to-end checks on the sample boards
 ```
 
-Runs 60+ assertions against two sample boards:
+The unit tests build small designs in memory or as tiny ODB++ files, one or more cases per
+conversion rule (pad typing from drill hits, inner layers, FID nets, NPTH, outline, rotation,
+custom pads, non-copper graphics).
+
+`test_simple.sh` runs 60+ assertions against two sample boards:
 - **Simple** (`samples/odb-output`) — 2-resistor board: nets, components, pads, traces, board outline
 - **Kitchen-sink** (`samples/odb-kitchen-sink`) — complex board: vias, through-hole, copper zones, arcs, polygonal outline with holes
 
 ## Known Limitations
 
 - **Text is rasterized** — ODB++ exports text as line strokes; imported as line segments, not editable KiCad text objects
-- **Zone outlines simplified** — copper fills are imported as filled polygons without thermal relief or clearance rules
-- **Two copper layers only** — F.Cu and B.Cu supported; inner copper layers are parsed but not yet mapped
+- **Zone outlines are the fill** — ODB++ carries the filled copper, not the zone's drawn outline, priority or rules
+- **Blind/buried vias** — every via is written through (F.Cu-B.Cu)
 - **Precision** — ODB++ coordinates may have minor rounding differences vs. the original design
+
+Details in [odb2kicad/what-doesnt-work.md](odb2kicad/what-doesnt-work.md).
 
 ## Architecture
 
