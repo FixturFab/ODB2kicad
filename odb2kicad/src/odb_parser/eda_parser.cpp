@@ -11,6 +11,7 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
 
     std::string line;
     OdbEdaPackage* currentPkg = nullptr;
+    int currentNet = -1;    // FID records belong to the last NET
 
     while (std::getline(file, line)) {
         line = trim(line);
@@ -39,11 +40,22 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
             }
             net.name = trim(netStr);
             edaData.nets.push_back(net);
+            currentNet = (int)edaData.nets.size() - 1;
             currentPkg = nullptr;
             continue;
         }
 
+        // FID <type> <layer_idx> <feature_idx>: a feature of the current net
+        if (startsWith(line, "FID ") && currentNet >= 0) {
+            std::istringstream iss(line.substr(4));
+            OdbEdaFid fid;
+            fid.netIdx = currentNet;
+            if (iss >> fid.type >> fid.layerIdx >> fid.featIdx) edaData.fids.push_back(fid);
+            continue;
+        }
+
         if (startsWith(line, "PKG ")) {
+            currentNet = -1;
             // PKG name xmax ymin xmin ymax rotation;
             auto rest = line.substr(4);
             // Remove trailing semicolon
@@ -66,7 +78,7 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
             continue;
         }
 
-        // Skip SNT, FID, CT, OB, OS, OE, CE records for now
+        // Skip SNT (subnet headers; FID carries the mapping), CT, OB, OS, OE, CE records
     }
     return true;
 }

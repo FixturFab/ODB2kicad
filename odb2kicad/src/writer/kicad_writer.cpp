@@ -430,6 +430,29 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         return {0, ""};
     };
 
+    // Feature -> net map from eda/data FID records: layer (lowercase) -> feature ordinal -> EDA net index.
+    // This is the net the source design gave each copper feature; geometry-based guesses below are
+    // only a fallback for files without it.
+    std::map<std::string, std::map<int, int>> fidNets;
+    for (auto& f : design.edaData.fids) {
+        if (f.layerIdx < 0 || f.layerIdx >= (int)design.edaData.layers.size()) continue;
+        fidNets[toLower(design.edaData.layers[f.layerIdx])][f.featIdx] = f.netIdx;
+    }
+    // KiCad net id of a feature from its FID record; -1 when the feature has none
+    auto fidNet = [&](const std::string& layerLower, int featIdx) -> int {
+        auto lit = fidNets.find(layerLower);
+        if (featIdx < 0 || lit == fidNets.end()) return -1;
+        auto fit = lit->second.find(featIdx);
+        if (fit == lit->second.end()) return -1;
+        return resolveNet(fit->second).first;
+    };
+    auto netNameOf = [&](int netId) -> std::string {
+        for (auto& net : pcb.nets) {
+            if (net.id == netId) return net.name;
+        }
+        return "";
+    };
+
     // Helper: ODB layer name -> KiCad canonical name
     auto mapLayerName = [&layerMap](const std::string& odbName) -> std::string {
         auto it = layerMap.find(toLower(odbName));
@@ -661,6 +684,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         double drillDiameter;  // from drill layer symbol
         double padSize;        // from copper layer symbol
         int netId;
+        bool netFromFid;       // net taken from the drill hit's FID record
     };
     std::vector<ViaInfo> viaInfos;
 
@@ -695,7 +719,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             ViaInfo vi;
             vi.x = pad.x;
             vi.y = pad.y;
-            vi.netId = 0;
+            int viaFid = fidNet(layerNameLower, pad.featIdx);
+            vi.netFromFid = viaFid >= 0;
+            vi.netId = std::max(viaFid, 0);
 
             // Drill diameter from drill-layer symbol
             if (pad.symIdx < (int)features.symbols.size()) {
@@ -732,8 +758,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         }
     }
 
-    // Assign nets to vias from netlist points with 'v' flag
+    // Assign nets to vias without an FID record from netlist points with 'v' flag
     for (auto& vi : viaInfos) {
+        if (vi.netFromFid) continue;
         for (auto& pt : design.netlist.points) {
             if (!pt.isVia) continue;
             if (std::abs(pt.x - vi.x) < 0.01 && std::abs(pt.y - vi.y) < 0.01) {
@@ -875,9 +902,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             seg.layer = kicadLayer;
 
-            // Net assignment: check both endpoints against pad and via positions
-            seg.netId = findNetAtPoint(seg.x1, seg.y1, kicadLayer);
-            if (seg.netId == 0) {
+            // Net: the FID record, else check both endpoints against pad and via positions
+            int segFid = fidNet(layerNameLower, line.featIdx);
+            seg.netId = segFid >= 0 ? segFid : findNetAtPoint(seg.x1, seg.y1, kicadLayer);
+            if (seg.netId == 0 && segFid < 0) {
                 seg.netId = findNetAtPoint(seg.x2, seg.y2, kicadLayer);
             }
 
@@ -911,9 +939,10 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             ka.layer = kicadLayer;
 
-            // Net assignment: check endpoints against pad and via positions
-            ka.netId = findNetAtPoint(ka.xs, ka.ys, kicadLayer);
-            if (ka.netId == 0) {
+            // Net: the FID record, else check endpoints against pad and via positions
+            int arcFid = fidNet(layerNameLower, arc.featIdx);
+            ka.netId = arcFid >= 0 ? arcFid : findNetAtPoint(ka.xs, ka.ys, kicadLayer);
+            if (ka.netId == 0 && arcFid < 0) {
                 ka.netId = findNetAtPoint(ka.xe, ka.ye, kicadLayer);
             }
 
@@ -1249,28 +1278,29 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 zone.filledPolygons.push_back(polyPts);
             }
 
-            // Try to determine zone net by finding pads inside the zone outline
-            if (!zone.outlinePoints.empty() && zone.netId == 0) {
+            // Zone net: the surface's FID record. Without one, fall back to a pad whose centre lies
+            // in the fill itself (inside an island, outside its holes): a pad sitting in a clearance
+            // hole of the pour belongs to another net.
+            int zoneFid = fidNet(layerNameLower, surface.featIdx);
+            if (zoneFid >= 0) {
+                zone.netId = zoneFid;
+            } else if (!zone.outlinePoints.empty()) {
                 for (auto& pni : padLookup) {
                     // Check if pad is on this layer (TH pads on any copper, SMD only on their layer)
                     bool layerMatch = pni.throughHole || (layerId == 0) || (layerId == 31);
-                    if (!layerMatch) continue;
-
-                    if (pointInPolygon(pni.x, pni.y, zone.outlinePoints)) {
-                        if (pni.netId > 0) {
-                            zone.netId = pni.netId;
-                            // Find net name
-                            for (auto& net : pcb.nets) {
-                                if (net.id == zone.netId) {
-                                    zone.netName = net.name;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
+                    if (!layerMatch || pni.netId <= 0) continue;
+                    int depth = 0;
+                    for (size_t ci = 0; ci < surface.contours.size(); ci++) {
+                        if (pointInPolygon(pni.x, pni.y, zone.filledPolygons[ci]))
+                            depth += surface.contours[ci].isHole ? -1 : 1;
+                    }
+                    if (depth > 0) {
+                        zone.netId = pni.netId;
+                        break;
                     }
                 }
             }
+            zone.netName = netNameOf(zone.netId);
 
             if (!zone.outlinePoints.empty() || !zone.filledPolygons.empty()) {
                 pcb.zones.push_back(zone);

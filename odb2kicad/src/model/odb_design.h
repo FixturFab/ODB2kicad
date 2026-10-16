@@ -41,6 +41,7 @@ struct OdbContour {
 };
 
 struct OdbSurface {
+    int featIdx = -1;       // ordinal of the S record among the layer's features (eda/data FID)
     std::string polarity;   // P or N
     std::vector<OdbContour> contours;
 };
@@ -61,6 +62,7 @@ struct OdbSymbol {
 
 // Feature records from layer features files
 struct OdbPad {
+    int featIdx = -1;       // ordinal among the layer's features (eda/data FID)
     double x = 0, y = 0;
     int symIdx = 0;
     std::string polarity;   // P or N
@@ -70,6 +72,7 @@ struct OdbPad {
 };
 
 struct OdbLine {
+    int featIdx = -1;
     double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
     int symIdx = 0;
     std::string polarity;
@@ -77,6 +80,7 @@ struct OdbLine {
 };
 
 struct OdbArc {
+    int featIdx = -1;
     double xs = 0, ys = 0;  // start
     double xe = 0, ye = 0;  // end
     double xc = 0, yc = 0;  // center
@@ -146,11 +150,20 @@ struct OdbEdaPackage {
     std::vector<OdbEdaPin> pins;
 };
 
+// FID record: feature <featIdx> of layer LYR[<layerIdx>] belongs to net <netIdx>
+struct OdbEdaFid {
+    int netIdx = 0;         // index into OdbEdaData::nets
+    std::string type;       // C copper, L laminate, H hole
+    int layerIdx = 0;       // index into OdbEdaData::layers (the LYR record)
+    int featIdx = 0;        // ordinal of the feature in that layer's features file
+};
+
 struct OdbEdaData {
     std::string units;
     std::vector<std::string> layers;
     std::vector<OdbEdaNet> nets;        // index 0 = $NONE$
     std::vector<OdbEdaPackage> packages;
+    std::vector<OdbEdaFid> fids;        // feature -> net map (SNT/FID records)
 };
 
 // Netlist

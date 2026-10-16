@@ -6,6 +6,8 @@
 //   cmake --build build && ctest --test-dir build
 #include "model/odb_design.h"
 #include "model/kicad_pcb.h"
+#include "odb_parser/eda_parser.h"
+#include "odb_parser/features_parser.h"
 #include "odb_parser/matrix_parser.h"
 #include "odb_parser/odb_parser.h"
 #include "writer/kicad_writer.h"
@@ -286,6 +288,102 @@ TEST(row_order_inner_layers_for_generic_names) {
     CHECK(hasKicadLayer(pcb, 1, "In1.Cu"));
     CHECK(hasKicadLayer(pcb, 2, "In2.Cu"));
     CHECK(hasKicadLayer(pcb, 31, "B.Cu"));
+}
+
+// ---------------------------------------------------------------- zone nets from FID records
+
+// Square contour (OB + 4 OS back to the start), island or hole
+static OdbContour square(double x0, double y0, double x1, double y1, bool hole) {
+    OdbContour c;
+    c.isHole = hole;
+    c.points = {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}, {x0, y0}};
+    return c;
+}
+
+// A B.Cu GND pour encloses a 3V3 TH pad that sits in a clearance hole of
+// the pour. The old reader took the net of the first pad inside the outer outline (3V3).
+static OdbDesign gndPourAroundClearance() {
+    OdbDesign d = kicadDesign();
+    auto& j = component(d, "J1", 0, 0, 2);
+    terminal(j, "1", 5, -5, /*3V3*/ 2);    // in the clearance hole
+    terminal(j, "2", 15, -15, /*GND*/ 1);  // in the fill
+    for (const char* cu : {"f.cu", "b.cu"}) {
+        flash(d, cu, 5, -5, "r1700.0", OdbSymbol::ROUND, 1.7);
+        flash(d, cu, 15, -15, "r1700.0", OdbSymbol::ROUND, 1.7);
+    }
+    flash(d, "drill_plated_f.cu-b.cu", 5, -5, "r1000.0", OdbSymbol::ROUND, 1.0, -1, {{".drill", "0"}});
+    flash(d, "drill_plated_f.cu-b.cu", 15, -15, "r1000.0", OdbSymbol::ROUND, 1.0, -1, {{".drill", "0"}});
+    auto& bcu = d.layerFeatures["b.cu"];
+    OdbSurface pour;
+    pour.polarity = "P";
+    pour.featIdx = (int)bcu.pads.size();  // the S record follows the two pad flashes
+    pour.contours = {square(0, 0, 20, -20, false), square(3, -3, 7, -7, true)};
+    bcu.surfaces.push_back(pour);
+    for (int i = 0; i < (int)bcu.pads.size(); i++) bcu.pads[i].featIdx = i;
+    return d;
+}
+
+static const KicadZone* zoneOn(const KicadPcb& pcb, const std::string& layer) {
+    for (auto& z : pcb.zones) if (z.layer == layer) return &z;
+    return nullptr;
+}
+
+TEST(gnd_pour_takes_its_net_from_the_fid_record) {
+    OdbDesign d = gndPourAroundClearance();
+    d.edaData.layers = {"b.cu", "drill_plated_f.cu-b.cu", "f.cu"};
+    OdbEdaFid fid;
+    fid.netIdx = 1;  // GND
+    fid.type = "C";
+    fid.layerIdx = 0;
+    fid.featIdx = d.layerFeatures["b.cu"].surfaces[0].featIdx;
+    d.edaData.fids.push_back(fid);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadZone* z = zoneOn(pcb, "B.Cu");
+    CHECK(z);
+    if (z) CHECK_EQ(z->netName, std::string("GND"));
+}
+
+// Without FID records the fallback only takes a pad that lies in the fill, not one in a hole.
+TEST(fallback_ignores_pads_in_pour_clearance_holes) {
+    OdbDesign d = gndPourAroundClearance();
+    KicadPcb pcb = transformToKicad(d);
+    const KicadZone* z = zoneOn(pcb, "B.Cu");
+    CHECK(z);
+    if (z) CHECK_EQ(z->netName, std::string("GND"));
+}
+
+// Parser side: FID records attach to the preceding NET; feature ordinals count every P/L/A/S/T/B
+// record (a text record shifts the surface's index).
+TEST(eda_fid_records_and_feature_ordinals_are_parsed) {
+    std::string dir = tempDir("fid_records");
+    writeFile(dir + "/eda/data",
+        "HDR KiCad EDA 9.0.9\nUNITS=MM\nLYR b.cu f.cu\n"
+        "NET $NONE$\nSNT TOP T 0 0\nFID C 1 0\n"
+        "NET GND\nSNT PLN\nFID C 0 2\nSNT TRC\nFID C 0 0\n"
+        "NET 3V3\nSNT TOP T 1 0\nFID C 0 1\n"
+        "PKG R0603 1 -1 -1 1 0;\nPIN 1 S -0.5 0 0 E S\n");
+    writeFile(dir + "/b.cu/features",
+        "UNITS=MM\n$0 r250.0\n"
+        "L 0 0 1 0 0 P 0\n"
+        "T 1 1 0 P 0 0 0.5 0.5 0.1 'X' 0\n"
+        "S P 0\nOB 0 0 I\nOS 1 0\nOS 1 1\nOS 0 0\nOE\nSE\n");
+    OdbEdaData eda;
+    CHECK(parseEdaData(dir + "/eda/data", eda));
+    CHECK_EQ(eda.nets.size(), (size_t)3);
+    CHECK_EQ(eda.fids.size(), (size_t)4);
+    if (eda.fids.size() == 4) {
+        CHECK_EQ(eda.fids[1].netIdx, 1);
+        CHECK_EQ(eda.fids[1].layerIdx, 0);
+        CHECK_EQ(eda.fids[1].featIdx, 2);
+        CHECK_EQ(eda.fids[3].netIdx, 2);
+    }
+    CHECK_EQ(eda.packages.size(), (size_t)1);
+    OdbFeatures f;
+    CHECK(parseFeatures(dir + "/b.cu/features", f));
+    CHECK_EQ(f.lines.size(), (size_t)1);
+    CHECK_EQ(f.surfaces.size(), (size_t)1);
+    if (!f.lines.empty()) CHECK_EQ(f.lines[0].featIdx, 0);
+    if (!f.surfaces.empty()) CHECK_EQ(f.surfaces[0].featIdx, 2);
 }
 
 // ---------------------------------------------------------------- main
