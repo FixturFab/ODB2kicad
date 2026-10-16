@@ -1548,19 +1548,20 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         out << "    (at " << formatFloat(fp.x) << " " << formatFloat(fp.y);
         if (std::abs(fp.angle) > 0.001) out << " " << formatFloat(fp.angle);
         out << ")\n";
-        out << "    (property \"Reference\" \"" << escapeString(fp.refdes) << "\")\n";
-        out << "    (property \"Value\" \"" << escapeString(fp.value) << "\")\n";
+        // Reference/Value fields, hidden: the ODB++ carries the visible text as stroked silk/fab
+        // lines (emitted as board graphics), and its position is not recorded. Writing them
+        // visible put a second copy of every ref/value at a made-up spot.
+        bool fpBottom = fp.layer == "B.Cu";
+        auto field = [&](const char* name, const std::string& text, double y, const char* layer) {
+            out << "    (property \"" << name << "\" \"" << escapeString(text) << "\" (at 0 " << formatFloat(y);
+            if (std::abs(fp.angle) > 0.001) out << " " << formatFloat(fp.angle);
+            out << ") (layer \"" << layer << "\") hide\n";
+            out << "      (effects (font (size 1 1) (thickness 0.15))" << (fpBottom ? " (justify mirror)" : "") << ")\n";
+            out << "    )\n";
+        };
+        field("Reference", fp.refdes, -1.65, fpBottom ? "B.SilkS" : "F.SilkS");
+        field("Value", fp.value, 1.65, fpBottom ? "B.Fab" : "F.Fab");
         out << "    (attr " << fp.attr << ")\n";
-
-        // fp_text reference
-        out << "    (fp_text reference \"" << escapeString(fp.refdes) << "\" (at 0 -1.65) (layer \"F.SilkS\")\n";
-        out << "      (effects (font (size 1 1) (thickness 0.15)))\n";
-        out << "    )\n";
-
-        // fp_text value
-        out << "    (fp_text value \"" << escapeString(fp.value) << "\" (at 0 1.65) (layer \"F.Fab\")\n";
-        out << "      (effects (font (size 1 1) (thickness 0.15)))\n";
-        out << "    )\n";
 
         // fp_lines
         for (auto& ln : fp.fpLines) {

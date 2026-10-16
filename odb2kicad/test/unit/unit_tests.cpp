@@ -640,6 +640,25 @@ TEST(bottom_rotation_matches_kicad_export) {
     CHECK(hasLayer(*p, "B.Cu"));
 }
 
+// ---------------------------------------------------------------- no synthesized ref/value text
+
+// The ODB++ carries the visible reference/value text as stroked lines; the converter added a second,
+// visible fp_text copy at (0 -1.65) F.SilkS / (0 1.65) F.Fab. The fields are now hidden properties
+// (bottom parts on B.SilkS / B.Fab, mirrored), with no fp_text.
+TEST(reference_and_value_fields_are_hidden) {
+    OdbDesign d = kicadDesign();
+    auto& r = component(d, "R7", 1, -1, 1);
+    r.properties["Value"] = "10k";
+    terminal(r, "1", 1, -1, 1);
+    component(d, "U9", 5, -5, 1, true);
+    std::string out = writeString(transformToKicad(d));
+    CHECK(out.find("fp_text") == std::string::npos);
+    CHECK(out.find("(property \"Reference\" \"R7\" (at 0 -1.65) (layer \"F.SilkS\") hide") != std::string::npos);
+    CHECK(out.find("(property \"Value\" \"10k\" (at 0 1.65) (layer \"F.Fab\") hide") != std::string::npos);
+    CHECK(out.find("(property \"Reference\" \"U9\" (at 0 -1.65) (layer \"B.SilkS\") hide") != std::string::npos);
+    CHECK(out.find("(justify mirror)") != std::string::npos);
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {
