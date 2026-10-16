@@ -235,6 +235,43 @@ static bool isInchUnits(const std::string& units) {
     return upper == "INCH" || upper == "IN" || upper == "INCHES";
 }
 
+// A hit on a DRILL layer
+struct DrillHit {
+    double x = 0, y = 0;    // raw ODB++ coordinates
+    double size = 0;        // mm
+    enum Kind { PLATED, NON_PLATED, VIA } kind = PLATED;
+};
+
+// Look up a feature's attribute value by attribute name ("" if absent)
+static std::string featureAttr(const OdbFeatures& feats, const std::map<int, std::string>& attrs,
+                               const std::string& name) {
+    for (auto& [idx, val] : attrs) {
+        auto it = feats.attrDefs.find(idx);
+        if (it != feats.attrDefs.end() && it->second == name) return val;
+    }
+    return "";
+}
+
+// Classify a drill hit. ODB++ .drill is an option attribute: 0 = plated, 1 = non_plated, 2 = via
+// (text values are accepted too). Without it, a non-plated layer name or a .geometry VIA* string
+// decides; everything else is plated.
+static DrillHit::Kind classifyDrill(const OdbFeatures& feats, const std::map<int, std::string>& attrs,
+                                    bool layerNonPlated) {
+    std::string d = toLower(trim(featureAttr(feats, attrs, ".drill")));
+    if (d == "0" || d == "plated") return DrillHit::PLATED;
+    if (d == "1" || d == "non_plated") return DrillHit::NON_PLATED;
+    if (d == "2" || d == "via") return DrillHit::VIA;
+    if (layerNonPlated) return DrillHit::NON_PLATED;
+    std::string geom = featureAttr(feats, attrs, ".geometry");
+    if (!geom.empty()) {
+        int strIdx = -1;
+        try { strIdx = std::stoi(geom); } catch (...) {}
+        auto it = feats.strings.find(strIdx);
+        if (it != feats.strings.end() && it->second.find("VIA") != std::string::npos) return DrillHit::VIA;
+    }
+    return DrillHit::PLATED;
+}
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
@@ -365,6 +402,83 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         return odbName;
     };
 
+    // Feature lookup tolerance in raw ODB++ units (5 um)
+    const double posTol = 0.005 / unitScale;
+    auto near = [posTol](double ax, double ay, double bx, double by) {
+        return std::abs(ax - bx) < posTol && std::abs(ay - by) < posTol;
+    };
+
+    // ODB++ layer name (lowercase) for a KiCad layer id, empty if the design has none
+    auto odbLayerFor = [&layerMap](int kicadId) -> std::string {
+        for (auto& [name, m] : layerMap) {
+            if (m->id == kicadId) return name;
+        }
+        return "";
+    };
+
+    // Pad feature (flash) on an ODB++ layer at a point, nullptr if none
+    auto padFeatureAt = [&](const std::string& odbLayer, double x, double y,
+                            const OdbSymbol** symOut) -> const OdbPad* {
+        auto it = design.layerFeatures.find(odbLayer);
+        if (odbLayer.empty() || it == design.layerFeatures.end()) return nullptr;
+        for (auto& p : it->second.pads) {
+            if (near(p.x, p.y, x, y)) {
+                if (symOut && p.symIdx >= 0 && p.symIdx < (int)it->second.symbols.size())
+                    *symOut = &it->second.symbols[p.symIdx];
+                return &p;
+            }
+        }
+        return nullptr;
+    };
+
+    // Drill hits, classified per hit. The .drill attribute says plated / non_plated / via;
+    // without it the layer name decides (KiCad: drill_non-plated_*), then .geometry VIA*.
+    std::set<std::string> drillLayerNames;
+    for (auto& l : design.layers) {
+        if (toUpper(l.type) == "DRILL") drillLayerNames.insert(toLower(l.name));
+    }
+    for (auto& [name, f] : design.layerFeatures) {
+        if (name.find("drill") != std::string::npos) drillLayerNames.insert(name);
+    }
+    std::vector<DrillHit> drillHits;
+    for (auto& dlName : drillLayerNames) {
+        auto it = design.layerFeatures.find(dlName);
+        if (it == design.layerFeatures.end()) continue;
+        auto& feats = it->second;
+        bool layerNonPlated = dlName.find("non-plated") != std::string::npos ||
+                              dlName.find("non_plated") != std::string::npos ||
+                              dlName.find("npth") != std::string::npos ||
+                              dlName.find("unplated") != std::string::npos;
+        for (auto& p : feats.pads) {
+            DrillHit h;
+            h.x = p.x;
+            h.y = p.y;
+            if (p.symIdx >= 0 && p.symIdx < (int)feats.symbols.size()) {
+                auto& ds = feats.symbols[p.symIdx];
+                h.size = scaleLen((ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width);
+            }
+            h.kind = classifyDrill(feats, p.attrs, layerNonPlated);
+            drillHits.push_back(h);
+        }
+    }
+    auto drillAt = [&](double x, double y) -> const DrillHit* {
+        for (auto& h : drillHits) {
+            if (near(h.x, h.y, x, y)) return &h;
+        }
+        return nullptr;
+    };
+
+    const std::string odbFCu = odbLayerFor(0), odbBCu = odbLayerFor(31);
+    const std::string odbFMask = odbLayerFor(39), odbBMask = odbLayerFor(38);
+    const std::string odbFPaste = odbLayerFor(35), odbBPaste = odbLayerFor(34);
+    auto layerPresent = [&](const std::string& odbLayer) {
+        return !odbLayer.empty() && design.layerFeatures.count(odbLayer) > 0;
+    };
+    // Mask/paste openings are read from the mask/paste layers when the design has them;
+    // a design without them gets KiCad's defaults for the pad type.
+    const bool haveMask = layerPresent(odbFMask) || layerPresent(odbBMask);
+    const bool havePaste = layerPresent(odbFPaste) || layerPresent(odbBPaste);
+
     // 3. Transform components -> footprints
     auto processComponents = [&](const OdbComponents& comps, bool isBottom) {
         for (int ci = 0; ci < (int)comps.components.size(); ci++) {
@@ -387,36 +501,29 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             fp.refdes = comp.refdes;
             fp.value = comp.properties.count("Value") ? comp.properties.at("Value") : "";
 
+            // .comp_mount_type only sets the footprint attribute; each pad's type comes
+            // from its own records (drill hit at the pad centre).
             if (comp.mountType == 1) fp.attr = "smd";
             else if (comp.mountType == 2) fp.attr = "through_hole";
             else fp.attr = "smd"; // default
+
+            const std::string& sideCu = isBottom ? odbBCu : odbFCu;
+            const std::string& otherCu = isBottom ? odbFCu : odbBCu;
 
             // Process terminals -> pads
             for (auto& term : comp.terminals) {
                 KicadPad pad;
                 pad.pinNum = term.pinNum;
 
-                // Determine pad shape from the feature layer
-                // Find the ODB++ copper layer name for this side
-                std::string cuLayerName;
-                for (auto& [name, m] : layerMap) {
-                    if (m->id == (isBottom ? 31 : 0)) { cuLayerName = name; break; }
-                }
-                auto featIt = design.layerFeatures.find(cuLayerName);
+                // Pad shape from the copper flash at the terminal: component side first,
+                // then the far side (an SMD pad can sit on the opposite layer).
+                const OdbSymbol* symPtr = nullptr;
+                bool onSide = padFeatureAt(sideCu, term.x, term.y, &symPtr) != nullptr;
+                bool onOther = false;
+                if (!onSide) onOther = padFeatureAt(otherCu, term.x, term.y, &symPtr) != nullptr;
                 OdbSymbol padSym;
                 padSym.shape = OdbSymbol::ROUNDRECT; // default
-
-                if (featIt != design.layerFeatures.end()) {
-                    // Find the pad feature at matching coordinates
-                    for (auto& p : featIt->second.pads) {
-                        if (std::abs(p.x - term.x) < 0.01 && std::abs(p.y - term.y) < 0.01) {
-                            if (p.symIdx < (int)featIt->second.symbols.size()) {
-                                padSym = featIt->second.symbols[p.symIdx];
-                            }
-                            break;
-                        }
-                    }
-                }
+                if (symPtr) padSym = *symPtr;
 
                 switch (padSym.shape) {
                     case OdbSymbol::ROUND: pad.shape = "circle"; break;
@@ -444,36 +551,42 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 pad.x = scaleLen(dx);
                 pad.y = -scaleLen(dy);  // Negate Y for KiCad's Y-down coordinate system
 
-                // Pad type
-                pad.type = (comp.mountType == 2) ? "thru_hole" : "smd";
-
-                // Pad layers
-                if (pad.type == "thru_hole") {
-                    pad.layerNames = {"*.Cu", "*.Mask"};
+                // Pad type from the drill hit at the pad centre
+                const DrillHit* hit = drillAt(term.x, term.y);
+                if (hit && hit->kind == DrillHit::PLATED) {
+                    pad.type = "thru_hole";
+                    pad.drill = hit->size;
+                } else if (hit && hit->kind == DrillHit::NON_PLATED) {
+                    pad.type = (comp.mountType == 2) ? "thru_hole" : "smd";
+                    if (pad.type == "thru_hole") pad.drill = hit->size;
                 } else {
-                    if (isBottom) {
-                        pad.layerNames = {"B.Cu", "B.Paste", "B.Mask"};
-                    } else {
-                        pad.layerNames = {"F.Cu", "F.Paste", "F.Mask"};
-                    }
+                    pad.type = "smd";
                 }
 
-                // Drill size for through-hole pads: look up from drill layer
+                // Pad layers: copper from the pad type / flash side, mask and paste from
+                // the openings present on the mask/paste layers at the pad centre
+                bool padOnBottom = (pad.type == "smd") ? (isBottom != onOther) : isBottom;
                 if (pad.type == "thru_hole") {
-                    for (auto& [dlName, dlFeats] : design.layerFeatures) {
-                        if (dlName.find("drill") == std::string::npos) continue;
-                        for (auto& drillPad : dlFeats.pads) {
-                            if (std::abs(drillPad.x - term.x) < 0.01 &&
-                                std::abs(drillPad.y - term.y) < 0.01) {
-                                if (drillPad.symIdx < (int)dlFeats.symbols.size()) {
-                                    auto& ds = dlFeats.symbols[drillPad.symIdx];
-                                    pad.drill = scaleLen((ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width);
-                                }
-                                break;
-                            }
-                        }
-                        if (pad.drill > 0) break;
-                    }
+                    pad.layerNames = {"*.Cu"};
+                } else {
+                    pad.layerNames = {padOnBottom ? "B.Cu" : "F.Cu"};
+                }
+                bool th = pad.type == "thru_hole";
+                if (havePaste) {
+                    if ((th || !padOnBottom) && padFeatureAt(odbFPaste, term.x, term.y, nullptr))
+                        pad.layerNames.push_back("F.Paste");
+                    if ((th || padOnBottom) && padFeatureAt(odbBPaste, term.x, term.y, nullptr))
+                        pad.layerNames.push_back("B.Paste");
+                } else if (!th) {
+                    pad.layerNames.push_back(padOnBottom ? "B.Paste" : "F.Paste");
+                }
+                if (haveMask) {
+                    if ((th || !padOnBottom) && padFeatureAt(odbFMask, term.x, term.y, nullptr))
+                        pad.layerNames.push_back("F.Mask");
+                    if ((th || padOnBottom) && padFeatureAt(odbBMask, term.x, term.y, nullptr))
+                        pad.layerNames.push_back("B.Mask");
+                } else {
+                    pad.layerNames.push_back(th ? "*.Mask" : (padOnBottom ? "B.Mask" : "F.Mask"));
                 }
 
                 // Net assignment from terminal

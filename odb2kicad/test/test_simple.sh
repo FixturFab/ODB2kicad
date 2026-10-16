@@ -89,7 +89,8 @@ fi
 
 # Check through-hole pads
 grep -q 'thru_hole' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no through-hole pads"; exit 1; }
-grep -qF '"*.Cu" "*.Mask"' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no *.Cu *.Mask layers"; exit 1; }
+# mask openings come from the mask layers, so both sides are listed explicitly
+grep -qE '"\*\.Cu" ("\*\.Mask"|"F\.Mask" "B\.Mask")' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no *.Cu + F/B mask layers"; exit 1; }
 
 # Check board outline (polygon, not rect)
 grep -q 'gr_line' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no gr_line (board outline)"; exit 1; }
