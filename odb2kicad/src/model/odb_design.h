@@ -58,6 +58,8 @@ struct OdbSymbol {
     double height = 0;      // mm
     double diameter = 0;    // mm (for round)
     double cornerRadius = 0;// mm (for roundrect)
+    double lineWidth = 0;   // mm (donut ring width: donut_rc line width, donut_r (od-id)/2)
+    bool donut = false;     // donut_r / donut_rc: an outline, not a filled shape
 };
 
 // Feature records from layer features files

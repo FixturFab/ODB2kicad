@@ -307,6 +307,57 @@ static DrillHit::Kind classifyDrill(const OdbFeatures& feats, const std::map<int
     return DrillHit::PLATED;
 }
 
+// KiCad orientation (degrees, CCW as seen from the top) of a P record. Orient 8 is a clockwise
+// angle; 9 is the mirrored form, whose angle KiCad's exporter writes counter-clockwise
+// (kicad-cli 9.0.9: a bottom pad at 30 deg exports as "9 30.0"). 0..7 are the legacy
+// 0/90/180/270 clockwise steps, 4..7 mirrored.
+static double padAngleKicad(const OdbPad& p) {
+    double a;
+    if (p.mirror == 9) a = p.angle;
+    else if (p.mirror == 8) a = -p.angle;
+    else if (p.mirror >= 4 && p.mirror <= 7) a = (p.mirror - 4) * 90.0;
+    else a = -(p.mirror % 4) * 90.0;
+    a = std::fmod(a, 360.0);
+    if (a < 0) a += 360.0;
+    if (std::abs(a - 360.0) < 1e-9) a = 0;
+    return a;
+}
+
+// A stroked rectangle centred at (cx, cy) (KiCad coords): a gr_rect when axis-aligned, else four
+// gr_lines. angle is KiCad CCW degrees.
+static void emitStrokedRect(KicadPcb& pcb, double cx, double cy, double w, double h, double angle,
+                            double stroke, const std::string& layer) {
+    double q = std::fmod(angle, 90.0);
+    if (std::abs(q) < 1e-6 || std::abs(q - 90.0) < 1e-6) {
+        if (std::lround(angle / 90.0) % 2 == 1) std::swap(w, h);
+        KicadGrRect r;
+        r.x1 = cx - w / 2; r.y1 = cy - h / 2;
+        r.x2 = cx + w / 2; r.y2 = cy + h / 2;
+        r.width = stroke;
+        r.type = "default";
+        r.layer = layer;
+        pcb.grRects.push_back(r);
+        return;
+    }
+    double c = std::cos(degToRad(angle)), s = std::sin(degToRad(angle));
+    double corners[4][2] = {{-w / 2, -h / 2}, {w / 2, -h / 2}, {w / 2, h / 2}, {-w / 2, h / 2}};
+    double pts[4][2];
+    for (int i = 0; i < 4; i++) {
+        // KiCad rotation (Y down, CCW on screen)
+        pts[i][0] = cx + corners[i][0] * c + corners[i][1] * s;
+        pts[i][1] = cy - corners[i][0] * s + corners[i][1] * c;
+    }
+    for (int i = 0; i < 4; i++) {
+        KicadGrLine gl;
+        gl.x1 = pts[i][0]; gl.y1 = pts[i][1];
+        gl.x2 = pts[(i + 1) % 4][0]; gl.y2 = pts[(i + 1) % 4][1];
+        gl.width = stroke;
+        gl.type = "default";
+        gl.layer = layer;
+        pcb.grLines.push_back(gl);
+    }
+}
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
@@ -1174,9 +1225,17 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             for (auto& pad : ecFeats.pads) {
                 if (pad.symIdx < (int)ecFeats.symbols.size()) {
                     auto& sym = ecFeats.symbols[pad.symIdx];
+                    // donut_rc<w>x<h>x<lw>xr<r>: a stroked rectangle (KiCad's gr_rect). The
+                    // symbol's outer box is the rectangle plus the stroke width.
+                    if (sym.donut && sym.shape == OdbSymbol::ROUNDRECT) {
+                        emitStrokedRect(pcb, scaleX(pad.x), scaleY(pad.y), scaleLen(sym.width - sym.lineWidth),
+                                        scaleLen(sym.height - sym.lineWidth), padAngleKicad(pad),
+                                        scaleLen(sym.lineWidth), "Edge.Cuts");
+                        continue;
+                    }
                     // For donut symbols, use the outer diameter to draw a circle
                     double radius = 0;
-                    if (sym.name.find("donut_r") == 0) {
+                    if (sym.donut && sym.shape == OdbSymbol::ROUND) {
                         // donut_r<outer>x<inner> - extract outer diameter
                         radius = sym.diameter / 2.0;
                         if (radius <= 0) radius = sym.width / 2.0;

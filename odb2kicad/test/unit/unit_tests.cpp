@@ -10,6 +10,7 @@
 #include "odb_parser/features_parser.h"
 #include "odb_parser/matrix_parser.h"
 #include "odb_parser/odb_parser.h"
+#include "odb_parser/symbols.h"
 #include "writer/kicad_writer.h"
 #include <cmath>
 #include <cstdio>
@@ -436,6 +437,46 @@ TEST(npth_layer_name_without_drill_attribute) {
         CHECK_EQ(p->type, std::string("np_thru_hole"));
         CHECK_NEAR(p->drill, 3.2, 1e-9);
     }
+}
+
+// ---------------------------------------------------------------- donut_rc on Edge.Cuts
+
+// KiCad exports an Edge.Cuts gr_rect as one P record with donut_rc<w>x<h>x<lw>xr<r>: outer box =
+// rectangle + stroke. The round-donut branch matched it by prefix and drew a circle of radius w/2
+// (a 650 x 72 mm rectangular outline came back as a 646 mm circle).
+TEST(donut_rc_on_edge_cuts_is_the_rectangle_it_describes) {
+    OdbSymbol rc = decodeSymbol("donut_rc650050.0x72050.0x50.0xr25.0");
+    CHECK(rc.donut);
+    CHECK_EQ((int)rc.shape, (int)OdbSymbol::ROUNDRECT);
+    CHECK_NEAR(rc.lineWidth, 0.05, 1e-9);
+    OdbSymbol r = decodeSymbol("donut_r3000.0x2000.0");
+    CHECK(r.donut);
+    CHECK_EQ((int)r.shape, (int)OdbSymbol::ROUND);
+    CHECK_NEAR(r.lineWidth, 0.5, 1e-9);
+
+    OdbDesign d = kicadDesign();
+    auto& ec = d.layerFeatures["edge.cuts"];
+    ec.units = "MM";
+    ec.symbols = {rc, r};
+    OdbPad outline;
+    outline.x = 325; outline.y = -36; outline.symIdx = 0; outline.mirror = 8;
+    OdbPad hole;
+    hole.x = 10; hole.y = -10; hole.symIdx = 1; hole.mirror = 8;
+    ec.pads = {outline, hole};
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.grRects.size(), (size_t)1);
+    if (!pcb.grRects.empty()) {
+        auto& g = pcb.grRects[0];
+        CHECK_NEAR(g.x1, 0, 1e-9);
+        CHECK_NEAR(g.y1, 0, 1e-9);
+        CHECK_NEAR(g.x2, 650, 1e-9);
+        CHECK_NEAR(g.y2, 72, 1e-9);
+        CHECK_NEAR(g.width, 0.05, 1e-9);
+        CHECK_EQ(g.layer, std::string("Edge.Cuts"));
+    }
+    // the round donut is still a circle (two half arcs) of its outer radius
+    CHECK_EQ(pcb.grArcs.size(), (size_t)2);
+    if (pcb.grArcs.size() == 2) CHECK_NEAR(pcb.grArcs[0].xs - 10, 1.5, 1e-9);
 }
 
 // ---------------------------------------------------------------- main

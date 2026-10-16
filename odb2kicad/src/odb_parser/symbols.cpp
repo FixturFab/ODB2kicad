@@ -63,6 +63,8 @@ OdbSymbol decodeSymbol(const std::string& name) {
         sym.diameter = std::stod(m[1]) / 1000.0;
         sym.width = sym.diameter;
         sym.height = sym.diameter;
+        sym.lineWidth = (sym.diameter - std::stod(m[2]) / 1000.0) / 2.0;
+        sym.donut = true;
         return sym;
     }
 
@@ -72,7 +74,9 @@ OdbSymbol decodeSymbol(const std::string& name) {
         sym.shape = OdbSymbol::ROUNDRECT;
         sym.width = std::stod(m[1]) / 1000.0;
         sym.height = std::stod(m[2]) / 1000.0;
+        sym.lineWidth = std::stod(m[3]) / 1000.0;
         sym.cornerRadius = std::stod(m[4]) / 1000.0;
+        sym.donut = true;
         return sym;
     }
 
