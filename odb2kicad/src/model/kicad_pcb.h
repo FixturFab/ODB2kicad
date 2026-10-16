@@ -98,6 +98,20 @@ struct KicadGrArc {
     std::string layer;
 };
 
+struct KicadGrPoly {
+    std::vector<std::pair<double,double>> pts;
+    double width = 0;           // stroke
+    bool filled = true;
+    std::string layer;
+};
+
+struct KicadGrCircle {
+    double cx = 0, cy = 0, r = 0;
+    double width = 0;           // stroke
+    bool filled = true;
+    std::string layer;
+};
+
 struct KicadZone {
     int netId = 0;
     std::string netName;
@@ -117,6 +131,8 @@ struct KicadPcb {
     std::vector<KicadGrLine> grLines;
     std::vector<KicadGrRect> grRects;
     std::vector<KicadGrArc> grArcs;
+    std::vector<KicadGrPoly> grPolys;
+    std::vector<KicadGrCircle> grCircles;
     std::vector<KicadZone> zones;
 };
 

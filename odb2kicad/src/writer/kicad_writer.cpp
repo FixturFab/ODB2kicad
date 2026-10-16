@@ -364,6 +364,64 @@ static void emitStrokedRect(KicadPcb& pcb, double cx, double cy, double w, doubl
     }
 }
 
+// Outline of a flashed rect / roundrect / oval symbol (w x h, corner radius r) centred at (cx, cy),
+// KiCad coords, rotated by the KiCad angle (CCW). An oval is a roundrect with r = min(w, h) / 2.
+static std::vector<std::pair<double,double>> roundRectOutline(double cx, double cy, double w, double h,
+                                                              double r, double angle) {
+    std::vector<std::pair<double,double>> local;
+    r = std::max(0.0, std::min(r, std::min(w, h) / 2));
+    const int steps = r > 0 ? 8 : 0;
+    // corner centres, walking clockwise on screen starting top-right (Y down)
+    double cxs[4] = { w / 2 - r, w / 2 - r, -w / 2 + r, -w / 2 + r };
+    double cys[4] = { -h / 2 + r, h / 2 - r, h / 2 - r, -h / 2 + r };
+    double start[4] = { -90, 0, 90, 180 };  // screen angle, degrees, Y down
+    for (int c = 0; c < 4; c++) {
+        for (int i = 0; i <= steps; i++) {
+            double a = degToRad(start[c] + 90.0 * (steps ? (double)i / steps : 0));
+            local.push_back({cxs[c] + r * std::cos(a), cys[c] + r * std::sin(a)});
+            if (!steps) break;
+        }
+    }
+    double cs = std::cos(degToRad(angle)), sn = std::sin(degToRad(angle));
+    std::vector<std::pair<double,double>> out;
+    for (auto& [x, y] : local) out.push_back({cx + x * cs + y * sn, cy - x * sn + y * cs});
+    return out;
+}
+
+static double signedArea(const std::vector<std::pair<double,double>>& pts) {
+    double a = 0;
+    for (size_t i = 0; i < pts.size(); i++) {
+        auto& p = pts[i];
+        auto& q = pts[(i + 1) % pts.size()];
+        a += p.first * q.second - q.first * p.second;
+    }
+    return a / 2;
+}
+
+// Fold the holes of an island into its outline with zero-width keyhole cuts (KiCad's gr_poly has
+// no holes): each hole is spliced in at its vertex closest to the outline, wound against it.
+static std::vector<std::pair<double,double>> keyhole(std::vector<std::pair<double,double>> outer,
+                                                     std::vector<std::vector<std::pair<double,double>>> holes) {
+    for (auto& hole : holes) {
+        if (hole.size() < 3 || outer.empty()) continue;
+        if ((signedArea(hole) > 0) == (signedArea(outer) > 0)) std::reverse(hole.begin(), hole.end());
+        size_t bi = 0, bj = 0;
+        double best = 1e300;
+        for (size_t i = 0; i < outer.size(); i++) {
+            for (size_t j = 0; j < hole.size(); j++) {
+                double dx = outer[i].first - hole[j].first, dy = outer[i].second - hole[j].second;
+                double d = dx * dx + dy * dy;
+                if (d < best) { best = d; bi = i; bj = j; }
+            }
+        }
+        std::vector<std::pair<double,double>> merged(outer.begin(), outer.begin() + bi + 1);
+        for (size_t k = 0; k <= hole.size(); k++) merged.push_back(hole[(bj + k) % hole.size()]);
+        merged.insert(merged.end(), outer.begin() + bi, outer.end());
+        outer.swap(merged);
+    }
+    return outer;
+}
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
@@ -1440,6 +1498,15 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         }
     }
 
+    // Pad and via centres (raw ODB++ coords): mask/paste flashes there belong to the pad/via
+    std::vector<std::pair<double,double>> ownedOpenings;
+    for (auto* comps : {&design.topComponents, &design.botComponents}) {
+        for (auto& comp : comps->components) {
+            for (auto& term : comp.terminals) ownedOpenings.push_back({term.x, term.y});
+        }
+    }
+    for (auto& vi : viaInfos) ownedOpenings.push_back({vi.x, vi.y});
+
     // 10. Non-copper, non-edge.cuts layer graphics (silkscreen, fab, courtyard, etc.)
     // These become gr_line / gr_arc at board level
     // Build set of copper layer names (lowercase) from the layer map
@@ -1494,6 +1561,85 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             }
             ga.layer = kicadLayer;
             pcb.grArcs.push_back(ga);
+        }
+
+        // Flashes (P records): filled shapes; donuts are stroked outlines (KiCad's circles and
+        // rectangles export as donut_r / donut_rc). On mask and paste layers a flash at a pad or
+        // via centre is that pad's opening, already carried by the pad, so only the others
+        // (graphic openings) are drawn.
+        bool maskOrPaste = kicadLayer.find(".Mask") != std::string::npos ||
+                           kicadLayer.find(".Paste") != std::string::npos;
+        for (auto& fpad : features.pads) {
+            if (fpad.polarity == "N") continue;
+            if (fpad.symIdx < 0 || fpad.symIdx >= (int)features.symbols.size()) continue;
+            if (maskOrPaste) {
+                bool owned = false;
+                for (auto& [tx, ty] : ownedOpenings) {
+                    if (near(tx, ty, fpad.x, fpad.y)) { owned = true; break; }
+                }
+                if (owned) continue;
+            }
+            auto& sym = features.symbols[fpad.symIdx];
+            double cx = scaleX(fpad.x), cy = scaleY(fpad.y), ang = padAngleKicad(fpad);
+            if (sym.donut && sym.shape == OdbSymbol::ROUNDRECT) {
+                emitStrokedRect(pcb, cx, cy, scaleLen(sym.width - sym.lineWidth), scaleLen(sym.height - sym.lineWidth),
+                                ang, scaleLen(sym.lineWidth), kicadLayer);
+            } else if (sym.donut && sym.shape == OdbSymbol::ROUND) {
+                KicadGrCircle gc;
+                gc.cx = cx; gc.cy = cy;
+                gc.r = scaleLen(sym.diameter - sym.lineWidth) / 2;
+                gc.width = scaleLen(sym.lineWidth);
+                gc.filled = false;
+                gc.layer = kicadLayer;
+                pcb.grCircles.push_back(gc);
+            } else if (sym.shape == OdbSymbol::ROUND) {
+                KicadGrCircle gc;
+                gc.cx = cx; gc.cy = cy;
+                gc.r = scaleLen(sym.diameter) / 2;
+                gc.layer = kicadLayer;
+                pcb.grCircles.push_back(gc);
+            } else if (sym.shape != OdbSymbol::UNKNOWN) {
+                double w = scaleLen(sym.width), h = scaleLen(sym.height);
+                double r = sym.shape == OdbSymbol::ROUNDRECT ? scaleLen(sym.cornerRadius)
+                         : sym.shape == OdbSymbol::OVAL ? std::min(w, h) / 2 : 0;
+                KicadGrPoly gp;
+                gp.pts = roundRectOutline(cx, cy, w, h, r, ang);
+                gp.layer = kicadLayer;
+                pcb.grPolys.push_back(gp);
+            }
+        }
+
+        // Surfaces (S records): filled polygons, one per island with its holes keyholed in
+        for (auto& srf : features.surfaces) {
+            if (srf.polarity == "N") continue;
+            std::vector<std::pair<double,double>> outer;
+            std::vector<std::vector<std::pair<double,double>>> holes;
+            auto flush = [&]() {
+                if (outer.size() >= 3) {
+                    KicadGrPoly gp;
+                    gp.pts = keyhole(outer, holes);
+                    gp.layer = kicadLayer;
+                    pcb.grPolys.push_back(gp);
+                }
+                outer.clear();
+                holes.clear();
+            };
+            for (auto& c : srf.contours) {
+                std::vector<std::pair<double,double>> pts;
+                for (size_t i = 0; i < c.points.size(); i++) {
+                    // drop the closing vertex (repeat of the OB start)
+                    if (i + 1 == c.points.size() && i > 0 && std::abs(c.points[i].x - c.points[0].x) < 1e-9 &&
+                        std::abs(c.points[i].y - c.points[0].y) < 1e-9) break;
+                    pts.push_back({scaleX(c.points[i].x), scaleY(c.points[i].y)});
+                }
+                if (c.isHole) {
+                    holes.push_back(pts);
+                } else {
+                    flush();
+                    outer = pts;
+                }
+            }
+            flush();
         }
     }
 
@@ -1649,6 +1795,26 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             << ") (end " << formatFloat(ga.xe) << " " << formatFloat(ga.ye)
             << ") (stroke (width " << formatFloat(ga.width)
             << ") (type solid)) (layer \"" << escapeString(ga.layer) << "\"))\n";
+    }
+
+    // Graphic polygons (filled)
+    for (auto& gp : pcb.grPolys) {
+        if (gp.pts.size() < 3) continue;
+        out << "\n  (gr_poly\n    (pts";
+        for (size_t i = 0; i < gp.pts.size(); i++) {
+            out << (i % 4 == 0 ? "\n      " : " ") << "(xy " << formatFloat(gp.pts[i].first) << " "
+                << formatFloat(gp.pts[i].second) << ")";
+        }
+        out << "\n    )\n    (stroke (width " << formatFloat(gp.width) << ") (type solid)) (fill "
+            << (gp.filled ? "solid" : "none") << ") (layer \"" << escapeString(gp.layer) << "\"))\n";
+    }
+
+    // Graphic circles
+    for (auto& gc : pcb.grCircles) {
+        out << "\n  (gr_circle (center " << formatFloat(gc.cx) << " " << formatFloat(gc.cy)
+            << ") (end " << formatFloat(gc.cx + gc.r) << " " << formatFloat(gc.cy)
+            << ") (stroke (width " << formatFloat(gc.width) << ") (type solid)) (fill "
+            << (gc.filled ? "solid" : "none") << ") (layer \"" << escapeString(gc.layer) << "\"))\n";
     }
 
     // Zones (modern KiCad 8.0+ format)

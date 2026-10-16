@@ -659,6 +659,63 @@ TEST(reference_and_value_fields_are_hidden) {
     CHECK(out.find("(justify mirror)") != std::string::npos);
 }
 
+// ---------------------------------------------------------------- non-copper pads and surfaces
+
+// Only lines and arcs were converted on non-copper layers: filled silk shapes and glyphs
+// (surfaces), graphic mask openings and the donut markers on user/fab layers (flashes) vanished.
+TEST(non_copper_flashes_and_surfaces_become_graphics) {
+    OdbDesign d = kicadDesign();
+    d.layers.push_back(layer(14, "DOCUMENT", "USER.DRAWINGS"));
+    d.layers.push_back(layer(15, "SILK_SCREEN", "F.SILKSCREEN"));
+    auto& r = component(d, "R1", 0, 0, 1);
+    terminal(r, "1", 1, -1, 1);
+    flash(d, "f.cu", 1, -1, "rect500.0x600.0", OdbSymbol::RECT, 0.5, 0.6);
+    flash(d, "f.mask", 1, -1, "rect600.0x700.0", OdbSymbol::RECT, 0.6, 0.7);  // R1.1's own opening
+    flash(d, "f.mask", 20, -20, "r3000.0", OdbSymbol::ROUND, 3.0);            // graphic opening
+    auto& user = d.layerFeatures["user.drawings"];
+    user.units = "MM";
+    user.symbols.push_back(decodeSymbol("donut_r2000.0x1800.0"));
+    OdbPad marker;
+    marker.x = 5; marker.y = -5; marker.symIdx = 0; marker.mirror = 8;
+    user.pads.push_back(marker);
+    auto& silk = d.layerFeatures["f.silkscreen"];
+    silk.units = "MM";
+    OdbSurface logo;
+    logo.polarity = "P";
+    logo.contours = {square(10, -10, 14, -14, false), square(11, -11, 13, -13, true)};
+    silk.surfaces.push_back(logo);
+
+    KicadPcb pcb = transformToKicad(d);
+    int maskCircles = 0, userRings = 0;
+    for (auto& c : pcb.grCircles) {
+        if (c.layer == "F.Mask") { maskCircles++; CHECK(c.filled); CHECK_NEAR(c.r, 1.5, 1e-9); }
+        if (c.layer == "Dwgs.User") { userRings++; CHECK(!c.filled); CHECK_NEAR(c.r, 0.95, 1e-9); CHECK_NEAR(c.width, 0.1, 1e-9); }
+    }
+    CHECK_EQ(maskCircles, 1);
+    CHECK_EQ(userRings, 1);
+    int maskPolys = 0;
+    for (auto& p : pcb.grPolys) maskPolys += p.layer == "F.Mask";
+    CHECK_EQ(maskPolys, 0);  // the pad's own opening is not duplicated
+    const KicadGrPoly* logoPoly = nullptr;
+    for (auto& p : pcb.grPolys) if (p.layer == "F.SilkS") logoPoly = &p;
+    CHECK(logoPoly);
+    if (logoPoly) {
+        // 4 outer + 4 hole vertices + the hole entry repeated + the outer splice point repeated
+        CHECK_EQ(logoPoly->pts.size(), (size_t)10);
+        double area2 = 0;  // shoelace: keyholed polygon area = 16 - 4
+        for (size_t i = 0; i < logoPoly->pts.size(); i++) {
+            auto& a = logoPoly->pts[i];
+            auto& b = logoPoly->pts[(i + 1) % logoPoly->pts.size()];
+            area2 += a.first * b.second - b.first * a.second;
+        }
+        CHECK_NEAR(std::abs(area2) / 2, 12.0, 1e-9);
+    }
+    std::string out = writeString(pcb);
+    CHECK(out.find("(gr_poly") != std::string::npos);
+    CHECK(out.find("(fill solid) (layer \"F.SilkS\")") != std::string::npos);
+    CHECK(out.find("(gr_circle (center 5 5) (end 5.95 5)") != std::string::npos);
+}
+
 // ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {
