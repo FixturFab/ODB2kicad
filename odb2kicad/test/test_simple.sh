@@ -132,7 +132,8 @@ grep -q 'filled_polygon' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-si
 grep -q 'gr_arc' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no gr_arcs"; exit 1; }
 CUTOUTS=$(grep -c 'gr_circle.*Edge.Cuts' /tmp/test-kitchen.kicad_pcb || true)
 [ "$CUTOUTS" -eq 2 ] || { echo "FAIL: kitchen-sink expected 2 Edge.Cuts circle cutouts, got $CUTOUTS"; exit 1; }
-grep -q '(gr_circle (center 224.6 97.7) (end 228.698315 97.7) (stroke (width 0.0375)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink cutout not on its centreline radius"; exit 1; }
+# kicad-cli 9 writes a circle (R, w) as donut_r(2R + w)x(2R - w/2): 8234.13x8159.13 is R 4.092065, w 0.05
+grep -q '(gr_circle (center 224.6 97.7) (end 228.692065 97.7) (stroke (width 0.05)' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink cutout is not the circle KiCad exported"; exit 1; }
 
 # Stage D: Check silkscreen graphics at board level
 grep -q 'gr_line.*F.SilkS' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink no silkscreen gr_lines"; exit 1; }

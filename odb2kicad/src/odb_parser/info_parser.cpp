@@ -22,6 +22,7 @@ bool parseInfo(const std::string& path, OdbInfo& info) {
         if (key == "UNITS") info.units = val;
         else if (key == "JOB_NAME") info.jobName = val;
         else if (key == "ODB_SOURCE") info.odbSource = val;
+        else if (key == "SAVE_APP") info.saveApp = val;
     }
     return true;
 }

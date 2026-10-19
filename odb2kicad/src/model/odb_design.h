@@ -9,6 +9,7 @@ struct OdbInfo {
     std::string units = "MM";
     std::string jobName;
     std::string odbSource;
+    std::string saveApp;    // SAVE_APP, e.g. "KiCad EDA 9.0.9"
 };
 
 struct OdbLayer {

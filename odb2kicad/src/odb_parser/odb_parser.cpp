@@ -10,6 +10,8 @@
 #include "util/string_utils.h"
 #include <iostream>
 #include <algorithm>
+#include <cctype>
+#include <cstdlib>
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -38,6 +40,29 @@ static std::vector<std::string> listDirs(const std::string& path) {
     }
     closedir(dir);
     return result;
+}
+
+bool hasKicadDonutSkew(const OdbInfo& info) {
+    const std::string app = "KiCad EDA ";
+    if (info.saveApp.compare(0, app.size(), app) != 0) return false;
+    // SAVE_APP=KiCad EDA <major>.<minor>...; KiCad 10 writes the inner diameter as 2R - w
+    std::string ver = info.saveApp.substr(app.size());
+    if (ver.empty() || !std::isdigit((unsigned char)ver[0])) return false;
+    return std::atoi(ver.c_str()) <= 9;
+}
+
+void applyProducerQuirks(OdbDesign& design) {
+    if (!hasKicadDonutSkew(design.info)) return;
+    // KiCad 9 writes a circle of radius R and stroke w as donut_r(2R + w)x(2R - w/2): the inner
+    // diameter is short of 2R - w by w/2, so the decoded ring width (od - id) / 2 is 3w/4. Its
+    // od - id is 3w/2, which gives back w; the centreline (od - w) / 2 is then R again.
+    // donut_r appears nowhere else in that exporter.
+    for (auto& [name, feats] : design.layerFeatures) {
+        for (auto& sym : feats.symbols) {
+            if (sym.donut && sym.shape == OdbSymbol::ROUND)
+                sym.lineWidth = sym.lineWidth * 4.0 / 3.0;
+        }
+    }
 }
 
 bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
@@ -128,6 +153,7 @@ bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
         parseNetlist(netlistPath, design.netlist);
     }
 
+    applyProducerQuirks(design);
     return true;
 }
 

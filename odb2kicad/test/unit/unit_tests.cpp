@@ -8,6 +8,7 @@
 #include "model/kicad_pcb.h"
 #include "odb_parser/eda_parser.h"
 #include "odb_parser/features_parser.h"
+#include "odb_parser/info_parser.h"
 #include "odb_parser/matrix_parser.h"
 #include "odb_parser/odb_parser.h"
 #include "odb_parser/symbols.h"
@@ -550,6 +551,54 @@ TEST(edge_cuts_donut_circle_on_its_centreline) {
         CHECK(!c.filled);
         CHECK_EQ(c.layer, std::string("Edge.Cuts"));
     }
+}
+
+// KiCad 9 writes a circle (R, stroke w) as donut_r(2R + w)x(2R - w/2): here R 14.3, w 0.1
+static OdbDesign edgeCircleFrom(const std::string& saveApp) {
+    OdbDesign d = kicadDesign();
+    d.info.odbSource = "KiCad EDA";
+    d.info.saveApp = saveApp;
+    auto& ec = d.layerFeatures["edge.cuts"];
+    ec.units = "MM";
+    ec.symbols = {decodeSymbol("donut_r28700.0x28550.0")};
+    OdbPad hole;
+    hole.x = 56.7; hole.y = -148.5; hole.symIdx = 0; hole.mirror = 8;
+    ec.pads = {hole};
+    applyProducerQuirks(d);
+    return d;
+}
+
+TEST(kicad9_donut_circle_gets_its_radius_and_stroke_back) {
+    KicadPcb pcb = transformToKicad(edgeCircleFrom("KiCad EDA 9.0.9"));
+    CHECK_EQ(pcb.grCircles.size(), (size_t)1);
+    if (!pcb.grCircles.empty()) {
+        CHECK_NEAR(pcb.grCircles[0].r, 14.3, 1e-9);
+        CHECK_NEAR(pcb.grCircles[0].width, 0.1, 1e-9);
+    }
+}
+
+TEST(donut_circle_from_other_producers_is_read_per_spec) {
+    for (const char* app : {"KiCad EDA 10.0.0", "", "Some CAD 9.0"}) {
+        KicadPcb pcb = transformToKicad(edgeCircleFrom(app));
+        CHECK_EQ(pcb.grCircles.size(), (size_t)1);
+        if (!pcb.grCircles.empty()) {
+            CHECK_NEAR(pcb.grCircles[0].r, 14.3125, 1e-9);
+            CHECK_NEAR(pcb.grCircles[0].width, 0.075, 1e-9);
+        }
+    }
+}
+
+TEST(save_app_is_parsed_from_misc_info) {
+    std::string dir = tempDir("misc_info");
+    writeFile(dir + "/info", "UNITS=MM\nODB_SOURCE=KiCad EDA\nSAVE_APP=KiCad EDA 9.0.9\n");
+    OdbInfo info;
+    CHECK(parseInfo(dir + "/info", info));
+    CHECK_EQ(info.saveApp, std::string("KiCad EDA 9.0.9"));
+    CHECK(hasKicadDonutSkew(info));
+    info.saveApp = "KiCad EDA 8.99.0-1234";
+    CHECK(hasKicadDonutSkew(info));
+    info.saveApp = "KiCad EDA 10.0.1";
+    CHECK(!hasKicadDonutSkew(info));
 }
 
 // ---------------------------------------------------------------- outline written once
