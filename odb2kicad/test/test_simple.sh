@@ -46,6 +46,31 @@ grep -q 'gr_line.*F.SilkS' /tmp/test-out.kicad_pcb || { echo "FAIL: no silkscree
 
 echo "PASS: simple test"
 
+# --- Full-circle arcs (start == end) ---
+# ODB++ defines an arc record whose start and end points coincide as a 360 degree circle.
+echo "--- Full-circle arc test ---"
+FC_DIR=$(mktemp -d)
+cp -r "${SAMPLES}/odb-output/." "$FC_DIR"
+echo "A 95.0 -95.0 95.0 -95.0 95.0 -94.88 1 P 0 Y" >> "$FC_DIR/steps/pcb/layers/f.silkscreen/features"
+echo "A 110.0 -105.0 110.0 -105.0 110.0 -104.0 1 P 0 N" >> "$FC_DIR/steps/pcb/layers/f.cu/features"
+"${BUILD_DIR}/odb2kicad" "$FC_DIR" /tmp/test-fullcircle.kicad_pcb
+rm -rf "$FC_DIR"
+
+# graphic: one gr_circle, centre + a point on the radius
+grep -qF '(gr_circle (center 95 94.88) (end 95 95) (stroke (width 0.15)' /tmp/test-fullcircle.kicad_pcb \
+    || { echo "FAIL: full-circle silk arc not written as gr_circle"; exit 1; }
+# copper: KiCad has no circular track, so two half arcs through the opposite point
+grep -qF '(arc (start 110 105) (mid 109 104) (end 110 103) (width 0.25)' /tmp/test-fullcircle.kicad_pcb \
+    || { echo "FAIL: full-circle copper arc: first half missing"; exit 1; }
+grep -qF '(arc (start 110 103) (mid 111 104) (end 110 105) (width 0.25)' /tmp/test-fullcircle.kicad_pcb \
+    || { echo "FAIL: full-circle copper arc: second half missing"; exit 1; }
+# no zero-length arc left anywhere
+if grep -E '\((gr_)?arc \(start ([^ ]+) ([^)]+)\) \(mid [^)]+\) \(end \2 \3\)' /tmp/test-fullcircle.kicad_pcb; then
+    echo "FAIL: arc with start == end written"; exit 1
+fi
+
+echo "PASS: full-circle arc test"
+
 # --- Kitchen-sink test (odb-kitchen-sink) ---
 echo "--- Kitchen-sink test ---"
 "${BUILD_DIR}/odb2kicad" "${SAMPLES}/odb-kitchen-sink" /tmp/test-kitchen.kicad_pcb

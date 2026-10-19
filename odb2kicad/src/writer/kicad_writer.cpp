@@ -263,6 +263,14 @@ static void computeArcMidpoint(double xs, double ys, double xe, double ye,
     }
 }
 
+// ODB++ defines an arc whose start and end points coincide as a full 360 degree circle.
+// computeArcMidpoint gives it a full sweep, so its mid is the point opposite the start.
+// KiCad's start/mid/end arcs cannot express 360 degrees (start == end is a zero-length arc),
+// so the writer emits these as circles.
+static bool isFullCircle(double xs, double ys, double xe, double ye) {
+    return xs == xe && ys == ye;
+}
+
 // Helper to check if units string indicates inches
 static bool isInchUnits(const std::string& units) {
     if (units.empty()) return true;  // ODB++ default is INCH when not specified
@@ -1858,13 +1866,25 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
     }
 
     // Copper arcs
-    for (auto& arc : pcb.arcs) {
-        out << "\n  (arc (start " << formatFloat(arc.xs) << " " << formatFloat(arc.ys)
-            << ") (mid " << formatFloat(arc.xm) << " " << formatFloat(arc.ym)
-            << ") (end " << formatFloat(arc.xe) << " " << formatFloat(arc.ye)
+    auto writeArc = [&](double xs, double ys, double xm, double ym, double xe, double ye,
+                        const KicadArc& arc) {
+        out << "\n  (arc (start " << formatFloat(xs) << " " << formatFloat(ys)
+            << ") (mid " << formatFloat(xm) << " " << formatFloat(ym)
+            << ") (end " << formatFloat(xe) << " " << formatFloat(ye)
             << ") (width " << formatFloat(arc.width)
             << ") (layer \"" << escapeString(arc.layer)
             << "\") (net " << arc.netId << "))\n";
+    };
+    for (auto& arc : pcb.arcs) {
+        if (isFullCircle(arc.xs, arc.ys, arc.xe, arc.ye)) {
+            // KiCad has no circular track: split into two half arcs through the opposite point
+            double xc = (arc.xs + arc.xm) / 2.0, yc = (arc.ys + arc.ym) / 2.0;
+            double px = -(arc.ys - yc), py = arc.xs - xc;
+            writeArc(arc.xs, arc.ys, xc + px, yc + py, arc.xm, arc.ym, arc);
+            writeArc(arc.xm, arc.ym, xc - px, yc - py, arc.xs, arc.ys, arc);
+            continue;
+        }
+        writeArc(arc.xs, arc.ys, arc.xm, arc.ym, arc.xe, arc.ye, arc);
     }
 
     // Vias
@@ -1894,6 +1914,15 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
 
     // Graphic arcs
     for (auto& ga : pcb.grArcs) {
+        if (isFullCircle(ga.xs, ga.ys, ga.xe, ga.ye)) {
+            // centre is halfway between start and the opposite point
+            out << "\n  (gr_circle (center " << formatFloat((ga.xs + ga.xm) / 2.0) << " "
+                << formatFloat((ga.ys + ga.ym) / 2.0)
+                << ") (end " << formatFloat(ga.xs) << " " << formatFloat(ga.ys)
+                << ") (stroke (width " << formatFloat(ga.width)
+                << ") (type solid)) (fill none) (layer \"" << escapeString(ga.layer) << "\"))\n";
+            continue;
+        }
         out << "\n  (gr_arc (start " << formatFloat(ga.xs) << " " << formatFloat(ga.ys)
             << ") (mid " << formatFloat(ga.xm) << " " << formatFloat(ga.ym)
             << ") (end " << formatFloat(ga.xe) << " " << formatFloat(ga.ye)
