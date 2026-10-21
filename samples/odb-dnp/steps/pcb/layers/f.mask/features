@@ -1,0 +1,27 @@
+UNITS=MM
+#
+#Num Features
+#
+F 4
+
+#
+#Feature symbol names
+#
+$0 rect1025.0x1400.0xr250.0
+
+#
+#Feature attribute names
+#
+@0 .pad_usage
+@1 .smd
+
+#
+#Feature attribute text strings
+#
+#
+#Layer features
+#
+P 120.91 -100.0 0 P 0 8 0.0 ;0=0,1
+P 100.91 -100.0 0 P 0 8 0.0 ;0=0,1
+P 119.09 -100.0 0 P 0 8 0.0 ;0=0,1
+P 99.09 -100.0 0 P 0 8 0.0 ;0=0,1

@@ -476,6 +476,19 @@ static std::vector<std::vector<std::pair<double,double>>> surfacePolygons(const 
     return result;
 }
 
+// A footprint's 'Config' field marks it unpopulated when the whole value, or one
+// comma/semicolon-separated token of it, spells out DNP.
+static bool isDnpConfig(const std::string& value) {
+    static const std::set<std::string> kTokens = {
+        "dnp", "do not populate", "do_not_populate", "no_pop", "nopop", "not populated"};
+    std::string v = toLower(value);
+    std::replace(v.begin(), v.end(), ';', ',');
+    for (auto& tok : split(v, ',')) {
+        if (kTokens.count(trim(tok))) return true;
+    }
+    return false;
+}
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
@@ -779,6 +792,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             if (comp.mountType == 1) fp.attr = "smd";
             else if (comp.mountType == 2) fp.attr = "through_hole";
             else fp.attr = "smd"; // default
+            fp.dnp = comp.noPop ||
+                     (comp.properties.count("Config") && isDnpConfig(comp.properties.at("Config")));
 
             const std::string& sideCu = isBottom ? odbBCu : odbFCu;
             const std::string& otherCu = isBottom ? odbFCu : odbBCu;
@@ -1810,7 +1825,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         };
         field("Reference", fp.refdes, -1.65, fpBottom ? "B.SilkS" : "F.SilkS");
         field("Value", fp.value, 1.65, fpBottom ? "B.Fab" : "F.Fab");
-        out << "    (attr " << fp.attr << ")\n";
+        out << "    (attr " << fp.attr << (fp.dnp ? " dnp" : "") << ")\n";
 
         // fp_lines
         for (auto& ln : fp.fpLines) {

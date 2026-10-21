@@ -125,6 +125,7 @@ struct OdbComponent {
     std::map<std::string, std::string> properties; // key -> value
     std::vector<OdbTerminal> terminals;
     int mountType = 0;      // 1=SMD, 2=TH
+    bool noPop = false;     // .no_pop attribute (KiCad writes it for DNP footprints)
 };
 
 struct OdbComponents {

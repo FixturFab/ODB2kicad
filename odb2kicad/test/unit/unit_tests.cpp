@@ -6,6 +6,7 @@
 //   cmake --build build && ctest --test-dir build
 #include "model/odb_design.h"
 #include "model/kicad_pcb.h"
+#include "odb_parser/components_parser.h"
 #include "odb_parser/eda_parser.h"
 #include "odb_parser/features_parser.h"
 #include "odb_parser/info_parser.h"
@@ -599,6 +600,56 @@ TEST(save_app_is_parsed_from_misc_info) {
     CHECK(hasKicadDonutSkew(info));
     info.saveApp = "KiCad EDA 10.0.1";
     CHECK(!hasKicadDonutSkew(info));
+}
+
+// ---------------------------------------------------------------- DNP footprints
+
+// kicad-cli 9 writes a footprint's DNP flag as the boolean .no_pop attribute on its CMP record
+// (an attribute index with no '='). The attribute is only defined when some footprint is DNP.
+TEST(no_pop_attribute_is_parsed_from_cmp_records) {
+    std::string dir = tempDir("no_pop");
+    writeFile(dir + "/components",
+              "UNITS=MM\n@0 .no_pop\n@1 .comp_mount_type\n"
+              "CMP 0 1.0 -1.0 0 N R1 R_0805 ;0,1=1\n"
+              "CMP 0 3.0 -1.0 0 N R2 R_0805 ;1=1\n");
+    OdbComponents comps;
+    CHECK(parseComponents(dir + "/components", comps));
+    CHECK_EQ(comps.components.size(), (size_t)2);
+    if (comps.components.size() == 2) {
+        CHECK(comps.components[0].noPop);
+        CHECK_EQ(comps.components[0].mountType, 1);
+        CHECK(!comps.components[1].noPop);
+        CHECK_EQ(comps.components[1].mountType, 1);
+    }
+}
+
+// Either source marks the footprint dnp: the .no_pop flag, or a 'Config' field whose whole value or
+// one comma/semicolon-separated token spells out DNP. Neither clears the other.
+TEST(dnp_comes_from_no_pop_or_a_config_token) {
+    OdbDesign d = kicadDesign();
+    component(d, "R1", 0, 0, 1).noPop = true;
+    component(d, "R2", 2, 0, 1).properties["Config"] = "Rev B; DNP";
+    component(d, "R3", 4, 0, 1).properties["Config"] = "Do Not Populate";
+    component(d, "R4", 6, 0, 1).properties["Config"] = "DNP-ready";
+    component(d, "R5", 8, 0, 1).properties["Config"] = "Rev B";
+    auto& r6 = component(d, "R6", 10, 0, 1);
+    r6.noPop = true;
+    r6.properties["Config"] = "Fitted";
+    component(d, "R7", 12, 0, 1);
+    KicadPcb pcb = transformToKicad(d);
+    std::map<std::string, bool> dnp;
+    for (auto& fp : pcb.footprints) dnp[fp.refdes] = fp.dnp;
+    CHECK(dnp["R1"]);
+    CHECK(dnp["R2"]);
+    CHECK(dnp["R3"]);
+    CHECK(!dnp["R4"]);
+    CHECK(!dnp["R5"]);
+    CHECK(dnp["R6"]);
+    CHECK(!dnp["R7"]);
+    std::string out = writeString(pcb);
+    size_t n = 0;
+    for (size_t pos = 0; (pos = out.find("(attr smd dnp)", pos)) != std::string::npos; ++pos) n++;
+    CHECK_EQ(n, (size_t)4);
 }
 
 // ---------------------------------------------------------------- outline written once

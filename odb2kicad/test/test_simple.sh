@@ -44,6 +44,8 @@ grep -q 'net 2' /tmp/test-out.kicad_pcb || { echo "FAIL: segment net should be S
 # Stage D checks: silkscreen graphics at board level
 grep -q 'gr_line.*F.SilkS' /tmp/test-out.kicad_pcb || { echo "FAIL: no silkscreen gr_lines"; exit 1; }
 
+grep -q ' dnp)' /tmp/test-out.kicad_pcb && { echo "FAIL: dnp on a board without DNP footprints"; exit 1; }
+
 echo "PASS: simple test"
 
 # --- Full-circle arcs (start == end) ---
@@ -155,6 +157,14 @@ OUTLINE_LINES=$(grep -c 'gr_line.*Edge.Cuts' /tmp/test-kitchen.kicad_pcb || true
 [ "$OUTLINE_LINES" -ge 10 ] || { echo "FAIL: kitchen-sink too few Edge.Cuts lines ($OUTLINE_LINES), expected profile with holes"; exit 1; }
 
 echo "PASS: kitchen-sink test"
+
+# --- DNP test (odb-dnp: KiCad 9 export, R1 has the dnp flag, R2 a 'Config' field 'Rev B; DNP') ---
+echo "--- DNP test ---"
+"${BUILD_DIR}/odb2kicad" "${SAMPLES}/odb-dnp" /tmp/test-dnp.kicad_pcb
+DNP=$(grep -c '(attr smd dnp)' /tmp/test-dnp.kicad_pcb || true)
+[ "$DNP" -eq 2 ] || { echo "FAIL: expected 2 dnp footprints (.no_pop and Config), got $DNP"; exit 1; }
+
+echo "PASS: DNP test"
 
 echo ""
 echo "=== All smoke tests passed ==="

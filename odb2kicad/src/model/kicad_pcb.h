@@ -49,6 +49,7 @@ struct KicadFootprint {
     std::string refdes;
     std::string value;
     std::string attr;           // "smd" or "through_hole"
+    bool dnp = false;           // emitted as a trailing "dnp" in (attr ...)
     std::vector<KicadPad> pads;
     std::vector<KicadFpLine> fpLines;
 };
