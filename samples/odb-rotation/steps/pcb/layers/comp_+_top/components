@@ -1,0 +1,46 @@
+UNITS=MM
+
+#
+#Feature attribute names
+#
+@0 .comp_mount_type
+
+#
+#Feature attribute text strings
+#
+# CMP 0
+CMP 0 30.0 -20.0 330.0 N U2 _SOT-23 ;0=1
+PRP Datasheet ''
+PRP Description ''
+PRP Value 'SOT-23'
+TOP 0 28.71 -19.65 330.0 N 0 0 1
+TOP 1 29.66 -21.29 330.0 N 0 1 2
+TOP 2 30.81 -19.53 330.0 N 0 2 3
+#
+# CMP 1
+CMP 1 55.0 -20.0 270.0 N J1 _PinHeader_1x03_P2.54mm_Vertical ;0=2
+PRP Datasheet ''
+PRP Description ''
+PRP Value 'PinHeader_1x03_P2.54mm_Vertical'
+TOP 0 55.0 -20.0 270.0 N 0 3 1
+TOP 1 57.54 -20.0 270.0 N 0 4 2
+TOP 2 60.08 -20.0 270.0 N 0 5 3
+#
+# CMP 2
+CMP 2 20.0 -20.0 0 N U1 _SOT-23 ;0=1
+PRP Datasheet ''
+PRP Description ''
+PRP Value 'SOT-23'
+TOP 0 19.06 -19.05 0.0 N 0 6 1
+TOP 1 19.06 -20.95 0.0 N 0 7 2
+TOP 2 20.94 -20.0 0.0 N 0 8 3
+#
+# CMP 3
+CMP 3 40.0 -20.0 270.0 N U3 _SOT-23 ;0=1
+PRP Datasheet ''
+PRP Description ''
+PRP Value 'SOT-23'
+TOP 0 39.05 -20.94 270.0 N 0 9 1
+TOP 1 40.95 -20.94 270.0 N 0 10 2
+TOP 2 40.0 -19.06 270.0 N 0 11 3
+#

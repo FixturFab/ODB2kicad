@@ -91,10 +91,11 @@ The unit tests build small designs in memory or as tiny ODB++ files, one or more
 conversion rule (pad typing from drill hits, inner layers, FID nets, NPTH, outline, rotation,
 custom pads, non-copper graphics).
 
-`test_simple.sh` runs 60+ assertions against three sample boards:
+`test_simple.sh` runs 60+ assertions against four sample boards:
 - **Simple** (`samples/odb-output`) — 2-resistor board: nets, components, pads, traces, board outline
 - **Kitchen-sink** (`samples/odb-kitchen-sink`) — complex board: vias, through-hole, copper zones, arcs, polygonal outline with holes
 - **DNP** (`samples/odb-dnp`) — kicad-cli 9.0.9 export: R1 has the DNP flag (`.no_pop`), R2 a `Config` field `Rev B; DNP`
+- **Rotation** (`samples/odb-rotation`) — kicad-cli 9.0.9 export: SOT-23s and 1x03 headers at 0/30/45/90/270°, on top and flipped to the bottom
 
 ## Known Limitations
 

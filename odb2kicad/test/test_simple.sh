@@ -166,5 +166,20 @@ DNP=$(grep -c '(attr smd dnp)' /tmp/test-dnp.kicad_pcb || true)
 
 echo "PASS: DNP test"
 
+# --- Rotation test (odb-rotation: KiCad 9 export, SOT-23s and 1x03 headers at 0/30/45/90/270 deg,
+# top and flipped to the bottom). Footprint and pad angles are KiCad's (CCW); pads stay at their
+# library positions in the footprint frame, mirrored in y on the bottom as KiCad stores them. ---
+echo "--- Rotation test ---"
+"${BUILD_DIR}/odb2kicad" "${SAMPLES}/odb-rotation" /tmp/test-rotation.kicad_pcb
+ROT=/tmp/test-rotation.kicad_pcb
+grep -q '(at 40 20 90)' $ROT || { echo "FAIL: rotation U3 (top, 90) footprint angle wrong"; exit 1; }
+grep -q '(pad "3" smd roundrect (at 0.94 0 90)' $ROT || { echo "FAIL: rotation U3 pad 3 not at its footprint-local position"; exit 1; }
+grep -q '(at 30 35 30)' $ROT || { echo "FAIL: rotation U5 (bottom, 30) footprint angle wrong"; exit 1; }
+grep -q '(at 40 35 270)' $ROT || { echo "FAIL: rotation U6 (bottom, 270) footprint angle wrong"; exit 1; }
+grep -q '(pad "1" smd roundrect (at -0.94 0.95 270)' $ROT || { echo "FAIL: rotation U6 pad 1 not at its footprint-local position"; exit 1; }
+grep -q '(at 55 35 45)' $ROT || { echo "FAIL: rotation J2 (bottom, 45) footprint angle wrong"; exit 1; }
+
+echo "PASS: rotation test"
+
 echo ""
 echo "=== All smoke tests passed ==="

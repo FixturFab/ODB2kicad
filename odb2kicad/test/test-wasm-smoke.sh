@@ -84,7 +84,9 @@ grep -q '"P2"' "$OUT" || { echo "FAIL: kitchen-sink no P2"; exit 1; }
 # Check component positions
 grep -q '(at 125.2 90.9)' "$OUT" || { echo "FAIL: kitchen-sink R1 position wrong"; exit 1; }
 grep -q '(at 105.85 65.35)' "$OUT" || { echo "FAIL: kitchen-sink D1 position wrong"; exit 1; }
-grep -q '(at 88.3 68.9 90)' "$OUT" || { echo "FAIL: kitchen-sink P2 position/angle wrong"; exit 1; }
+# CMP 90 (clockwise) is KiCad 270; pad 1 then sits at its library position (see test_simple.sh)
+grep -q '(at 88.3 68.9 270)' "$OUT" || { echo "FAIL: kitchen-sink P2 position/angle wrong"; exit 1; }
+grep -q '(pad "1" thru_hole rect (at -2.54 0 270)' "$OUT" || { echo "FAIL: kitchen-sink P2 pad 1 not at its footprint-local position"; exit 1; }
 
 # Check vias
 VIA_COUNT=$(grep -c '^  (via' "$OUT" || true)
