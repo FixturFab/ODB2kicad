@@ -1,11 +1,13 @@
 // Integration test for the odb2kicad-wasm JS wrapper
 // Tests both convertOdb() and convertOdbArchive() APIs.
 
-import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdtempSync } from 'fs';
 import { join, relative, dirname } from 'path';
+import { tmpdir } from 'os';
 import { fileURLToPath } from 'url';
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
+import { zipSync } from 'fflate';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -111,12 +113,22 @@ console.log('--- Test 5: Multiple sequential conversions ---');
 
 // === Archive extraction tests ===
 
+// Zip a sample directory with fflate (already a dependency), so the test does not
+// need the zip CLI. Entries are prefixed with the directory name, as `zip -r` writes them.
+function zipDir(name) {
+  const tree = {};
+  for (const f of loadDir(join(samplesDir, name))) {
+    tree[`${name}/${f.path}`] = new Uint8Array(readFileSync(join(samplesDir, name, f.path)));
+  }
+  return zipSync(tree);
+}
+
 // Create test archives (tgz and zip) from sample directories
-const tmpDir = '/tmp';
-execSync(`tar czf ${tmpDir}/odb-output.tgz -C "${samplesDir}" odb-output`);
-execSync(`tar czf ${tmpDir}/odb-kitchen-sink.tgz -C "${samplesDir}" odb-kitchen-sink`);
-execSync(`cd "${samplesDir}" && zip -rq ${tmpDir}/odb-output.zip odb-output`);
-execSync(`cd "${samplesDir}" && zip -rq ${tmpDir}/odb-kitchen-sink.zip odb-kitchen-sink`);
+const tmpDir = mkdtempSync(join(tmpdir(), 'odb2kicad-wasm-test-'));
+execSync(`tar czf "${tmpDir}/odb-output.tgz" -C "${samplesDir}" odb-output`);
+execSync(`tar czf "${tmpDir}/odb-kitchen-sink.tgz" -C "${samplesDir}" odb-kitchen-sink`);
+writeFileSync(join(tmpDir, 'odb-output.zip'), zipDir('odb-output'));
+writeFileSync(join(tmpDir, 'odb-kitchen-sink.zip'), zipDir('odb-kitchen-sink'));
 
 // Get reference output from directory-based conversion
 const refSimple = await convertOdb(loadDir(join(samplesDir, 'odb-output')));
@@ -187,6 +199,18 @@ console.log('--- Test 11: Empty ArrayBuffer ---');
   assert.equal(result.success, false, 'empty buffer should fail');
   assert.ok(result.error, 'error message should be present');
   console.log(`  PASS: Error for empty buffer: "${result.error}"`);
+}
+
+// --- Test 12: DNP footprints (odb-dnp: R1 has .no_pop, R2 a 'Config' field 'Rev B; DNP') ---
+console.log('--- Test 12: DNP footprints (odb-dnp) ---');
+{
+  const result = await convertOdb(loadDir(join(samplesDir, 'odb-dnp')));
+
+  assert.equal(result.success, true, 'conversion should succeed');
+  const dnp = result.kicadPcb.split('\n').filter((l) => l.includes('(attr smd dnp)')).length;
+  assert.equal(dnp, 2, 'both the .no_pop footprint and the Config DNP footprint should be dnp');
+  assert.ok(!refSimple.kicadPcb.includes(' dnp)'), 'a board without DNP footprints should have no dnp attr');
+  console.log(`  PASS: ${dnp} dnp footprints, none on odb-output`);
 }
 
 console.log('\nAll tests PASSED');

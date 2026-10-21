@@ -51,9 +51,19 @@ The API also exposes `convertOdb(files)` for pre-extracted file arrays — see t
 - **Vias** — detected from drill layers with correct drill and pad sizing
 - **Copper fill zones** — imported from surface records, nets taken from the eda/data FID records
 - **Custom-shape pads** — rebuilt from the pin's copper surface
+- **DNP footprints** — written with the `dnp` attribute (see [DNP Footprints](#dnp-footprints))
 - **Board outline** — rectangular and polygonal profiles, including cutout holes
 - **Graphics** — silkscreen, mask, fab, courtyard and user-layer lines, arcs, flashes and filled shapes
 - **Layer mapping** — ODB++ layers mapped to KiCad canonical layer names
+
+## DNP Footprints
+
+A footprint is written as `(attr ... dnp)` when either of these holds:
+
+1. **`.no_pop` on its CMP record.** This is how kicad-cli 9 exports a footprint's *Do not populate* flag: a boolean attribute (an index with no `=`, e.g. `CMP ... ;0,1=1` with `@0 .no_pop`). The components file only defines `.no_pop` when at least one footprint is DNP.
+2. **A `Config` property** (`PRP Config '...'`) whose whole value, or one comma- or semicolon-separated token of it, is `dnp`, `do not populate`, `do_not_populate`, `no_pop`, `nopop` or `not populated` (case-insensitive). `Rev B; DNP` counts, `DNP-ready` does not. KiCad exports a user field named `Config` like any other field, so this only applies when a board keeps its DNP mark in that field. KiCad does not set the flag from the field.
+
+There is no precedence between the two: either one makes the footprint DNP, and neither clears the other. A `.no_pop` footprint stays DNP whatever its `Config` says. No other property or attribute is read for DNP.
 
 ## Build from Source
 
@@ -81,9 +91,10 @@ The unit tests build small designs in memory or as tiny ODB++ files, one or more
 conversion rule (pad typing from drill hits, inner layers, FID nets, NPTH, outline, rotation,
 custom pads, non-copper graphics).
 
-`test_simple.sh` runs 60+ assertions against two sample boards:
+`test_simple.sh` runs 60+ assertions against three sample boards:
 - **Simple** (`samples/odb-output`) — 2-resistor board: nets, components, pads, traces, board outline
 - **Kitchen-sink** (`samples/odb-kitchen-sink`) — complex board: vias, through-hole, copper zones, arcs, polygonal outline with holes
+- **DNP** (`samples/odb-dnp`) — kicad-cli 9.0.9 export: R1 has the DNP flag (`.no_pop`), R2 a `Config` field `Rev B; DNP`
 
 ## Known Limitations
 

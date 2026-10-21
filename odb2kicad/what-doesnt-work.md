@@ -19,6 +19,9 @@ KiCad) and diffing the result against the original, layer by layer.
 - **Mirrored flashes (orient 9)**: the angle is read counter-clockwise (KiCad's ODB++ export writes a bottom pad at 30 deg as `9 30.0`); other exporters are untested.
 - **Missing board outline**: KiCad exports a bounding-box profile for a board without Edge.Cuts; it is imported as the outline.
 
+## DNP
+- **DNP footprints**: read from the CMP `.no_pop` attribute (kicad-cli 9's export of the DNP flag) or a DNP token in a `Config` property; see the README. Other producers' DNP conventions (other attribute or property names, assembly variants) are not read, and a footprint without either mark is written populated.
+
 ## Precision
 - **Coordinate rounding**: ODB++ coordinates may have rounding differences vs the original KiCad design (e.g., 100.91 vs 100.9125). The converter uses ODB++ values as-is.
 
