@@ -947,6 +947,165 @@ TEST(without_fids_copper_surfaces_stay_zones) {
 
 // ---------------------------------------------------------------- main
 
+// ---------------------------------------------------------------- package outlines -> courtyards
+
+// The RC/CR/SQ/CT records between PKG and its first PIN are the package outline (KiCad writes the
+// footprint courtyard there). They were skipped. Arcs (OC) are flattened in steps of <= 15 deg;
+// outline records after a PIN are the pin's own and stay out.
+TEST(package_outline_records_are_parsed) {
+    std::string dir = tempDir("pkg_outline");
+    writeFile(dir + "/eda/data",
+        "HDR KiCad EDA 9.0.9\nUNITS=MM\nLYR f.cu\n"
+        "PKG SOT23 0.95 -2 -1.5 2 1.5;\n"
+        "CT\nOB -1 -1 I\nOS 1 -1\nOC 1 1 1 0 N\nOS -1 1\nOS -1 -1\nOE\n"
+        "OB -0.2 -0.2 H\nOS 0.2 -0.2\nOS 0.2 0.2\nOE\nCE\n"
+        "RC 2 2 1 0.5\nSQ 0 5 0.5\nCR 0 -5 1\n"
+        "PIN 1 S -0.95 -1 0 E S\nRC -1 -1.2 0.1 0.1\n"
+        "PKG R0603 1.6 -1.5 -0.7 1.5 0.7;\nPIN 1 S -0.8 0 0 E S\nCT\nOB -1 -0.3 I\nOS -0.6 -0.3\nOS -0.6 0.3\nOE\nCE\n");
+    OdbEdaData eda;
+    CHECK(parseEdaData(dir + "/eda/data", eda));
+    CHECK_EQ(eda.packages.size(), (size_t)2);
+    if (eda.packages.size() != 2) return;
+    auto& o = eda.packages[0].outlines;
+    CHECK_EQ(o.size(), (size_t)4);  // contour island (hole dropped), RC, SQ, CR
+    CHECK(eda.packages[1].outlines.empty());
+    CHECK_EQ(eda.packages[0].pins.size(), (size_t)1);
+    if (o.size() != 4) return;
+    // island: (-1,-1) (1,-1), 180 deg arc around (1,0) in 12 steps -> 11 inner points + (1,1), (-1,1)
+    CHECK_EQ(o[0].size(), (size_t)15);
+    double maxX = -1e9;
+    for (auto& [x, y] : o[0]) { maxX = std::max(maxX, x); CHECK_NEAR(x > 1 ? std::hypot(x - 1, y) : 1, 1, 1e-9); }
+    CHECK_NEAR(maxX, 2, 1e-9);  // counter-clockwise from (1,-1) bulges to +x
+    CHECK_EQ(o[1].size(), (size_t)4);
+    CHECK_NEAR(o[1][2].first, 3, 1e-9);
+    CHECK_NEAR(o[1][2].second, 2.5, 1e-9);
+    CHECK_NEAR(o[2][0].first, -0.5, 1e-9);
+    CHECK_NEAR(o[2][0].second, 4.5, 1e-9);
+    CHECK_EQ(o[3].size(), (size_t)24);
+    for (auto& [x, y] : o[3]) CHECK_NEAR(std::hypot(x, y + 5), 1, 1e-9);
+}
+
+static void courtyardLine(OdbDesign& d, const std::string& layerName, double x1, double y1, double x2, double y2) {
+    auto& f = d.layerFeatures[layerName];
+    f.units = "MM";
+    if (f.symbols.empty()) symbol(f, "r50.0", OdbSymbol::ROUND, 0.05);
+    OdbLine l;
+    l.x1 = x1; l.y1 = y1; l.x2 = x2; l.y2 = y2;
+    l.symIdx = 0;
+    l.polarity = "P";
+    f.lines.push_back(l);
+}
+
+static OdbDesign courtyardDesign() {
+    OdbDesign d = kicadDesign();
+    d.layers.push_back(layer(13, "DOCUMENT", "F.COURTYARD"));
+    d.layers.push_back(layer(14, "DOCUMENT", "B.COURTYARD"));
+    OdbEdaPackage pkg;
+    pkg.name = "R0603";
+    pkg.outlines = {{{-1.48, -0.73}, {1.48, -0.73}, {1.48, 0.73}, {-1.48, 0.73}}};
+    d.edaData.packages.push_back(pkg);
+    return d;
+}
+
+// kicad-cli writes each courtyard twice: as strokes on F/B.Courtyard (read as board graphics) and as
+// the package outline. The outline now claims the strokes it runs along: they move into the
+// footprint, on the footprint's side, so KiCad's DRC sees a courtyard per footprint. Top part
+// rotated 90 deg (clockwise in ODB++): the outline is 0.73 x 1.48 on the board.
+TEST(package_outline_claims_its_courtyard_strokes) {
+    OdbDesign d = courtyardDesign();
+    auto& r = component(d, "R1", 10, -20, 1, false, 90.0);
+    r.pkgIdx = 0;
+    courtyardLine(d, "f.courtyard", 9.27, -18.52, 10.73, -18.52);
+    courtyardLine(d, "f.courtyard", 10.73, -18.52, 10.73, -21.48);
+    courtyardLine(d, "f.courtyard", 10.73, -21.48, 9.27, -21.48);
+    courtyardLine(d, "f.courtyard", 9.27, -21.48, 9.27, -18.52);
+    courtyardLine(d, "f.courtyard", 30, -30, 31, -30);  // a board-level courtyard stroke stays one
+    KicadPcb pcb = transformToKicad(d);
+    const KicadFootprint* fp = findFp(pcb, "R1");
+    CHECK(fp);
+    if (!fp) return;
+    CHECK_EQ(fp->fpLines.size(), (size_t)4);
+    for (auto& l : fp->fpLines) {
+        CHECK_EQ(l.layer, std::string("F.CrtYd"));
+        CHECK_NEAR(l.width, 0.05, 1e-9);
+        // footprint frame: the unrotated 0603 courtyard
+        CHECK_NEAR(std::abs(l.x1), 1.48, 1e-6);
+        CHECK_NEAR(std::abs(l.y1), 0.73, 1e-6);
+    }
+    CHECK_EQ(pcb.grLines.size(), (size_t)1);
+    std::string out = writeString(pcb);
+    CHECK(out.find("(fp_line (start") != std::string::npos);
+    CHECK(out.find("(layer \"F.CrtYd\"))") != std::string::npos);
+}
+
+// A footprint without a courtyard gets its bounding hull as the package outline: it runs along no
+// courtyard stroke, so nothing is claimed (a hull is not a courtyard). A stroke that covers only
+// part of the outline is not enough either.
+TEST(hull_outline_without_strokes_claims_nothing) {
+    OdbDesign d = courtyardDesign();
+    auto& r = component(d, "R1", 0, 0, 1);
+    r.pkgIdx = 0;
+    courtyardLine(d, "f.courtyard", -1.48, -0.73, 1.48, -0.73);  // one side only: 30% of the ring
+    KicadPcb pcb = transformToKicad(d);
+    const KicadFootprint* fp = findFp(pcb, "R1");
+    CHECK(fp && fp->fpLines.empty());
+    CHECK_EQ(pcb.grLines.size(), (size_t)1);
+}
+
+// A bottom part (mirror M) claims B.Courtyard strokes. kicad-cli writes bottom packages already
+// flipped, so the M flag must not mirror them again; the package pin on the part's terminal says
+// so. KiCad writes the courtyard rectangle as a donut_rc flash; it comes back as four fp_lines on
+// B.CrtYd in the flipped footprint's frame. Without pins to decide, kicad-cli's placement is used.
+static OdbDesign bottomCourtyardDesign(bool withPin) {
+    OdbDesign d = courtyardDesign();
+    d.edaData.packages[0].outlines = {{{-2.5, -1.0}, {1.5, -1.0}, {1.5, 1.0}, {-2.5, 1.0}}};  // off-centre
+    d.edaData.packages[0].pins.push_back({"1", "S", -2.0, 0.0, 0, "E", "S"});
+    auto& u = component(d, "U2", 50, -40, 1, true, 0.0);
+    u.pkgIdx = 0;
+    if (withPin) terminal(u, "1", 48, -40, 1);  // package (-2, 0) as written: not mirrored
+    // the courtyard strokes sit at package x -2.5..1.5 -> board 47.5..51.5; centreline 4 x 2
+    auto& f = d.layerFeatures["b.courtyard"];
+    f.units = "MM";
+    f.symbols.push_back(decodeSymbol("donut_rc4050.0x2050.0x50.0xr25.0"));
+    OdbPad p;
+    p.x = 49.5; p.y = -40; p.symIdx = 0; p.mirror = 0; p.polarity = "P";
+    f.pads.push_back(p);
+    return d;
+}
+
+TEST(bottom_package_outline_claims_a_donut_rc_courtyard) {
+    for (bool withPin : {true, false}) {
+        OdbDesign d = bottomCourtyardDesign(withPin);
+        KicadPcb pcb = transformToKicad(d);
+        const KicadFootprint* fp = findFp(pcb, "U2");
+        CHECK(fp);
+        if (!fp) return;
+        CHECK_EQ(fp->layer, std::string("B.Cu"));
+        CHECK_EQ(fp->fpLines.size(), (size_t)4);
+        double minX = 1e9, maxX = -1e9;
+        for (auto& l : fp->fpLines) {
+            CHECK_EQ(l.layer, std::string("B.CrtYd"));
+            minX = std::min({minX, l.x1, l.x2});
+            maxX = std::max({maxX, l.x1, l.x2});
+        }
+        CHECK_NEAR(minX, -2.5, 1e-6);  // board offset from the footprint origin
+        CHECK_NEAR(maxX, 1.5, 1e-6);
+        CHECK(pcb.grRects.empty() && pcb.grLines.empty());
+    }
+}
+
+// The same part from a producer that follows the spec (package written unflipped, M mirrors it):
+// the pin lands on the terminal only when mirrored, so the mirrored outline claims the strokes.
+TEST(spec_mirrored_bottom_package_is_placed_mirrored) {
+    OdbDesign d = bottomCourtyardDesign(false);
+    d.edaData.packages[0].outlines = {{{-1.5, -1.0}, {2.5, -1.0}, {2.5, 1.0}, {-1.5, 1.0}}};
+    d.edaData.packages[0].pins[0].x = 2.0;
+    terminal(d.botComponents.components[0], "1", 48, -40, 1);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadFootprint* fp = findFp(pcb, "U2");
+    CHECK(fp && fp->fpLines.size() == 4);
+}
+
 int main(int argc, char** argv) {
     std::string only = argc > 1 ? argv[1] : "";
     int run = 0, failedTests = 0;

@@ -54,6 +54,7 @@ The API also exposes `convertOdb(files)` for pre-extracted file arrays — see t
 - **DNP footprints** — written with the `dnp` attribute (see [DNP Footprints](#dnp-footprints))
 - **Board outline** — rectangular and polygonal profiles, including cutout holes
 - **Graphics** — silkscreen, mask, fab, courtyard and user-layer lines, arcs, flashes and filled shapes
+- **Footprint courtyards** — courtyard strokes claimed by the eda/data package outline become the footprint's own F/B.CrtYd lines, arcs and circles
 - **Layer mapping** — ODB++ layers mapped to KiCad canonical layer names
 
 ## DNP Footprints

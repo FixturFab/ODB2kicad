@@ -9,6 +9,7 @@ KiCad) and diffing the result against the original, layer by layer.
 - **Zone net assignment**: nets come from the eda/data FID records. Without eda/data, a zone takes the net of a pad that lies in its fill (not in a clearance hole), else net 0.
 - **Custom pad shapes**: rebuilt from the pin's copper surface (SNT TOP); the anchor shape is not exported, so it is a 0.01 mm circle inside the primitives.
 - **Negative-polarity features** on any layer are not drawn.
+- **Footprint courtyards need courtyard strokes**: a footprint's courtyard is rebuilt from the F/B.Courtyard strokes its eda/data package outline runs along (90% of the outline's length). A package outline with no strokes under it draws nothing: kicad-cli writes a footprint's bounding hull there when it has no courtyard, Allegro the place-bound, Altium the body, and those are not courtyards. Allegro and Altium package outlines are not imported.
 
 ## Layer Support
 - **User layers 1-9**: ODB++ USER.1 through USER.9 don't have standard KiCad layer mappings and are skipped.
@@ -18,6 +19,7 @@ KiCad) and diffing the result against the original, layer by layer.
 ## Conventions taken from KiCad's exporter
 - **Mirrored flashes (orient 9)**: the angle is read counter-clockwise (KiCad's ODB++ export writes a bottom pad at 30 deg as `9 30.0`); other exporters are untested.
 - **Missing board outline**: KiCad exports a bounding-box profile for a board without Edge.Cuts; it is imported as the outline.
+- **Bottom packages are already flipped**: kicad-cli writes a bottom part's eda/data package flipped, so its M flag must not mirror it again (the spec says it does). The package pins decide per part; a part without pins is placed kicad-cli's way.
 
 ## DNP
 - **DNP footprints**: read from the CMP `.no_pop` attribute (kicad-cli 9's export of the DNP flag) or a DNP token in a `Config` property; see the README. Other producers' DNP conventions (other attribute or property names, assembly variants) are not read, and a footprint without either mark is written populated.

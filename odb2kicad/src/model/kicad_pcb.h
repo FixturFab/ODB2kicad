@@ -40,6 +40,18 @@ struct KicadFpLine {
     std::string layer;
 };
 
+struct KicadFpArc {
+    double xs = 0, ys = 0, xm = 0, ym = 0, xe = 0, ye = 0;
+    double width = 0;
+    std::string layer;
+};
+
+struct KicadFpCircle {
+    double cx = 0, cy = 0, r = 0;
+    double width = 0;
+    std::string layer;
+};
+
 struct KicadFootprint {
     std::string library;        // e.g. "Resistor_SMD:R_0805_2012Metric"
     std::string layer;          // "F.Cu" or "B.Cu"
@@ -51,7 +63,9 @@ struct KicadFootprint {
     std::string attr;           // "smd" or "through_hole"
     bool dnp = false;           // emitted as a trailing "dnp" in (attr ...)
     std::vector<KicadPad> pads;
-    std::vector<KicadFpLine> fpLines;
+    std::vector<KicadFpLine> fpLines;   // footprint-frame coordinates, like the pads
+    std::vector<KicadFpArc> fpArcs;
+    std::vector<KicadFpCircle> fpCircles;
 };
 
 struct KicadSegment {

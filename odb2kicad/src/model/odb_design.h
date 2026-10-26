@@ -152,6 +152,11 @@ struct OdbEdaPin {
 struct OdbEdaPackage {
     std::string name;
     std::vector<OdbEdaPin> pins;
+    // Package outline: the RC/CR/SQ/CT records between PKG and its first PIN, as closed rings
+    // (islands only, arcs flattened) in the package frame, eda/data units. KiCad writes the
+    // footprint courtyard here (its bounding hull when it has none), Allegro the place-bound,
+    // Altium the body.
+    std::vector<std::vector<std::pair<double,double>>> outlines;
 };
 
 // FID record: feature <featIdx> of layer LYR[<layerIdx>] belongs to net <netIdx>

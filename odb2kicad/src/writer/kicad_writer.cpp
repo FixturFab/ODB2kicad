@@ -489,6 +489,32 @@ static bool isDnpConfig(const std::string& value) {
     return false;
 }
 
+// Distance from (x, y) to the boundary of a closed ring
+static double distToRing(const std::vector<std::pair<double,double>>& ring, double x, double y) {
+    double best = 1e300;
+    for (size_t i = 0; i < ring.size(); i++) {
+        auto [ax, ay] = ring[i];
+        auto [bx, by] = ring[(i + 1) % ring.size()];
+        double dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        double t = l2 > 0 ? std::clamp(((x - ax) * dx + (y - ay) * dy) / l2, 0.0, 1.0) : 0.0;
+        best = std::min(best, std::hypot(x - ax - t * dx, y - ay - t * dy));
+    }
+    return best;
+}
+
+// A stroke on a courtyard layer (line, arc, circle or stroked rectangle), KiCad board coords.
+// A package outline that runs along enough of them claims them as its footprint's courtyard.
+struct CourtyardPiece {
+    std::string layer;                                // KiCad layer
+    std::vector<std::pair<double,double>> samples;    // points that must lie on the outline
+    double length = 0;
+    double minX = 0, minY = 0, maxX = 0, maxY = 0;
+    double width = 0;
+    enum Kind { LINE, ARC, CIRCLE, RECT } kind = LINE;
+    std::vector<std::pair<double,double>> pts;        // LINE: 2, ARC: start mid end, CIRCLE: centre + (r, 0), RECT: 4 corners
+    bool claimed = false;
+};
+
 KicadPcb transformToKicad(const OdbDesign& design) {
     KicadPcb pcb;
 
@@ -763,6 +789,93 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     }
     std::vector<std::pair<double,double>> customAnchors;  // raw coords of custom pads
 
+    // Courtyard strokes, per courtyard layer, for the package outlines to claim (step 3).
+    // KiCad writes a footprint's courtyard both as strokes on F/B.Courtyard and as its
+    // package outline in eda/data; footprints without a courtyard get their bounding hull
+    // there instead, which matches no stroke and so draws nothing.
+    std::vector<CourtyardPiece> crtydPieces;
+    std::map<std::pair<std::string, int>, size_t> crtydLineIdx, crtydArcIdx, crtydPadIdx;  // (odb layer, index) -> piece
+    for (int kid : {47, 46}) {
+        std::string ln = odbLayerFor(kid);
+        if (ln.empty() || !design.layerFeatures.count(ln)) continue;
+        auto& feats = design.layerFeatures.at(ln);
+        std::string kl = kid == 47 ? "F.CrtYd" : "B.CrtYd";
+        auto stroke = [&](int symIdx) {
+            if (symIdx < 0 || symIdx >= (int)feats.symbols.size()) return 0.1;
+            auto& sym = feats.symbols[symIdx];
+            return scaleLen(sym.shape == OdbSymbol::ROUND ? sym.diameter : sym.width);
+        };
+        auto add = [&](CourtyardPiece pc) {
+            pc.layer = kl;
+            pc.minX = pc.maxX = pc.samples[0].first;
+            pc.minY = pc.maxY = pc.samples[0].second;
+            for (auto& [x, y] : pc.samples) {
+                pc.minX = std::min(pc.minX, x); pc.maxX = std::max(pc.maxX, x);
+                pc.minY = std::min(pc.minY, y); pc.maxY = std::max(pc.maxY, y);
+            }
+            crtydPieces.push_back(pc);
+            return crtydPieces.size() - 1;
+        };
+        for (int i = 0; i < (int)feats.lines.size(); i++) {
+            auto& l = feats.lines[i];
+            if (l.polarity == "N") continue;
+            CourtyardPiece pc;
+            pc.kind = CourtyardPiece::LINE;
+            pc.pts = {{scaleX(l.x1), scaleY(l.y1)}, {scaleX(l.x2), scaleY(l.y2)}};
+            pc.samples = {pc.pts[0], pc.pts[1], {(pc.pts[0].first + pc.pts[1].first) / 2, (pc.pts[0].second + pc.pts[1].second) / 2}};
+            pc.length = std::hypot(pc.pts[1].first - pc.pts[0].first, pc.pts[1].second - pc.pts[0].second);
+            pc.width = stroke(l.symIdx);
+            crtydLineIdx[{ln, i}] = add(pc);
+        }
+        for (int i = 0; i < (int)feats.arcs.size(); i++) {
+            auto& a = feats.arcs[i];
+            if (a.polarity == "N" || isFullCircle(a.xs, a.ys, a.xe, a.ye)) continue;
+            double xm, ym;
+            computeArcMidpoint(a.xs, a.ys, a.xe, a.ye, a.xc, a.yc, a.clockwise, xm, ym);
+            CourtyardPiece pc;
+            pc.kind = CourtyardPiece::ARC;
+            pc.pts = {{scaleX(a.xs), scaleY(a.ys)}, {scaleX(xm), scaleY(ym)}, {scaleX(a.xe), scaleY(a.ye)}};
+            pc.samples = pc.pts;
+            pc.length = std::hypot(pc.pts[1].first - pc.pts[0].first, pc.pts[1].second - pc.pts[0].second) +
+                        std::hypot(pc.pts[2].first - pc.pts[1].first, pc.pts[2].second - pc.pts[1].second);
+            pc.width = stroke(a.symIdx);
+            crtydArcIdx[{ln, i}] = add(pc);
+        }
+        // KiCad exports a courtyard circle as a donut_r flash and a rectangle as a donut_rc one
+        for (int i = 0; i < (int)feats.pads.size(); i++) {
+            auto& f = feats.pads[i];
+            if (f.polarity == "N" || f.symIdx < 0 || f.symIdx >= (int)feats.symbols.size()) continue;
+            auto& sym = feats.symbols[f.symIdx];
+            if (!sym.donut) continue;
+            double cx = scaleX(f.x), cy = scaleY(f.y);
+            CourtyardPiece pc;
+            pc.width = scaleLen(sym.lineWidth);
+            if (sym.shape == OdbSymbol::ROUND) {
+                double r = scaleLen(sym.diameter - sym.lineWidth) / 2;
+                pc.kind = CourtyardPiece::CIRCLE;
+                pc.pts = {{cx, cy}, {r, 0}};
+                for (int k = 0; k < 8; k++)
+                    pc.samples.push_back({cx + r * std::cos(k * PI / 4), cy + r * std::sin(k * PI / 4)});
+                pc.length = 2 * PI * r;
+            } else if (sym.shape == OdbSymbol::ROUNDRECT) {
+                double w = scaleLen(sym.width - sym.lineWidth), h = scaleLen(sym.height - sym.lineWidth);
+                double ang = padAngleKicad(f), c = std::cos(degToRad(ang)), s = std::sin(degToRad(ang));
+                double corners[4][2] = {{-w / 2, -h / 2}, {w / 2, -h / 2}, {w / 2, h / 2}, {-w / 2, h / 2}};
+                pc.kind = CourtyardPiece::RECT;
+                for (auto& k : corners) pc.pts.push_back({cx + k[0] * c + k[1] * s, cy - k[0] * s + k[1] * c});
+                pc.samples = pc.pts;
+                for (int k = 0; k < 4; k++)
+                    pc.samples.push_back({(pc.pts[k].first + pc.pts[(k + 1) % 4].first) / 2,
+                                          (pc.pts[k].second + pc.pts[(k + 1) % 4].second) / 2});
+                pc.length = 2 * (w + h);
+            } else {
+                continue;
+            }
+            crtydPadIdx[{ln, i}] = add(pc);
+        }
+    }
+    const double eda2mm = design.edaData.units.empty() ? unitScale : (isInchUnits(design.edaData.units) ? 25.4 : 1.0);
+
     // 3. Transform components -> footprints
     auto processComponents = [&](const OdbComponents& comps, bool isBottom) {
         for (int ci = 0; ci < (int)comps.components.size(); ci++) {
@@ -933,6 +1046,94 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 pad.netName = netName;
 
                 fp.pads.push_back(pad);
+            }
+
+            // Courtyard: the package outline placed like the component claims the courtyard
+            // strokes it runs along, on the component's side first. A ring is a courtyard when
+            // its strokes cover at least 90% of its length; the strokes move into the footprint
+            // (and out of the board graphics of step 10). Placement is a clockwise rotation about
+            // the component origin; for a mirrored (M) part the ODB++ spec also mirrors the
+            // package X, but kicad-cli writes bottom packages already flipped. The package pins
+            // decide: the variant that puts them on the component's terminals wins (no pins:
+            // kicad-cli's).
+            if (comp.pkgIdx >= 0 && comp.pkgIdx < (int)design.edaData.packages.size()) {
+                const double tol = 0.025;  // mm: KiCad rounds both records independently
+                auto& pkg = design.edaData.packages[comp.pkgIdx];
+                double rc = std::cos(degToRad(comp.rotation)), rs = std::sin(degToRad(comp.rotation));
+                auto place = [&](double px, double py, bool mirror) {  // package -> board ODB++ units
+                    px = (mirror ? -px : px) * eda2mm / unitScale;
+                    py = py * eda2mm / unitScale;
+                    return std::make_pair(comp.x + px * rc + py * rs, comp.y - px * rs + py * rc);
+                };
+                bool mirrored = false;
+                if (comp.mirror == "M") {
+                    double err[2] = {0, 0};
+                    int n = 0;
+                    for (auto& t : comp.terminals) {
+                        if (t.pinIdx < 0 || t.pinIdx >= (int)pkg.pins.size()) continue;
+                        for (int m = 0; m < 2; m++) {
+                            auto [bx, by] = place(pkg.pins[t.pinIdx].x, pkg.pins[t.pinIdx].y, m == 1);
+                            err[m] = std::max(err[m], std::hypot(bx - t.x, by - t.y));
+                        }
+                        n++;
+                    }
+                    mirrored = n > 0 && err[1] < err[0];
+                }
+                auto local = [&](double x, double y) {  // board (KiCad mm) -> footprint frame
+                    double dx = x - fp.x, dy = y - fp.y;
+                    return std::make_pair(dx * fpCos - dy * fpSin, dx * fpSin + dy * fpCos);
+                };
+                for (auto& pkgRing : design.edaData.packages[comp.pkgIdx].outlines) {
+                    std::vector<std::pair<double,double>> ring;
+                    double minX = 1e300, minY = 1e300, maxX = -1e300, maxY = -1e300, perim = 0;
+                    for (auto& [px, py] : pkgRing) {
+                        auto [qx, qy] = place(px, py, mirrored);
+                        double bx = scaleX(qx), by = scaleY(qy);
+                        ring.push_back({bx, by});
+                        minX = std::min(minX, bx); maxX = std::max(maxX, bx);
+                        minY = std::min(minY, by); maxY = std::max(maxY, by);
+                    }
+                    for (size_t k = 0; k < ring.size(); k++)
+                        perim += std::hypot(ring[(k + 1) % ring.size()].first - ring[k].first,
+                                            ring[(k + 1) % ring.size()].second - ring[k].second);
+                    if (perim <= 0) continue;
+                    for (const char* kl : {isBottom ? "B.CrtYd" : "F.CrtYd", isBottom ? "F.CrtYd" : "B.CrtYd"}) {
+                        std::vector<size_t> hits;
+                        double covered = 0;
+                        for (size_t pi = 0; pi < crtydPieces.size(); pi++) {
+                            auto& pc = crtydPieces[pi];
+                            if (pc.claimed || pc.layer != kl) continue;
+                            if (pc.minX > maxX + tol || pc.maxX < minX - tol ||
+                                pc.minY > maxY + tol || pc.maxY < minY - tol) continue;
+                            bool on = true;
+                            for (auto& [x, y] : pc.samples)
+                                if (distToRing(ring, x, y) > tol) { on = false; break; }
+                            if (on) { hits.push_back(pi); covered += pc.length; }
+                        }
+                        if (covered < 0.9 * perim) continue;
+                        for (size_t pi : hits) {
+                            auto& pc = crtydPieces[pi];
+                            pc.claimed = true;
+                            if (pc.kind == CourtyardPiece::LINE || pc.kind == CourtyardPiece::RECT) {
+                                size_t n = pc.kind == CourtyardPiece::LINE ? 1 : 4;
+                                for (size_t k = 0; k < n; k++) {
+                                    auto a = local(pc.pts[k].first, pc.pts[k].second);
+                                    auto b = local(pc.pts[(k + 1) % pc.pts.size()].first, pc.pts[(k + 1) % pc.pts.size()].second);
+                                    fp.fpLines.push_back({a.first, a.second, b.first, b.second, pc.width, pc.layer});
+                                }
+                            } else if (pc.kind == CourtyardPiece::ARC) {
+                                auto a = local(pc.pts[0].first, pc.pts[0].second);
+                                auto m = local(pc.pts[1].first, pc.pts[1].second);
+                                auto e = local(pc.pts[2].first, pc.pts[2].second);
+                                fp.fpArcs.push_back({a.first, a.second, m.first, m.second, e.first, e.second, pc.width, pc.layer});
+                            } else {
+                                auto c = local(pc.pts[0].first, pc.pts[0].second);
+                                fp.fpCircles.push_back({c.first, c.second, pc.pts[1].first, pc.width, pc.layer});
+                            }
+                        }
+                        break;
+                    }
+                }
             }
 
             pcb.footprints.push_back(fp);
@@ -1657,7 +1858,13 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         if (lmIt2 == layerMap.end()) continue;
         std::string kicadLayer = lmIt2->second->canonical;
 
-        for (auto& line : features.lines) {
+        auto claimedBy = [&](const std::map<std::pair<std::string, int>, size_t>& idx, int i) {
+            auto it = idx.find({layerNameLower, i});
+            return it != idx.end() && crtydPieces[it->second].claimed;
+        };
+        for (int li = 0; li < (int)features.lines.size(); li++) {
+            auto& line = features.lines[li];
+            if (claimedBy(crtydLineIdx, li)) continue;
             KicadGrLine gl;
             gl.x1 = scaleX(line.x1);
             gl.y1 = scaleY(line.y1);
@@ -1674,7 +1881,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             pcb.grLines.push_back(gl);
         }
 
-        for (auto& arc : features.arcs) {
+        for (int ai = 0; ai < (int)features.arcs.size(); ai++) {
+            auto& arc = features.arcs[ai];
+            if (claimedBy(crtydArcIdx, ai)) continue;
             KicadGrArc ga;
             ga.xs = scaleX(arc.xs);
             ga.ys = scaleY(arc.ys);
@@ -1701,8 +1910,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         // (graphic openings) are drawn.
         bool maskOrPaste = kicadLayer.find(".Mask") != std::string::npos ||
                            kicadLayer.find(".Paste") != std::string::npos;
-        for (auto& fpad : features.pads) {
-            if (fpad.polarity == "N") continue;
+        for (int fi = 0; fi < (int)features.pads.size(); fi++) {
+            auto& fpad = features.pads[fi];
+            if (fpad.polarity == "N" || claimedBy(crtydPadIdx, fi)) continue;
             if (fpad.symIdx < 0 || fpad.symIdx >= (int)features.symbols.size()) continue;
             if (maskOrPaste) {
                 bool owned = false;
@@ -1833,6 +2043,19 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
                 << ") (end " << formatFloat(ln.x2) << " " << formatFloat(ln.y2)
                 << ") (stroke (width " << formatFloat(ln.width) << ") (type solid)) (layer \""
                 << ln.layer << "\"))\n";
+        }
+        for (auto& a : fp.fpArcs) {
+            out << "    (fp_arc (start " << formatFloat(a.xs) << " " << formatFloat(a.ys)
+                << ") (mid " << formatFloat(a.xm) << " " << formatFloat(a.ym)
+                << ") (end " << formatFloat(a.xe) << " " << formatFloat(a.ye)
+                << ") (stroke (width " << formatFloat(a.width) << ") (type solid)) (layer \""
+                << a.layer << "\"))\n";
+        }
+        for (auto& c : fp.fpCircles) {
+            out << "    (fp_circle (center " << formatFloat(c.cx) << " " << formatFloat(c.cy)
+                << ") (end " << formatFloat(c.cx + c.r) << " " << formatFloat(c.cy)
+                << ") (stroke (width " << formatFloat(c.width) << ") (type solid)) (fill none) (layer \""
+                << c.layer << "\"))\n";
         }
 
         // Pads
