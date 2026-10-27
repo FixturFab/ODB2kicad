@@ -130,6 +130,11 @@ static std::map<std::string, const LayerMapping*> buildLayerMap(const std::vecto
     std::vector<std::pair<std::string, int>> silkLayers;
 
     for (auto& layer : layers) {
+        // MISC-context layers (drill maps, assembly drawings, scratch copies)
+        // are not part of the physical stackup even when typed SIGNAL. Letting
+        // one into the copper list shifts the real bottom layer to In1.Cu and
+        // leaves B.Cu holding the misc layer instead (issue #2).
+        if (toUpper(layer.context) == "MISC") continue;
         std::string type = toUpper(layer.type);
         if (isCopperType(type))
             copperLayers.push_back({layer.name, layer.row});
@@ -581,6 +586,27 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         std::unique(pcb.layers.begin(), pcb.layers.end(),
                     [](const KicadLayer& a, const KicadLayer& b) { return a.id == b.id; }),
         pcb.layers.end());
+
+    // KiCad only accepts an even copper layer count ("3 is not a valid layer
+    // count"). An odd ODB++ stackup gets one empty inner layer appended so the
+    // board still loads with every source layer intact (issue #2).
+    {
+        int copperCount = 0, maxInner = 0;
+        for (auto& l : pcb.layers) {
+            if (l.id > 31) continue;
+            copperCount++;
+            if (l.id < 31) maxInner = std::max(maxInner, l.id);
+        }
+        if (copperCount >= 3 && copperCount % 2 == 1 && maxInner < 30) {
+            KicadLayer kl;
+            kl.id = maxInner + 1;
+            kl.canonicalName = "In" + std::to_string(kl.id) + ".Cu";
+            kl.type = "signal";
+            pcb.layers.push_back(kl);
+            std::sort(pcb.layers.begin(), pcb.layers.end(),
+                      [](const KicadLayer& a, const KicadLayer& b) { return a.id < b.id; });
+        }
+    }
 
     // 2. Build net list from EDA data
     // Net 0 is always the unconnected net

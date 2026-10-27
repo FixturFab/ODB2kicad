@@ -72,6 +72,54 @@ if grep -E '\((gr_)?arc \(start ([^ ]+) ([^)]+)\) \(mid [^)]+\) \(end \2 \3\)' /
 fi
 
 echo "PASS: full-circle arc test"
+# --- Non-KiCad stackup tests (issue #2), synthetic fixtures built from odb-output ---
+echo "--- Stackup test ---"
+STACK=$(mktemp -d)
+trap 'rm -rf "$STACK"' EXIT
+
+# Copper layer named TOP/BOTTOM (forces type-based mapping), with one bottom trace.
+make_stackup() {
+    local dir="$1"
+    cp -r "${SAMPLES}/odb-output" "$dir"
+    local L="$dir/steps/pcb/layers"
+    mv "$L/f.cu" "$L/top"
+    mv "$L/b.cu" "$L/bottom"
+    sed -i 's/^    NAME=F\.CU$/    NAME=TOP/; s/^    NAME=B\.CU$/    NAME=BOTTOM/' "$dir/matrix/matrix"
+    printf 'UNITS=MM\nF 1\n$0 r250.0\nL 100.0 -105.0 120.0 -105.0 0 P 0\n' > "$L/bottom/features"
+}
+
+add_signal_layer() {  # dir name row context
+    printf '\nLAYER {\n    ROW=%s\n    CONTEXT=%s\n    TYPE=SIGNAL\n    NAME=%s\n    POLARITY=POSITIVE\n}\n' \
+        "$3" "$4" "$2" >> "$1/matrix/matrix"
+    mkdir -p "$1/steps/pcb/layers/$(echo "$2" | tr 'A-Z' 'a-z')"
+    printf 'UNITS=MM\nF 1\n$0 r250.0\nL 95.0 -95.0 125.0 -95.0 0 P 0\n' \
+        > "$1/steps/pcb/layers/$(echo "$2" | tr 'A-Z' 'a-z')/features"
+}
+
+copper_count() { grep -cE '^    \(([0-9]|[12][0-9]|3[01]) "[^"]*\.Cu" signal\)' "$1"; }
+
+# MISC-context SIGNAL layer after the bottom copper must not steal B.Cu.
+make_stackup "$STACK/misc"
+add_signal_layer "$STACK/misc" DRILL_MAP 99 MISC
+"${BUILD_DIR}/odb2kicad" "$STACK/misc" "$STACK/misc.kicad_pcb"
+N=$(copper_count "$STACK/misc.kicad_pcb")
+[ "$N" -eq 2 ] || { echo "FAIL: MISC signal layer counted as copper ($N copper layers)"; exit 1; }
+grep -q 'In1.Cu' "$STACK/misc.kicad_pcb" && { echo "FAIL: MISC stackup emitted In1.Cu"; exit 1; }
+grep -q 'segment (start 100 105) (end 120 105).*(layer "B.Cu")' "$STACK/misc.kicad_pcb" \
+    || { echo "FAIL: bottom trace not on B.Cu"; exit 1; }
+
+# Three real copper layers must be padded to an even count KiCad accepts.
+make_stackup "$STACK/odd"
+add_signal_layer "$STACK/odd" MID 6 BOARD
+"${BUILD_DIR}/odb2kicad" "$STACK/odd" "$STACK/odd.kicad_pcb"
+N=$(copper_count "$STACK/odd.kicad_pcb")
+[ "$N" -eq 4 ] || { echo "FAIL: odd stackup emitted $N copper layers, KiCad needs an even count"; exit 1; }
+grep -q 'segment (start 95 95) (end 125 95).*(layer "In1.Cu")' "$STACK/odd.kicad_pcb" \
+    || { echo "FAIL: inner trace not on In1.Cu"; exit 1; }
+grep -q 'segment (start 100 105) (end 120 105).*(layer "B.Cu")' "$STACK/odd.kicad_pcb" \
+    || { echo "FAIL: odd stackup bottom trace not on B.Cu"; exit 1; }
+
+echo "PASS: stackup test"
 
 # --- Kitchen-sink test (odb-kitchen-sink) ---
 echo "--- Kitchen-sink test ---"
