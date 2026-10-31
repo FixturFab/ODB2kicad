@@ -21,17 +21,33 @@ struct KicadPad {
     std::string pinNum;
     std::string type;           // "smd" or "thru_hole"
     std::string shape;          // "roundrect", "circle", "rect", "oval"
-    double x = 0, y = 0;       // relative to footprint
+    double x = 0, y = 0;       // relative to footprint, in its unrotated frame
+    double angle = 0;           // absolute orientation (KiCad stores pad angles board-relative)
     double width = 0, height = 0;
     std::vector<std::string> layerNames;
     double roundrectRatio = 0;
     int netId = 0;
     std::string netName;
-    double drill = 0;           // for thru_hole
+    double drill = 0;           // for thru_hole (round hole diameter, or slot width)
+    double drillHeight = 0;     // slot length when the hole is oval (0 = round)
+    // custom shape: filled polygons in the pad frame (relative to the pad, unrotated)
+    std::vector<std::vector<std::pair<double,double>>> primitives;
 };
 
 struct KicadFpLine {
     double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    double width = 0;
+    std::string layer;
+};
+
+struct KicadFpArc {
+    double xs = 0, ys = 0, xm = 0, ym = 0, xe = 0, ye = 0;
+    double width = 0;
+    std::string layer;
+};
+
+struct KicadFpCircle {
+    double cx = 0, cy = 0, r = 0;
     double width = 0;
     std::string layer;
 };
@@ -45,8 +61,11 @@ struct KicadFootprint {
     std::string refdes;
     std::string value;
     std::string attr;           // "smd" or "through_hole"
+    bool dnp = false;           // emitted as a trailing "dnp" in (attr ...)
     std::vector<KicadPad> pads;
-    std::vector<KicadFpLine> fpLines;
+    std::vector<KicadFpLine> fpLines;   // footprint-frame coordinates, like the pads
+    std::vector<KicadFpArc> fpArcs;
+    std::vector<KicadFpCircle> fpCircles;
 };
 
 struct KicadSegment {
@@ -96,6 +115,20 @@ struct KicadGrArc {
     std::string layer;
 };
 
+struct KicadGrPoly {
+    std::vector<std::pair<double,double>> pts;
+    double width = 0;           // stroke
+    bool filled = true;
+    std::string layer;
+};
+
+struct KicadGrCircle {
+    double cx = 0, cy = 0, r = 0;
+    double width = 0;           // stroke
+    bool filled = true;
+    std::string layer;
+};
+
 struct KicadZone {
     int netId = 0;
     std::string netName;
@@ -115,6 +148,8 @@ struct KicadPcb {
     std::vector<KicadGrLine> grLines;
     std::vector<KicadGrRect> grRects;
     std::vector<KicadGrArc> grArcs;
+    std::vector<KicadGrPoly> grPolys;
+    std::vector<KicadGrCircle> grCircles;
     std::vector<KicadZone> zones;
 };
 

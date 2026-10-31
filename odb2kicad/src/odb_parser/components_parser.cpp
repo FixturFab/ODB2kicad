@@ -65,7 +65,13 @@ bool parseComponents(const std::string& path, OdbComponents& components) {
                 for (auto& part : parts) {
                     part = trim(part);
                     auto eq = part.find('=');
-                    if (eq != std::string::npos) {
+                    if (eq == std::string::npos) {
+                        // Boolean attribute: present means set
+                        try {
+                            auto it = components.attrDefs.find(std::stoi(part));
+                            if (it != components.attrDefs.end() && it->second == ".no_pop") comp.noPop = true;
+                        } catch (const std::exception&) {}
+                    } else {
                         std::string key = part.substr(0, eq);
                         // Only parse numeric attribute keys; skip named attrs
                         try {

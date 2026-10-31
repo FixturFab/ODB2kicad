@@ -1,0 +1,28 @@
+UNITS=MM
+#
+#Num Features
+#
+F 6
+
+#
+#Feature symbol names
+#
+$0 r1000.0
+
+#
+#Feature attribute names
+#
+@0 .drill
+
+#
+#Feature attribute text strings
+#
+#
+#Layer features
+#
+P 55.0 -20.0 0 P 0 8 270.0 ;0=0
+P 57.54 -20.0 0 P 0 8 270.0 ;0=0
+P 60.08 -20.0 0 P 0 8 270.0 ;0=0
+P 55.0 -35.0 0 P 0 9 45.0 ;0=0
+P 53.20 -33.20 0 P 0 9 45.0 ;0=0
+P 51.41 -31.41 0 P 0 9 45.0 ;0=0

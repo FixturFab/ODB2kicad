@@ -9,6 +9,7 @@ struct OdbInfo {
     std::string units = "MM";
     std::string jobName;
     std::string odbSource;
+    std::string saveApp;    // SAVE_APP, e.g. "KiCad EDA 9.0.9"
 };
 
 struct OdbLayer {
@@ -41,6 +42,7 @@ struct OdbContour {
 };
 
 struct OdbSurface {
+    int featIdx = -1;       // ordinal of the S record among the layer's features (eda/data FID)
     std::string polarity;   // P or N
     std::vector<OdbContour> contours;
 };
@@ -57,10 +59,13 @@ struct OdbSymbol {
     double height = 0;      // mm
     double diameter = 0;    // mm (for round)
     double cornerRadius = 0;// mm (for roundrect)
+    double lineWidth = 0;   // mm (donut ring width: donut_rc line width, donut_r (od-id)/2)
+    bool donut = false;     // donut_r / donut_rc: an outline, not a filled shape
 };
 
 // Feature records from layer features files
 struct OdbPad {
+    int featIdx = -1;       // ordinal among the layer's features (eda/data FID)
     double x = 0, y = 0;
     int symIdx = 0;
     std::string polarity;   // P or N
@@ -70,6 +75,7 @@ struct OdbPad {
 };
 
 struct OdbLine {
+    int featIdx = -1;
     double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
     int symIdx = 0;
     std::string polarity;
@@ -77,6 +83,7 @@ struct OdbLine {
 };
 
 struct OdbArc {
+    int featIdx = -1;
     double xs = 0, ys = 0;  // start
     double xe = 0, ye = 0;  // end
     double xc = 0, yc = 0;  // center
@@ -118,6 +125,7 @@ struct OdbComponent {
     std::map<std::string, std::string> properties; // key -> value
     std::vector<OdbTerminal> terminals;
     int mountType = 0;      // 1=SMD, 2=TH
+    bool noPop = false;     // .no_pop attribute (KiCad writes it for DNP footprints)
 };
 
 struct OdbComponents {
@@ -144,6 +152,24 @@ struct OdbEdaPin {
 struct OdbEdaPackage {
     std::string name;
     std::vector<OdbEdaPin> pins;
+    // Package outline: the RC/CR/SQ/CT records between PKG and its first PIN, as closed rings
+    // (islands only, arcs flattened) in the package frame, eda/data units. KiCad writes the
+    // footprint courtyard here (its bounding hull when it has none), Allegro the place-bound,
+    // Altium the body.
+    std::vector<std::vector<std::pair<double,double>>> outlines;
+};
+
+// FID record: feature <featIdx> of layer LYR[<layerIdx>] belongs to net <netIdx>
+struct OdbEdaFid {
+    int netIdx = 0;         // index into OdbEdaData::nets
+    int sntIdx = -1;        // ordinal of the SNT record it belongs to (one per subnet: a zone, a pin...)
+    std::string sntType;    // TOP (component pin), TRC, VIA, PLN (plane / zone)
+    std::string sntSide;    // TOP only: T or B
+    int sntComp = -1;       // TOP only: component index in comp_+_top / comp_+_bot
+    int sntToeprint = -1;   // TOP only: toeprint (pin) index within the component
+    std::string type;       // C copper, L laminate, H hole
+    int layerIdx = 0;       // index into OdbEdaData::layers (the LYR record)
+    int featIdx = 0;        // ordinal of the feature in that layer's features file
 };
 
 struct OdbEdaData {
@@ -151,6 +177,7 @@ struct OdbEdaData {
     std::vector<std::string> layers;
     std::vector<OdbEdaNet> nets;        // index 0 = $NONE$
     std::vector<OdbEdaPackage> packages;
+    std::vector<OdbEdaFid> fids;        // feature -> net map (SNT/FID records)
 };
 
 // Netlist

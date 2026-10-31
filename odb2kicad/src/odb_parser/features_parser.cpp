@@ -34,6 +34,7 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
     if (!file.is_open()) return false;
 
     std::string line;
+    int featCount = 0;  // feature ordinal: P/L/A/S/T/B records in file order (eda/data FID index)
     OdbSurface* currentSurface = nullptr;
     OdbContour* currentContour = nullptr;
 
@@ -98,6 +99,7 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
             int dcode;
             iss >> pad.x >> pad.y >> pad.symIdx >> pad.polarity >> dcode >> pad.mirror >> pad.angle;
             pad.attrs = parseAttrs(attrPart);
+            pad.featIdx = featCount++;
             features.pads.push_back(pad);
             continue;
         }
@@ -109,6 +111,7 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
             int dcode;
             iss >> ln.x1 >> ln.y1 >> ln.x2 >> ln.y2 >> ln.symIdx >> ln.polarity >> dcode;
             ln.attrs = parseAttrs(attrPart);
+            ln.featIdx = featCount++;
             features.lines.push_back(ln);
             continue;
         }
@@ -123,6 +126,7 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
                 >> arc.symIdx >> arc.polarity >> dcode >> cw;
             arc.clockwise = (cw == "Y");
             arc.attrs = parseAttrs(attrPart);
+            arc.featIdx = featCount++;
             features.arcs.push_back(arc);
             continue;
         }
@@ -131,8 +135,15 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
         if (line[0] == 'S' && line.size() > 1 && line[1] == ' ') {
             features.surfaces.emplace_back();
             currentSurface = &features.surfaces.back();
+            currentSurface->featIdx = featCount++;
             auto parts = split(mainPart, ' ');
             if (parts.size() >= 2) currentSurface->polarity = parts[1];
+            continue;
+        }
+
+        // Text and barcode records are not converted but still take a feature index
+        if ((line[0] == 'T' || line[0] == 'B') && line.size() > 1 && line[1] == ' ') {
+            featCount++;
             continue;
         }
 

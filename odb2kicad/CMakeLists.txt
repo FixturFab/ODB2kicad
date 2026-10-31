@@ -48,4 +48,10 @@ else()
     # Native CLI build
     add_executable(odb2kicad src/main.cpp)
     target_link_libraries(odb2kicad PRIVATE odb2kicad_core)
+
+    # Unit tests (test/unit): ctest, or test/run_unit_tests.sh without cmake
+    add_executable(odb2kicad_unit_tests test/unit/unit_tests.cpp)
+    target_link_libraries(odb2kicad_unit_tests PRIVATE odb2kicad_core)
+    enable_testing()
+    add_test(NAME unit_tests COMMAND odb2kicad_unit_tests)
 endif()
