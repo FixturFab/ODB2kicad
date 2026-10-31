@@ -8,6 +8,8 @@ Convert ODB++ PCB designs to KiCad `.kicad_pcb` format.
 
 ## Install
 
+Changes per release: [CHANGELOG.md](CHANGELOG.md).
+
 ```bash
 npm install -g https://raw.githubusercontent.com/FixturFab/odb2kicad/main/wasm/odb2kicad-wasm.tgz
 ```
