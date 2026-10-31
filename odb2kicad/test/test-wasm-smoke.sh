@@ -108,7 +108,8 @@ fi
 
 # Check through-hole pads
 grep -q 'thru_hole' "$OUT" || { echo "FAIL: kitchen-sink no through-hole pads"; exit 1; }
-grep -qF '"*.Cu" "*.Mask"' "$OUT" || { echo "FAIL: kitchen-sink no *.Cu *.Mask layers"; exit 1; }
+# mask openings come from the mask layers, so both sides are listed explicitly (as in test_simple.sh)
+grep -qE '"\*\.Cu" ("\*\.Mask"|"F\.Mask" "B\.Mask")' "$OUT" || { echo "FAIL: kitchen-sink no *.Cu + F/B mask layers"; exit 1; }
 
 # Check board outline (polygon, not rect)
 grep -q 'gr_line' "$OUT" || { echo "FAIL: kitchen-sink no gr_line (board outline)"; exit 1; }
@@ -119,8 +120,9 @@ grep -q 'filled_polygon' "$OUT" || { echo "FAIL: kitchen-sink no filled polygons
 
 # Stage D: Check arcs (Edge.Cuts cutouts + B.Fab arc)
 grep -q 'gr_arc' "$OUT" || { echo "FAIL: kitchen-sink no gr_arcs"; exit 1; }
-ARC_COUNT=$(grep -c 'gr_arc' "$OUT" || true)
-[ "$ARC_COUNT" -ge 4 ] || { echo "FAIL: kitchen-sink expected >=4 arcs, got $ARC_COUNT"; exit 1; }
+# the two donut_r Edge.Cuts cutouts are gr_circles now, not arcs (as in test_simple.sh)
+CUTOUTS=$(grep -c 'gr_circle.*Edge.Cuts' "$OUT" || true)
+[ "$CUTOUTS" -eq 2 ] || { echo "FAIL: kitchen-sink expected 2 Edge.Cuts circle cutouts, got $CUTOUTS"; exit 1; }
 
 # Stage D: Check silkscreen graphics at board level
 grep -q 'gr_line.*F.SilkS' "$OUT" || { echo "FAIL: kitchen-sink no silkscreen gr_lines"; exit 1; }
