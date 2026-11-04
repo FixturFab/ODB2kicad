@@ -554,6 +554,120 @@ class DirectOdbOracle:
             }
 
 
+# ----------------------------------------------------------------------------------------------
+# Feature geometry: the records themselves, not just counts, for the round-up's
+# reference rasterizer (odb_render.py). Kept next to DirectOdbOracle so both read ODB++ the same way.
+# ----------------------------------------------------------------------------------------------
+
+def _num(tok: str) -> float:
+    return float(tok)
+
+
+def parse_feature_geometry(features_path) -> Dict[str, Any]:
+    """Parse an ODB++ ``features`` file (layer, profile or user symbol) into geometry records.
+
+    Returns {'units': 'MM'|'INCH', 'symbols': {idx: (name, unit_override or None)}, 'records': [...]}
+    where each record is one of (coordinates in the file's units, as written):
+      ('P', x, y, sym, pol, orient, angle)            orient: 0-7 legacy, 8 rotate, 9 mirror+rotate
+      ('L', xs, ys, xe, ye, sym, pol)
+      ('A', xs, ys, xe, ye, xc, yc, sym, pol, cw)
+      ('S', pol, contours)   contours = [(is_hole, [('S', x, y) | ('C', xe, ye, xc, yc, cw), ...])]
+      ('T', x, y, pol)       text (not rasterized; counted)
+      ('B', x, y, pol)       barcode (not rasterized; counted)
+    ``pol`` is True for positive. Unknown lines are counted in 'skipped'.
+    """
+    units = 'INCH'
+    symbols: Dict[int, tuple] = {}
+    records: List[tuple] = []
+    skipped = 0
+    surf = None
+    contour = None
+    path = Path(features_path)
+    if not path.is_file():
+        return {'units': units, 'symbols': symbols, 'records': records, 'skipped': 0}
+    with open(path, 'r', encoding='latin-1') as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith('#'):
+                continue
+            body = line.split(';', 1)[0].strip()
+            if body.startswith('UNITS='):
+                units = body.split('=', 1)[1].strip().upper()
+                continue
+            if body.startswith('U ') and surf is None:
+                units = body.split()[1].upper()
+                continue
+            tok = body.split()
+            t = tok[0]
+            try:
+                if surf is not None:
+                    if t == 'OB':
+                        contour = [('S', _num(tok[1]), _num(tok[2]))]
+                        surf[2].append((len(tok) > 3 and tok[3].upper() == 'H', contour))
+                    elif t == 'OS' and contour is not None:
+                        contour.append(('S', _num(tok[1]), _num(tok[2])))
+                    elif t == 'OC' and contour is not None:
+                        contour.append(('C', _num(tok[1]), _num(tok[2]), _num(tok[3]), _num(tok[4]),
+                                        len(tok) > 5 and tok[5].upper() == 'Y'))
+                    elif t == 'OE':
+                        contour = None
+                    elif t == 'SE':
+                        records.append(tuple(surf))
+                        surf = None
+                    continue
+                if t.startswith('$'):
+                    parts = body.split()
+                    idx = int(parts[0][1:])
+                    ov = parts[2].upper() if len(parts) > 2 and parts[2].upper() in ('I', 'M') else None
+                    symbols[idx] = (parts[1], ov)
+                elif t == 'P':
+                    orient = int(tok[6]) if len(tok) > 6 else 0
+                    ang = _num(tok[7]) if orient in (8, 9) and len(tok) > 7 else 0.0
+                    records.append(('P', _num(tok[1]), _num(tok[2]), int(tok[3]), tok[4] != 'N', orient, ang))
+                elif t == 'L':
+                    records.append(('L', _num(tok[1]), _num(tok[2]), _num(tok[3]), _num(tok[4]), int(tok[5]), tok[6] != 'N'))
+                elif t == 'A':
+                    records.append(('A', _num(tok[1]), _num(tok[2]), _num(tok[3]), _num(tok[4]), _num(tok[5]), _num(tok[6]),
+                                    int(tok[7]), tok[8] != 'N', len(tok) > 10 and tok[10].upper() == 'Y'))
+                elif t == 'S':
+                    surf = ['S', tok[1] != 'N', []]
+                elif t == 'T':
+                    records.append(('T', _num(tok[1]), _num(tok[2]), tok[4] != 'N' if len(tok) > 4 else True))
+                elif t == 'B':
+                    records.append(('B', _num(tok[1]), _num(tok[2]), True))
+                elif t == 'F' or t.startswith('@') or t.startswith('&') or t == 'ID=' or '=' in t:
+                    continue
+                else:
+                    skipped += 1
+            except (IndexError, ValueError):
+                skipped += 1
+    return {'units': units, 'symbols': symbols, 'records': records, 'skipped': skipped}
+
+
+def find_odb_root(path) -> Optional[Path]:
+    """The ODB++ job folder at or under ``path`` (the dir holding matrix/matrix), or None."""
+    p = Path(path)
+    if (p / 'matrix' / 'matrix').is_file():
+        return p
+    for m in sorted(p.rglob('matrix')):
+        if m.is_file() and m.parent.name == 'matrix':
+            return m.parent.parent
+    return None
+
+
+def ci_child(parent: Path, name: str) -> Optional[Path]:
+    """parent/name, matched case-insensitively (matrix names are upper case, folders often lower)."""
+    exact = parent / name
+    if exact.exists():
+        return exact
+    low = name.lower()
+    if parent.is_dir():
+        for c in parent.iterdir():
+            if c.name.lower() == low:
+                return c
+    return None
+
+
 def compare_oracle_to_kicad(oracle_data: Dict, kicad_path: str) -> List[str]:
     """
     Compare oracle data (from ODB++ viewer or direct parse) to

@@ -49,3 +49,4 @@ node_modules/
 Thumbs.db
 __pycache__/
 samples/private/
+build-wasm/

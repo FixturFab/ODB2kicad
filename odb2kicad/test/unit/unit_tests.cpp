@@ -9,11 +9,14 @@
 #include "odb_parser/components_parser.h"
 #include "odb_parser/eda_parser.h"
 #include "odb_parser/features_parser.h"
+#include "odb_parser/profile_parser.h"
 #include "odb_parser/info_parser.h"
 #include "odb_parser/matrix_parser.h"
 #include "odb_parser/odb_parser.h"
 #include "odb_parser/symbols.h"
 #include "writer/kicad_writer.h"
+#include "writer/polygon.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -750,6 +753,8 @@ TEST(bottom_rotation_matches_kicad_export) {
     auto& j5 = component(d, "J5", 140.47, -97.294999, 1, true, /*rotation=*/330.0);
     terminal(j5, "1", 131.333534, -99.250175, 1, 330.0);
     flash(d, "b.cu", 131.333534, -99.250175, "rect1244.60x4749.80", OdbSymbol::RECT, 1.2446, 4.7498, {}, 30.0, 9);
+    d.info.odbSource = "KiCad EDA";
+    applyProducerQuirks(d);
     KicadPcb pcb = transformToKicad(d);
     const KicadFootprint* fp = findFp(pcb, "J5");
     const KicadPad* p = findPad(pcb, "J5", "1");
@@ -1104,6 +1109,574 @@ TEST(spec_mirrored_bottom_package_is_placed_mirrored) {
     KicadPcb pcb = transformToKicad(d);
     const KicadFootprint* fp = findFp(pcb, "U2");
     CHECK(fp && fp->fpLines.size() == 4);
+}
+
+// ---------------------------------------------------------------- round-up bug classes, part 1
+
+static std::vector<const KicadFootprint*> freePads(const KicadPcb& pcb) {
+    std::vector<const KicadFootprint*> out;
+    for (auto& fp : pcb.footprints)
+        if (fp.library == "odb2kicad:FreePad") out.push_back(&fp);
+    return out;
+}
+
+// Class 1: copper flashes that are no component pin and no via still reach the board, as one
+// board-only footprint per site: a plated hit makes it through-hole, a lone non-plated hit an
+// NPTH, an outer flash an SMD pad (fiducial named FID), all at their own position and angle.
+TEST(free_copper_pads_become_board_only_footprints) {
+    OdbDesign d = kicadDesign();
+    auto& r1 = component(d, "R1", 50, -50, 1);
+    terminal(r1, "1", 50, -50, 1);
+    flash(d, "f.cu", 50, -50, "r1000.0", OdbSymbol::ROUND, 1.0);           // the pin: not free
+    flash(d, "f.cu", 10, -10, "r1000.0", OdbSymbol::ROUND, 1.0, -1, {{".pad_usage", "2"}});  // fiducial
+    flash(d, "b.cu", 20, -10, "rect2000.0x1000.0", OdbSymbol::RECT, 2.0, 1.0, {}, 30);   // bottom test pad
+    flash(d, "f.cu", 30, -10, "r1600.0", OdbSymbol::ROUND, 1.6);           // plated mounting hole
+    flash(d, "b.cu", 30, -10, "r1600.0", OdbSymbol::ROUND, 1.6);
+    flash(d, "drill_plated_f.cu-b.cu", 30, -10, "r800.0", OdbSymbol::ROUND, 0.8, -1, {{".drill", "0"}});
+    flash(d, "drill_non-plated_f.cu-b.cu", 40, -10, "r3000.0", OdbSymbol::ROUND, 3.0);
+
+    KicadPcb pcb = transformToKicad(d);
+    auto fps = freePads(pcb);
+    CHECK_EQ(fps.size(), (size_t)4);
+    auto at = [&](double x, double y) -> const KicadFootprint* {
+        for (auto* fp : fps) if (std::abs(fp->x - x) < 1e-6 && std::abs(fp->y - y) < 1e-6) return fp;
+        return nullptr;
+    };
+    const KicadFootprint* fid = at(10, 10);
+    const KicadFootprint* tp = at(20, 10);
+    const KicadFootprint* mh = at(30, 10);
+    const KicadFootprint* np = at(40, 10);
+    CHECK(fid && tp && mh && np);
+    if (!fid || !tp || !mh || !np) return;
+    CHECK_EQ(fid->refdes.substr(0, 3), std::string("FID"));
+    CHECK_EQ(fid->pads[0].type, std::string("smd"));
+    CHECK_EQ(fid->pads[0].shape, std::string("circle"));
+    CHECK(hasLayer(fid->pads[0], "F.Cu"));
+    CHECK(fid->attr.find("board_only") != std::string::npos);
+    CHECK(hasLayer(tp->pads[0], "B.Cu") && !hasLayer(tp->pads[0], "F.Cu"));
+    CHECK_NEAR(tp->pads[0].width, 2.0, 1e-9);
+    CHECK_NEAR(tp->pads[0].angle, 330.0, 1e-9);   // orient 8, 30 deg clockwise
+    CHECK_EQ(mh->pads[0].type, std::string("thru_hole"));
+    CHECK_NEAR(mh->pads[0].drill, 0.8, 1e-9);
+    CHECK_NEAR(mh->pads[0].width, 1.6, 1e-9);
+    CHECK_EQ(np->pads[0].type, std::string("np_thru_hole"));
+    CHECK_NEAR(np->pads[0].width, 3.0, 1e-9);
+    // R1's own pad is not duplicated as a free pad
+    CHECK(!at(50, 50));
+    std::string out = writeString(pcb);
+    CHECK(out.find("(attr smd board_only exclude_from_pos_files exclude_from_bom)") != std::string::npos);
+}
+
+// Class 2: OC records in a surface are arcs. The bite of a clockwise arc stays round in the
+// fill (flattened within 2.5 um), and a profile arc is written as a gr_arc, not a chord.
+TEST(surface_and_profile_arcs_are_parsed) {
+    std::string dir = tempDir("oc_arcs");
+    writeFile(dir + "/features", "UNITS=MM\n$0 r100\nS P 0\nOB 5 10 I\nOS 15 10\nOC 15 20 15 15 Y\nOS 5 20\nOS 5 10\nOE\nSE\n");
+    OdbFeatures f;
+    CHECK(parseFeatures(dir + "/features", f));
+    CHECK_EQ(f.surfaces.size(), (size_t)1);
+    if (f.surfaces.empty() || f.surfaces[0].contours.empty()) return;
+    auto& pts = f.surfaces[0].contours[0].points;
+    CHECK(pts.size() > 20);
+    double maxGap = 0, minX = 1e9;
+    int arcEnds = 0;
+    for (auto& p : pts) {
+        if (p.arc) { arcEnds++; CHECK_NEAR(p.x, 15, 1e-12); CHECK_NEAR(p.y, 20, 1e-12); }
+        if (p.interp) maxGap = std::max(maxGap, std::abs(std::hypot(p.x - 15, p.y - 15) - 5));
+        if (p.interp) minX = std::min(minX, p.x);
+    }
+    CHECK_EQ(arcEnds, 1);
+    CHECK(maxGap < 1e-9);          // every flattened point on the circle
+    CHECK_NEAR(minX, 10, 0.003);   // clockwise from (15,10) to (15,20) bites in to x = 10
+
+    writeFile(dir + "/profile", "UNITS=MM\nF 1\nS P 0\nOB 0 0 I\nOS 30 0\nOC 30 20 30 10 N\nOS 0 20\nOS 0 0\nOE\nSE\n");
+    OdbDesign d = kicadDesign();
+    CHECK(parseProfile(dir + "/profile", d.profile));
+    CHECK_EQ(d.profile.units, std::string("MM"));
+    KicadPcb pcb = transformToKicad(d);
+    int edgeArcs = 0;
+    for (auto& a : pcb.grArcs)
+        if (a.layer == "Edge.Cuts") {
+            edgeArcs++;
+            CHECK_NEAR(a.xm, 40, 1e-9);   // counter-clockwise about (30,10): mid at x = 40
+            CHECK_NEAR(a.ym, -10, 1e-9);
+        }
+    CHECK_EQ(edgeArcs, 1);
+}
+
+// Class 3: a pad's mask / paste opening keeps its own size (margin from the flash, turned into
+// the pad frame); a second mask flash at the pin (a ring) stays drawn.
+TEST(mask_and_paste_margins_come_from_the_openings) {
+    OdbDesign d = kicadDesign();
+    auto& u1 = component(d, "U1", 10, -10, 1);
+    terminal(u1, "1", 10, -10, 1);
+    terminal(u1, "2", 14, -10, 1);
+    flash(d, "f.cu", 10, -10, "r2032", OdbSymbol::ROUND, 2.032);
+    flash(d, "f.mask", 10, -10, "r2632", OdbSymbol::ROUND, 2.632);
+    flash(d, "f.mask", 10, -10, "donut", OdbSymbol::ROUND, 4.0);
+    d.layerFeatures["f.mask"].symbols.back().donut = true;
+    d.layerFeatures["f.mask"].symbols.back().diameter = 4.0;
+    d.layerFeatures["f.mask"].symbols.back().lineWidth = 0.5;
+    flash(d, "f.cu", 14, -10, "rect2000x1000", OdbSymbol::RECT, 2.0, 1.0, {}, 90);
+    flash(d, "f.mask", 14, -10, "rect1200x2200", OdbSymbol::RECT, 1.2, 2.2);   // same opening, unrotated
+    flash(d, "f.paste", 14, -10, "rect1800x800", OdbSymbol::RECT, 1.8, 0.8, {}, 90);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadPad* p1 = findPad(pcb, "U1", "1");
+    const KicadPad* p2 = findPad(pcb, "U1", "2");
+    CHECK(p1 && p2);
+    if (!p1 || !p2) return;
+    CHECK(p1->hasMaskMargin);
+    CHECK_NEAR(p1->maskMargin, 0.3, 1e-9);
+    CHECK(p2->hasMaskMargin);
+    CHECK_NEAR(p2->maskMargin, 0.1, 1e-9);
+    CHECK(p2->hasPasteMargin);
+    CHECK_NEAR(p2->pasteMargin, -0.1, 1e-9);
+    int rings = 0;
+    for (auto& c : pcb.grCircles)
+        if (c.layer == "F.Mask" && !c.filled && std::abs(c.cx - 10) < 1e-6) rings++;
+    CHECK_EQ(rings, 1);
+    CHECK(writeString(pcb).find("(solder_mask_margin 0.3)") != std::string::npos);
+}
+
+// Class 4: a zone's fill keeps the surface's holes (one keyholed polygon per island, not one
+// filled polygon per contour); a ring flashed around a pin on its own layer is copper too.
+TEST(zone_fill_keeps_its_holes) {
+    OdbDesign d = gndPourAroundClearance();
+    flash(d, "b.cu", 15, -15, "ring", OdbSymbol::ROUND, 3.0);
+    auto& ring = d.layerFeatures["b.cu"].symbols.back();
+    ring.donut = true; ring.diameter = 3.0; ring.lineWidth = 0.3;
+    KicadPcb pcb = transformToKicad(d);
+    const KicadZone* z = zoneOn(pcb, "B.Cu");
+    CHECK(z);
+    if (!z) return;
+    CHECK_EQ(z->filledPolygons.size(), (size_t)1);   // the island, its hole spliced in
+    if (!z->filledPolygons.empty()) CHECK(z->filledPolygons[0].size() >= 9);
+    // even-odd: the hole centre is outside the fill, a point in the copper inside
+    auto inside = [](const std::vector<std::pair<double,double>>& poly, double x, double y) {
+        bool in = false;
+        for (size_t i = 0, j = poly.size() - 1; i < poly.size(); j = i++)
+            if (((poly[i].second > y) != (poly[j].second > y)) &&
+                x < (poly[j].first - poly[i].first) * (y - poly[i].second) / (poly[j].second - poly[i].second) + poly[i].first)
+                in = !in;
+        return in;
+    };
+    if (!z->filledPolygons.empty()) {
+        CHECK(!inside(z->filledPolygons[0], 5, 5));
+        CHECK(inside(z->filledPolygons[0], 15, 15));
+    }
+    CHECK_EQ(z->outlinePoints.size(), (size_t)4);
+    int rings = 0;
+    for (auto& c : pcb.grCircles) if (c.layer == "B.Cu" && !c.filled && std::abs(c.cx - 15) < 1e-6) rings++;
+    CHECK_EQ(rings, 1);
+}
+
+// Class 5: drill layers come from the matrix (TYPE=DRILL, any name) and .pad_usage=via makes a
+// hit a via; START/END_NAME give a blind span. A via's mask flash is drawn (untented via).
+TEST(vias_come_from_matrix_drill_layers) {
+    OdbDesign d = kicadDesign();
+    d.layers = {layer(1, "SOLDER_MASK", "F.MASK"), layer(2, "SIGNAL", "SIGNAL_1"), layer(3, "SIGNAL", "SIGNAL_2"),
+                layer(4, "SIGNAL", "SIGNAL_3"), layer(5, "SIGNAL", "SIGNAL_4"), layer(6, "DRILL", "D_1_2"),
+                layer(7, "DRILL", "D_1_4")};
+    d.layers[5].startName = "SIGNAL_1"; d.layers[5].endName = "SIGNAL_2";
+    d.layers[6].startName = "SIGNAL_1"; d.layers[6].endName = "SIGNAL_4";
+    for (const char* cu : {"signal_1", "signal_2"}) flash(d, cu, 5, -5, "r250", OdbSymbol::ROUND, 0.25);
+    flash(d, "d_1_2", 5, -5, "r100", OdbSymbol::ROUND, 0.1, -1, {{".pad_usage", "1"}});
+    for (const char* cu : {"signal_1", "signal_2", "signal_3", "signal_4"}) flash(d, cu, 9, -5, "r600", OdbSymbol::ROUND, 0.6);
+    flash(d, "d_1_4", 9, -5, "r300", OdbSymbol::ROUND, 0.3, -1, {{".pad_usage", "1"}});
+    flash(d, "f.mask", 9, -5, "r700", OdbSymbol::ROUND, 0.7);
+    KicadPcb pcb = transformToKicad(d);
+    CHECK_EQ(pcb.vias.size(), (size_t)2);
+    CHECK(freePads(pcb).empty());
+    for (auto& v : pcb.vias) {
+        if (std::abs(v.x - 5) < 1e-6) {
+            CHECK(v.blind);
+            CHECK_EQ(v.fromLayer, std::string("F.Cu"));
+            CHECK_EQ(v.toLayer, std::string("In1.Cu"));
+            CHECK_NEAR(v.drill, 0.1, 1e-9);
+            CHECK_NEAR(v.size, 0.25, 1e-9);
+        } else {
+            CHECK(!v.blind);
+            CHECK_EQ(v.toLayer, std::string("B.Cu"));
+        }
+    }
+    int openings = 0;
+    for (auto& c : pcb.grCircles) if (c.layer == "F.Mask" && c.filled && std::abs(c.cx - 9) < 1e-6) openings++;
+    CHECK_EQ(openings, 1);
+    CHECK(writeString(pcb).find("(via blind (at 5 5)") != std::string::npos);
+}
+
+// Class 6: a mirrored flash (orient 9) is read clockwise, as the spec says, unless misc/info
+// names KiCad, whose exporter writes that angle counter-clockwise.
+TEST(mirrored_flash_angle_follows_the_producer) {
+    for (const char* src : {"KiCad EDA", "Xpedition xPCB Layout", ""}) {
+        OdbDesign d = kicadDesign();
+        d.info.odbSource = src;
+        flash(d, "b.cu", 10, -10, "rect2000x1000", OdbSymbol::RECT, 2.0, 1.0, {}, 30.0, 9);
+        applyProducerQuirks(d);
+        KicadPcb pcb = transformToKicad(d);
+        auto fps = freePads(pcb);
+        CHECK_EQ(fps.size(), (size_t)1);
+        if (fps.empty()) continue;
+        CHECK_NEAR(fps[0]->pads[0].angle, std::string(src) == "KiCad EDA" ? 30.0 : 330.0, 1e-9);
+    }
+}
+
+// Class 7: a contour starts at OB. When the first OS does not repeat OB (Cadence), the edge out
+// of OB is still drawn; when it does (KiCad), it is not drawn twice.
+TEST(contours_start_at_their_first_vertex) {
+    for (bool repeat : {false, true}) {
+        OdbDesign d = kicadDesign();
+        OdbSurface s;
+        s.polarity = "P";
+        OdbContour c;
+        c.points = {{0, 0}, {30, 0}, {30, 10}, {10, 10}, {10, 25}, {0, 25}, {0, 0}};
+        if (repeat) c.points.insert(c.points.begin() + 1, OdbPoint{0, 0});
+        s.contours = {c};
+        d.profile.surfaces = {s};
+        KicadPcb pcb = transformToKicad(d);
+        int edges = 0, firstEdge = 0;
+        for (auto& l : pcb.grLines) {
+            if (l.layer != "Edge.Cuts") continue;
+            edges++;
+            if (std::abs(l.y1) < 1e-9 && std::abs(l.y2) < 1e-9 && std::abs(std::abs(l.x2 - l.x1) - 30) < 1e-9) firstEdge++;
+        }
+        CHECK_EQ(edges, 6);
+        CHECK_EQ(firstEdge, 1);
+    }
+}
+
+// Class 8: every file is scaled by its own UNITS line (else misc/info's, else INCH), and a
+// symbol's I / M suffix overrides its file's units.
+TEST(units_are_per_file) {
+    std::string dir = tempDir("per_file_units");
+    writeFile(dir + "/misc/info", "UNITS=MM\nODB_SOURCE=made-up\n");
+    writeFile(dir + "/matrix/matrix", "STEP {\n COL=1\n NAME=PCB\n}\nLAYER {\n ROW=1\n CONTEXT=BOARD\n TYPE=SIGNAL\n NAME=TOP\n POLARITY=POSITIVE\n}\n"
+              "LAYER {\n ROW=2\n CONTEXT=BOARD\n TYPE=SIGNAL\n NAME=BOT\n POLARITY=POSITIVE\n}\n");
+    writeFile(dir + "/steps/pcb/profile", "UNITS=MM\nS P 0\nOB 0 0 I\nOS 0 25\nOS 35 25\nOS 35 0\nOS 0 0\nOE\nSE\n");
+    writeFile(dir + "/steps/pcb/layers/top/features", "UNITS=MM\n$0 r1000\n$1 rect50x30 I\nP 10 5 0 P 0 0\nP 20 5 1 P 0 0\n");
+    writeFile(dir + "/steps/pcb/layers/bot/features", "UNITS=INCH\n$0 r40\nP 1 1 0 P 0 0\n");
+    OdbDesign d;
+    CHECK(parseOdbDirectory(dir, d));
+    KicadPcb pcb = transformToKicad(d);
+    auto fps = freePads(pcb);
+    CHECK_EQ(fps.size(), (size_t)3);
+    int found = 0;
+    for (auto* fp : fps) {
+        auto& p = fp->pads[0];
+        if (std::abs(fp->x - 10) < 1e-6) { found++; CHECK_NEAR(p.width, 1.0, 1e-9); }
+        if (std::abs(fp->x - 20) < 1e-6) { found++; CHECK_NEAR(p.width, 1.27, 1e-9); CHECK_NEAR(p.height, 0.762, 1e-9); }
+        if (std::abs(fp->x - 25.4) < 1e-6) { found++; CHECK_NEAR(fp->y, -25.4, 1e-9); CHECK_NEAR(p.width, 1.016, 1e-9); }
+    }
+    CHECK_EQ(found, 3);
+    CHECK_EQ(pcb.grRects.size(), (size_t)1);
+    if (!pcb.grRects.empty()) CHECK_NEAR(std::abs(pcb.grRects[0].x2 - pcb.grRects[0].x1), 35.0, 1e-9);
+}
+
+// ---------------------------------------------------------------- round-up bug classes, part 2
+
+static double islandsArea(const std::vector<poly::Island>& isl) {
+    double a = 0;
+    for (auto& i : isl) {
+        a += poly::signedArea(i.outer);
+        for (auto& h : i.holes) a += poly::signedArea(h);
+    }
+    return a;
+}
+
+static bool inPoly(const std::vector<std::pair<double,double>>& poly, double x, double y) {
+    bool in = false;
+    for (size_t i = 0, j = poly.size() - 1; i < poly.size(); j = i++)
+        if (((poly[i].second > y) != (poly[j].second > y)) &&
+            x < (poly[j].first - poly[i].first) * (y - poly[i].second) / (poly[j].second - poly[i].second) + poly[i].first)
+            in = !in;
+    return in;
+}
+static bool inFill(const KicadZone& z, double x, double y) {
+    for (auto& p : z.filledPolygons) if (inPoly(p, x, y)) return true;
+    return false;
+}
+
+// The difference: a hole inside, a bite out of the edge, overlapping and edge-sharing clearances,
+// a clearance that splits the island in two, and a shape with a hole of its own.
+TEST(polygon_difference) {
+    poly::Shape a{{{0, 0}, {10, 0}, {10, 10}, {0, 10}}};
+    auto sq = [](double x0, double y0, double x1, double y1) {
+        return poly::Shape{{{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}}};
+    };
+    CHECK_NEAR(islandsArea(poly::difference({a}, {sq(2, 2, 4, 4)})), 96, 1e-6);
+    auto r = poly::difference({a}, {sq(2, 2, 4, 4)});
+    CHECK_EQ(r.size(), (size_t)1);
+    if (!r.empty()) CHECK_EQ(r[0].holes.size(), (size_t)1);
+    CHECK_NEAR(islandsArea(poly::difference({a}, {sq(-1, 4, 2, 6)})), 96, 1e-6);           // bite
+    CHECK_NEAR(islandsArea(poly::difference({a}, {sq(2, 2, 5, 5), sq(4, 4, 6, 6)})), 100 - 9 - 4 + 1, 1e-6);
+    CHECK_NEAR(islandsArea(poly::difference({a}, {sq(2, 2, 4, 4), sq(4, 2, 6, 4)})), 92, 1e-6);  // shared edge
+    CHECK_NEAR(islandsArea(poly::difference({a}, {sq(0, 0, 10, 10)})), 0, 1e-6);            // all of it
+    auto split = poly::difference({a}, {sq(4, -1, 6, 11)});
+    CHECK_EQ(split.size(), (size_t)2);
+    CHECK_NEAR(islandsArea(split), 80, 1e-6);
+    poly::Shape donut = sq(1, 1, 9, 9);
+    donut.push_back({{3, 3}, {7, 3}, {7, 7}, {3, 7}});                                     // its hole stays copper
+    CHECK_NEAR(islandsArea(poly::difference({a}, {donut})), 100 - 64 + 16, 1e-6);
+    CHECK_NEAR(islandsArea(poly::difference({a}, {{poly::circle(5, 5, 2)}})), 100 - 3.14159265 * 4, 0.05);
+    CHECK_NEAR(islandsArea(poly::difference({a}, {{poly::stroke(-1, 5, 11, 5, 2, true)}})), 80, 1e-6);
+}
+
+// A negative flash or line clears the pour drawn before it, never one drawn after it, and is not
+// itself copper (it used to be written as a segment, and a negative surface as a zone).
+TEST(negative_features_clear_the_pour_before_them) {
+    OdbDesign d = gndPourAroundClearance();
+    auto& bcu = d.layerFeatures["b.cu"];
+    int pourIdx = bcu.surfaces[0].featIdx;
+    int sym = symbol(bcu, "r2000", OdbSymbol::ROUND, 2.0);
+    OdbPad neg;
+    neg.x = 10; neg.y = -10; neg.symIdx = sym; neg.polarity = "N"; neg.mirror = 0;
+    neg.featIdx = pourIdx + 1;
+    bcu.pads.push_back(neg);
+    OdbPad early = neg;  // before the pour: clears nothing
+    early.x = 17; early.y = -3; early.featIdx = -1;
+    bcu.pads.push_back(early);
+    OdbLine cut;
+    cut.x1 = 0; cut.y1 = -18; cut.x2 = 20; cut.y2 = -18; cut.symIdx = sym; cut.polarity = "N";
+    cut.featIdx = pourIdx + 2;
+    bcu.lines.push_back(cut);
+    OdbSurface negSrf;
+    negSrf.polarity = "N";
+    negSrf.featIdx = pourIdx + 3;
+    negSrf.contours = {square(1, -10, 3, -12, false)};
+    bcu.surfaces.push_back(negSrf);
+    KicadPcb pcb = transformToKicad(d);
+    const KicadZone* z = zoneOn(pcb, "B.Cu");
+    CHECK(z);
+    if (!z) return;
+    CHECK(!inFill(*z, 10, 10));     // the negative flash
+    CHECK(inFill(*z, 10, 12));
+    CHECK(inFill(*z, 17, 3));       // the flash before the pour
+    CHECK(!inFill(*z, 5, 18));      // the negative line
+    CHECK(!inFill(*z, 2, 11));      // the negative surface
+    CHECK(!inFill(*z, 5, 5));       // the pour's own hole
+    CHECK(inFill(*z, 15, 15));
+    int zones = 0;
+    for (auto& zz : pcb.zones) if (zz.layer == "B.Cu") zones++;
+    CHECK_EQ(zones, 1);
+    for (auto& s : pcb.segments) CHECK(s.layer != "B.Cu");
+}
+
+// A NEGATIVE matrix layer is a plane: the profile less its (positive) features, on the net of the
+// through-hole pins standing in its copper.
+TEST(negative_layer_is_a_plane) {
+    OdbDesign d = gndPourAroundClearance();
+    for (auto& l : d.layers) if (l.name == "B.CU") l.polarity = "NEGATIVE";
+    auto& bcu = d.layerFeatures["b.cu"];
+    bcu.surfaces.clear();
+    bcu.pads.erase(bcu.pads.begin() + 1);  // keep the 5,-5 antipad; 15,-15 (GND) is in the copper
+    OdbSurface prof;
+    prof.polarity = "P";
+    prof.contours = {square(0, 0, 20, -20, false)};
+    d.profile.surfaces = {prof};
+    KicadPcb pcb = transformToKicad(d);
+    const KicadZone* z = zoneOn(pcb, "B.Cu");
+    CHECK(z);
+    if (!z) return;
+    CHECK(!inFill(*z, 5, 5));
+    CHECK(inFill(*z, 15, 15));
+    CHECK(inFill(*z, 1, 1));
+    CHECK_EQ(z->netName, std::string("GND"));
+    for (auto& fp : pcb.footprints) CHECK(fp.refdes.rfind("FID", 0) != 0 && fp.refdes.rfind("PAD", 0) != 0);
+}
+
+// kicad-cli writes User.1..User.9 as DOCUMENT layers USER.1..USER.9; they map back to KiCad's
+TEST(user_layers_map_to_kicad_user_layers) {
+    OdbDesign d = kicadDesign();
+    d.layers.push_back(layer(40, "DOCUMENT", "USER.4"));
+    d.layers.back().context = "MISC";
+    auto& f = d.layerFeatures["user.4"];
+    f.units = "MM";
+    int si = symbol(f, "r200", OdbSymbol::ROUND, 0.2);
+    OdbLine l;
+    l.x1 = 0; l.y1 = 0; l.x2 = 5; l.y2 = 0; l.symIdx = si; l.polarity = "P";
+    f.lines.push_back(l);
+    KicadPcb pcb = transformToKicad(d);
+    bool layerOk = false;
+    for (auto& kl : pcb.layers) if (kl.canonicalName == "User.4") layerOk = kl.id == 53 && kl.type == "user";
+    CHECK(layerOk);
+    int lines = 0;
+    for (auto& g : pcb.grLines) if (g.layer == "User.4") lines++;
+    CHECK_EQ(lines, 1);
+}
+
+static double outlineArea(const OdbSymbol& sym) {
+    poly::Shape sh;
+    for (auto& r : sym.outline) sh.push_back(r);
+    return islandsArea(poly::difference({sh}, {}));
+}
+
+// Standard symbols KiCad has no pad shape for decode to an outline (sizes / 1000, like the others)
+TEST(standard_symbols_decode_to_outlines) {
+    auto oct = decodeSymbol("oct1000x1000x300");
+    CHECK(oct.shape == OdbSymbol::UNKNOWN);
+    CHECK_NEAR(outlineArea(oct), 1.0 - 4 * 0.3 * 0.3 / 2, 1e-9);
+    CHECK_NEAR(oct.width, 1.0, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("rect2000x1000xc300x13")), 2.0 - 2 * 0.045, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("rect2000x1000xc300")), 2.0 - 4 * 0.045, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("rect2000x1000xr300x24")), 2.0 - 2 * 0.09 * (1 - 3.14159265 / 4), 1e-3);
+    CHECK_NEAR(outlineArea(decodeSymbol("el2000x1000")), 3.14159265 * 0.5, 0.01);
+    CHECK_NEAR(outlineArea(decodeSymbol("di2000x1000")), 1.0, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("tri2000x1000")), 1.0, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("hex_l2000x1000x500")), 2.0 - 4 * 0.125, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("donut_s2000x1000")), 3.0, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("bfs1000")), 0.5, 1e-9);
+    // a round thermal: the ring less four 0.3 mm air gaps, in four separate pieces
+    auto thr = decodeSymbol("thr2000x1400x45x4x300");
+    poly::Shape sh;
+    for (auto& r : thr.outline) sh.push_back(r);
+    auto pieces = poly::difference({sh}, {});
+    CHECK_EQ(pieces.size(), (size_t)4);
+    double ring = 3.14159265 * (1.0 - 0.49);
+    CHECK(islandsArea(pieces) < ring - 4 * 0.3 * 0.3 * 0.9);
+    CHECK(islandsArea(pieces) > ring - 4 * 0.3 * 0.3 * 1.2);
+    CHECK_EQ(decodeSymbol("r1000").outline.size(), (size_t)0);  // KiCad shapes keep their own path
+}
+
+// A pin or free flash of such a symbol becomes a KiCad custom pad; a graphic one a polygon
+TEST(custom_symbols_become_custom_pads) {
+    OdbDesign d = kicadDesign();
+    auto& r1 = component(d, "R1", 10, -10, 1);
+    terminal(r1, "1", 10, -10, 1);
+    auto& fcu = d.layerFeatures["f.cu"];
+    fcu.units = "MM";
+    OdbSymbol oct = decodeSymbol("oct1000x1000x300");
+    fcu.symbols.push_back(oct);
+    OdbPad p;
+    p.x = 10; p.y = -10; p.symIdx = (int)fcu.symbols.size() - 1; p.polarity = "P"; p.mirror = 0;
+    fcu.pads.push_back(p);
+    fcu.symbols.push_back(decodeSymbol("thr2000x1400x45x4x300"));
+    p.x = 20; p.y = -10; p.symIdx = (int)fcu.symbols.size() - 1;
+    fcu.pads.push_back(p);
+    KicadPcb pcb = transformToKicad(d);
+    int custom = 0;
+    for (auto& fp : pcb.footprints)
+        for (auto& pad : fp.pads)
+            if (pad.shape == "custom") {
+                custom++;
+                CHECK(!pad.primitives.empty());
+                if (fp.refdes == "R1") CHECK_EQ(pad.primitives.size(), (size_t)1);
+                else CHECK_EQ(pad.primitives.size(), (size_t)4);
+            }
+    CHECK_EQ(custom, 2);
+}
+
+// symbols/<name>/features is read (in its own units) and drawn where a layer flashes <name>
+TEST(user_symbols_are_drawn) {
+    std::string dir = tempDir("user_symbol");
+    writeFile(dir + "/misc/info", "UNITS=MM\nODB_SOURCE=made-up\n");
+    writeFile(dir + "/matrix/matrix", "STEP {\n COL=1\n NAME=PCB\n}\nLAYER {\n ROW=1\n CONTEXT=BOARD\n TYPE=SIGNAL\n NAME=TOP\n POLARITY=POSITIVE\n}\n"
+              "LAYER {\n ROW=2\n CONTEXT=BOARD\n TYPE=SILK_SCREEN\n NAME=SST\n POLARITY=POSITIVE\n}\n");
+    writeFile(dir + "/steps/pcb/profile", "UNITS=MM\nS P 0\nOB 0 0 I\nOS 0 25\nOS 35 25\nOS 35 0\nOS 0 0\nOE\nSE\n");
+    writeFile(dir + "/symbols/logo/features", "UNITS=INCH\n$0 r40\nP 0 0 0 P 0 0\nP 0.1 0 0 P 0 0\n");
+    writeFile(dir + "/steps/pcb/layers/top/features", "UNITS=MM\n$0 logo\nP 10 5 0 P 0 0\n");
+    writeFile(dir + "/steps/pcb/layers/sst/features", "UNITS=MM\n$0 logo\nP 20 5 0 P 0 8 90\n");
+    OdbDesign d;
+    CHECK(parseOdbDirectory(dir, d));
+    CHECK(d.userSymbols.count("logo"));
+    KicadPcb pcb = transformToKicad(d);
+    auto fps = freePads(pcb);
+    CHECK_EQ(fps.size(), (size_t)1);
+    if (!fps.empty()) {
+        CHECK_EQ(fps[0]->pads[0].shape, std::string("custom"));
+        CHECK_EQ(fps[0]->pads[0].primitives.size(), (size_t)2);  // two 1.016 mm discs 2.54 mm apart
+    }
+    int silk = 0;
+    for (auto& g : pcb.grPolys)
+        if (g.layer == "F.SilkS") {
+            silk++;
+            double minY = 1e9, maxY = -1e9;
+            for (auto& [x, y] : g.pts) { minY = std::min(minY, y); maxY = std::max(maxY, y); }
+            CHECK_NEAR(maxY - minY, 1.016, 0.01);  // turned 90 deg: the discs stack along x
+        }
+    CHECK_EQ(silk, 2);
+}
+
+// An opening KiCad cannot make by growing the pad (a square paste window over a round pad, a
+// paste window of another aspect ratio) is a paste-only pad of its own shape; a grown one stays a margin
+TEST(odd_openings_become_aperture_pads) {
+    OdbDesign d = kicadDesign();
+    auto& u1 = component(d, "U1", 10, -10, 1);
+    terminal(u1, "1", 10, -10, 1);
+    terminal(u1, "2", 14, -10, 1);
+    flash(d, "f.cu", 10, -10, "r300", OdbSymbol::ROUND, 0.3);
+    flash(d, "f.paste", 10, -10, "rect300x300xr70", OdbSymbol::ROUNDRECT, 0.3);
+    d.layerFeatures["f.paste"].symbols.back().cornerRadius = 0.07;
+    flash(d, "f.mask", 10, -10, "r400", OdbSymbol::ROUND, 0.4);
+    flash(d, "f.cu", 14, -10, "rect2000x1000", OdbSymbol::RECT, 2.0, 1.0);
+    flash(d, "f.paste", 14, -10, "rect1600x800", OdbSymbol::RECT, 1.6, 0.8);
+    KicadPcb pcb = transformToKicad(d);
+    std::vector<const KicadPad*> one, two;
+    for (auto& fp : pcb.footprints)
+        if (fp.refdes == "U1")
+            for (auto& p : fp.pads) (p.pinNum == "1" ? one : two).push_back(&p);
+    CHECK_EQ(one.size(), (size_t)2);
+    CHECK_EQ(two.size(), (size_t)2);
+    if (one.size() == 2) {
+        CHECK(hasLayer(*one[0], "F.Cu") && hasLayer(*one[0], "F.Mask") && !hasLayer(*one[0], "F.Paste"));
+        CHECK(one[0]->hasMaskMargin);
+        CHECK_EQ(one[1]->shape, std::string("roundrect"));
+        CHECK(one[1]->layerNames == std::vector<std::string>{"F.Paste"});
+        CHECK_NEAR(one[1]->width, 0.3, 1e-9);
+    }
+    if (two.size() == 2) {  // 0.2 / 0.1 shrink: not one margin
+        CHECK(!hasLayer(*two[0], "F.Paste"));
+        CHECK_EQ(two[1]->shape, std::string("rect"));
+        CHECK_NEAR(two[1]->height, 0.8, 1e-9);
+    }
+}
+
+// Overlapping surfaces of a layer become zones of rising priority in file order (ODB++ paints a
+// later surface on top; KiCad's DRC refuses overlapping zones of one priority)
+TEST(overlapping_zones_get_file_order_priorities) {
+    OdbDesign d = gndPourAroundClearance();
+    auto& bcu = d.layerFeatures["b.cu"];
+    OdbSurface over = bcu.surfaces[0];
+    over.featIdx = 100;
+    over.contours = {square(10, -10, 30, -30, false)};
+    bcu.surfaces.push_back(over);
+    OdbSurface apart = over;
+    apart.featIdx = 101;
+    apart.contours = {square(50, -50, 60, -60, false)};
+    bcu.surfaces.push_back(apart);
+    KicadPcb pcb = transformToKicad(d);
+    std::vector<int> pr;
+    for (auto& z : pcb.zones) if (z.layer == "B.Cu") pr.push_back(z.priority);
+    CHECK_EQ(pr.size(), (size_t)3);
+    if (pr.size() == 3) {
+        CHECK_EQ(pr[0], 0);
+        CHECK_EQ(pr[1], 1);
+        CHECK_EQ(pr[2], 0);  // overlaps nothing
+    }
+    CHECK(writeString(pcb).find("(priority 1)") != std::string::npos);
+}
+
+// A custom pad whose copper reaches another pad of the part on another net is a net tie
+TEST(joined_custom_pads_are_net_ties) {
+    OdbDesign d = kicadDesign();
+    auto& st = component(d, "ST1", 10, -10, 1);
+    terminal(st, "1", 9.75, -10, 1);
+    terminal(st, "2", 10.25, -10, 2);
+    auto& fcu = d.layerFeatures["f.cu"];
+    fcu.units = "MM";
+    OdbSymbol join = decodeSymbol("rect600x200xr50x14");  // part-rounded: a custom outline
+    fcu.symbols.push_back(join);
+    for (double x : {9.75, 10.25}) {
+        OdbPad p;
+        p.x = x; p.y = -10; p.symIdx = (int)fcu.symbols.size() - 1; p.polarity = "P"; p.mirror = 0;
+        fcu.pads.push_back(p);
+    }
+    KicadPcb pcb = transformToKicad(d);
+    const KicadFootprint* fp = nullptr;
+    for (auto& f : pcb.footprints) if (f.refdes == "ST1") fp = &f;
+    CHECK(fp);
+    if (!fp) return;
+    CHECK_EQ(fp->netTiePadGroups.size(), (size_t)1);
+    CHECK(writeString(pcb).find("(net_tie_pad_groups \"1, 2\")") != std::string::npos);
 }
 
 int main(int argc, char** argv) {

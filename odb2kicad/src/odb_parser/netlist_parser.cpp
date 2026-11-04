@@ -20,6 +20,7 @@ bool parseNetlist(const std::string& path, OdbNetlist& netlist) {
             continue;
         }
 
+        if (startsWith(line, "UNITS=")) { netlist.units = trim(line.substr(6)); continue; }
         if (startsWith(line, "H ")) continue;
 
         // Net definition: $idx name

@@ -51,7 +51,19 @@ bool hasKicadDonutSkew(const OdbInfo& info) {
     return std::atoi(ver.c_str()) <= 9;
 }
 
+bool isKicadProducer(const OdbInfo& info) {
+    const std::string k = "KiCad";
+    return info.odbSource.compare(0, k.size(), k) == 0 || info.saveApp.compare(0, k.size(), k) == 0;
+}
+
 void applyProducerQuirks(OdbDesign& design) {
+    if (isKicadProducer(design.info)) {
+        // KiCad writes a mirrored flash (orient 9) with its counter-clockwise angle (kicad-cli
+        // 9.0.9: a bottom pad at 30 deg is "9 30.0"); the spec's angle is clockwise.
+        for (auto& [name, feats] : design.layerFeatures)
+            for (auto& p : feats.pads)
+                if (p.mirror == 9) p.angle = -p.angle;
+    }
     if (!hasKicadDonutSkew(design.info)) return;
     // KiCad 9 writes a circle of radius R and stroke w as donut_r(2R + w)x(2R - w/2): the inner
     // diameter is short of 2R - w by w/2, so the decoded ring width (od - id) / 2 is 3w/4. Its
@@ -65,7 +77,81 @@ void applyProducerQuirks(OdbDesign& design) {
     }
 }
 
+// File units -> mm factor: the file's UNITS line, else misc/info's, else INCH (the spec's default)
+static double unitFactor(const std::string& fileUnits, const std::string& jobUnits) {
+    std::string u = toUpper(trim(fileUnits.empty() ? jobUnits : fileUnits));
+    return (u == "MM") ? 1.0 : 25.4;
+}
+
+void normalizeUnits(OdbDesign& design) {
+    if (design.unitsNormalized) return;
+    const std::string& job = design.info.units;
+    auto scaleContours = [](std::vector<OdbSurface>& surfaces, double k) {
+        for (auto& srf : surfaces)
+            for (auto& c : srf.contours)
+                for (auto& p : c.points) { p.x *= k; p.y *= k; p.xc *= k; p.yc *= k; }
+    };
+    auto scaleFeatures = [&](OdbFeatures& f) {
+        double k = unitFactor(f.units, job);
+        for (auto& sym : f.symbols) {
+            // standard symbol sizes are mils (INCH) or microns (MM), decoded / 1000
+            double ks = sym.unitOverride == 'I' ? 25.4 : sym.unitOverride == 'M' ? 1.0 : k;
+            sym.width *= ks; sym.height *= ks; sym.diameter *= ks;
+            sym.cornerRadius *= ks; sym.lineWidth *= ks;
+            for (auto& ring : sym.outline)
+                for (auto& [x, y] : ring) { x *= ks; y *= ks; }
+            sym.unitOverride = 0;
+        }
+        for (auto& p : f.pads) { p.x *= k; p.y *= k; }
+        for (auto& l : f.lines) { l.x1 *= k; l.y1 *= k; l.x2 *= k; l.y2 *= k; }
+        for (auto& a : f.arcs) { a.xs *= k; a.ys *= k; a.xe *= k; a.ye *= k; a.xc *= k; a.yc *= k; }
+        scaleContours(f.surfaces, k);
+        f.units = "MM";
+    };
+    for (auto& [name, f] : design.layerFeatures) scaleFeatures(f);
+    for (auto& [name, f] : design.userSymbols) scaleFeatures(f);  // each in its own UNITS
+    {
+        double k = unitFactor(design.profile.units, job);
+        scaleContours(design.profile.surfaces, k);
+        design.profile.units = "MM";
+    }
+    for (auto* comps : {&design.topComponents, &design.botComponents}) {
+        double k = unitFactor(comps->units, job);
+        for (auto& c : comps->components) {
+            c.x *= k; c.y *= k;
+            for (auto& t : c.terminals) { t.x *= k; t.y *= k; }
+        }
+        comps->units = "MM";
+    }
+    {
+        double k = unitFactor(design.edaData.units, job);
+        for (auto& pkg : design.edaData.packages) {
+            for (auto& pin : pkg.pins) { pin.x *= k; pin.y *= k; }
+            for (auto& ring : pkg.outlines)
+                for (auto& [x, y] : ring) { x *= k; y *= k; }
+        }
+        design.edaData.units = "MM";
+    }
+    {
+        double k = unitFactor(design.netlist.units, job);
+        for (auto& pt : design.netlist.points) { pt.x *= k; pt.y *= k; pt.padW *= k; pt.padH *= k; }
+        design.netlist.units = "MM";
+    }
+    design.unitsNormalized = true;
+}
+
 bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
+    std::string error;
+    if (parseOdbDirectory(rootDir, design, error)) return true;
+    std::cerr << "Error: " << error << "\n";
+    return false;
+}
+
+bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design, std::string& error) {
+    if (!dirExists(rootDir)) {
+        error = "no-input: " + rootDir + " is not a folder (an archive must be unpacked first)";
+        return false;
+    }
     // 1. Parse misc/info
     std::string infoPath = rootDir + "/misc/info";
     if (fileExists(infoPath)) {
@@ -76,8 +162,17 @@ bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
 
     // 2. Parse matrix/matrix
     std::string matrixPath = rootDir + "/matrix/matrix";
+    if (!fileExists(matrixPath)) {
+        error = "not-odb: no matrix/matrix file; the input is not an ODB++ job folder (or the archive "
+                "holds it under another name)";
+        return false;
+    }
     if (!parseMatrix(matrixPath, design.stepName, design.layers)) {
-        std::cerr << "Error: failed to parse " << matrixPath << "\n";
+        error = "bad-matrix: matrix/matrix could not be read";
+        return false;
+    }
+    if (design.layers.empty()) {
+        error = "bad-matrix: matrix/matrix lists no LAYER records";
         return false;
     }
 
@@ -99,7 +194,7 @@ bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
         if (!stepDirs.empty()) {
             actualStepDir = stepsDir + "/" + stepDirs[0];
         } else {
-            std::cerr << "Error: no step directory found\n";
+            error = "no-step: no step folder under steps/ (the matrix names step '" + design.stepName + "')";
             return false;
         }
     }
@@ -131,6 +226,21 @@ bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
         }
     }
 
+    // 5b. User symbols: symbols/<name>/features, drawn wherever a layer flashes <name>
+    std::string symbolsDir = rootDir + "/symbols";
+    for (auto& symName : listDirs(symbolsDir)) {
+        std::string featPath = symbolsDir + "/" + symName + "/features";
+        OdbFeatures feats;
+        if (fileExists(featPath) && parseFeatures(featPath, feats))
+            design.userSymbols[toLower(symName)] = std::move(feats);
+    }
+
+    if (design.layerFeatures.empty()) {
+        error = "no-layers: no layer has a features file under " + actualStepDir.substr(rootDir.size() + 1) +
+                "/layers (" + std::to_string(design.layers.size()) + " layers in the matrix)";
+        return false;
+    }
+
     // 6. Parse components (top and bottom)
     std::string compTopPath = layersDir + "/comp_+_top/components";
     if (fileExists(compTopPath)) {
@@ -154,6 +264,7 @@ bool parseOdbDirectory(const std::string& rootDir, OdbDesign& design) {
     }
 
     applyProducerQuirks(design);
+    normalizeUnits(design);
     return true;
 }
 

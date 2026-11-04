@@ -1,13 +1,17 @@
 #include "odb_parser/features_parser.h"
 #include "odb_parser/symbols.h"
+#include "odb_parser/contour.h"
 #include "util/string_utils.h"
 #include <fstream>
 #include <sstream>
 
 namespace odb2kicad {
 
-static std::map<int, std::string> parseAttrs(const std::string& attrStr) {
+static std::map<int, std::string> parseAttrs(std::string attrStr) {
     std::map<int, std::string> result;
+    // ";0=1,25=2,26;ID=516688": the numbered attributes end at the next ';' (ID= follows)
+    auto semi = attrStr.find(';');
+    if (semi != std::string::npos) attrStr = attrStr.substr(0, semi);
     if (attrStr.empty()) return result;
 
     auto parts = split(attrStr, ',');
@@ -24,7 +28,10 @@ static std::map<int, std::string> parseAttrs(const std::string& attrStr) {
                 // Named attribute from non-KiCad ODB++ — skip
             }
         }
-        // Single value like "1" means attr flag is set (used for .smd)
+        else {
+            // A bare index is a boolean attribute that is set (.smd, .test_point)
+            try { result[std::stoi(part)] = "1"; } catch (const std::exception&) {}
+        }
     }
     return result;
 }
@@ -55,7 +62,14 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
             if (sp != std::string::npos) {
                 int idx = std::stoi(line.substr(1, sp - 1));
                 std::string symName = trim(line.substr(sp + 1));
+                char unitOverride = 0;  // "$n name I|M"
+                if (symName.size() > 2 && symName[symName.size() - 2] == ' ' &&
+                    (symName.back() == 'I' || symName.back() == 'M')) {
+                    unitOverride = symName.back();
+                    symName = trim(symName.substr(0, symName.size() - 2));
+                }
                 OdbSymbol sym = decodeSymbol(symName);
+                sym.unitOverride = unitOverride;
                 if (idx >= (int)features.symbols.size())
                     features.symbols.resize(idx + 1);
                 features.symbols[idx] = sym;
@@ -147,30 +161,8 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
             continue;
         }
 
-        // Surface contour records
-        if (startsWith(line, "OB ")) {
-            if (!currentSurface) continue;
-            currentSurface->contours.emplace_back();
-            currentContour = &currentSurface->contours.back();
-            std::istringstream iss(line.substr(3));
-            double x, y;
-            std::string dir;
-            iss >> x >> y >> dir;
-            currentContour->isHole = (dir == "H");
-            currentContour->points.push_back({x, y});
-            continue;
-        }
-
-        if (startsWith(line, "OS ")) {
-            if (!currentContour) continue;
-            std::istringstream iss(line.substr(3));
-            double x, y;
-            iss >> x >> y;
-            currentContour->points.push_back({x, y});
-            continue;
-        }
-
-        if (line == "OE") { currentContour = nullptr; continue; }
+        // Surface contour records (OB / OS / OC / OE)
+        if (parseContourRecord(line, currentSurface, currentContour, contourTolerance(features.units))) continue;
         if (line == "SE") { currentSurface = nullptr; continue; }
     }
     return true;

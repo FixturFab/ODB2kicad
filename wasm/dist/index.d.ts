@@ -16,9 +16,18 @@ export interface ConvertResult {
   success: boolean;
   /** The .kicad_pcb s-expression output (present when success is true) */
   kicadPcb?: string;
-  /** Error message (present when success is false) */
+  /** What went wrong and what to do about it (present when success is false) */
   error?: string;
+  /**
+   * Kind of failure (present when success is false): bad-input, archive, not-odb, no-input,
+   * bad-matrix, no-step, no-layers, crash (WASM abort / out of memory; the module was reset),
+   * internal.
+   */
+  code?: 'bad-input' | 'archive' | 'not-odb' | 'no-input' | 'bad-matrix' | 'no-step' | 'no-layers' | 'crash' | 'internal';
 }
+
+/** Drop the cached WASM module; the next conversion starts a fresh instance. */
+export declare function resetWasmModule(): void;
 
 /**
  * Convert ODB++ files to KiCad .kicad_pcb format.

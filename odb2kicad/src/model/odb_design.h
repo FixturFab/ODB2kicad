@@ -6,7 +6,7 @@
 namespace odb2kicad {
 
 struct OdbInfo {
-    std::string units = "MM";
+    std::string units;      // misc/info UNITS (empty: none); the default for files without UNITS
     std::string jobName;
     std::string odbSource;
     std::string saveApp;    // SAVE_APP, e.g. "KiCad EDA 9.0.9"
@@ -34,6 +34,13 @@ struct OdbStepHeader {
 struct OdbPoint {
     double x = 0;
     double y = 0;
+    // An OC record ends at this point: the edge from the previous vertex is an arc about
+    // (xc, yc). The arc is also flattened into `interp` points before it, so polygon users
+    // can ignore these fields; outline writers skip the interp points and draw the arc.
+    bool arc = false;
+    bool cw = false;
+    double xc = 0, yc = 0;
+    bool interp = false;
 };
 
 struct OdbContour {
@@ -48,6 +55,7 @@ struct OdbSurface {
 };
 
 struct OdbProfile {
+    std::string units;      // the profile file's UNITS line (empty: none)
     std::vector<OdbSurface> surfaces;
 };
 
@@ -61,6 +69,11 @@ struct OdbSymbol {
     double cornerRadius = 0;// mm (for roundrect)
     double lineWidth = 0;   // mm (donut ring width: donut_rc line width, donut_r (od-id)/2)
     bool donut = false;     // donut_r / donut_rc: an outline, not a filled shape
+    char unitOverride = 0;  // 'I' / 'M' after the name ("$3 rect50x30 I"): mils / microns whatever the file's UNITS
+    // Every other standard symbol (shape stays UNKNOWN): its outline as rings filled even-odd,
+    // symbol frame (y up, unrotated), same units as width: thermals, chamfered and
+    // part-rounded rects, octagons, ellipses, diamonds, hexagons, triangles, butterflies, donuts.
+    std::vector<std::vector<std::pair<double,double>>> outline;
 };
 
 // Feature records from layer features files
@@ -196,6 +209,7 @@ struct OdbNetPoint {
 };
 
 struct OdbNetlist {
+    std::string units;
     std::vector<OdbNetDef> nets;
     std::vector<OdbNetPoint> points;
 };
@@ -208,10 +222,12 @@ struct OdbDesign {
     OdbStepHeader stepHeader;
     OdbProfile profile;
     std::map<std::string, OdbFeatures> layerFeatures; // layer name (lowercase) -> features
+    std::map<std::string, OdbFeatures> userSymbols;   // symbols/<name>/features (name lowercase)
     OdbComponents topComponents;
     OdbComponents botComponents;
     OdbEdaData edaData;
     OdbNetlist netlist;
+    bool unitsNormalized = false;  // every coordinate and size is in mm (normalizeUnits)
 };
 
 } // namespace odb2kicad

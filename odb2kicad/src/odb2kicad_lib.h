@@ -8,7 +8,7 @@ namespace odb2kicad {
 struct ConvertResult {
     bool success;
     std::string kicad_pcb;   // output s-expression on success
-    std::string error;       // error message on failure
+    std::string error;       // on failure: "<code>: <reason>" (codes in odb_parser.h, or internal)
 };
 
 // Convert from a filesystem path (used by CLI and WASM-with-MEMFS)

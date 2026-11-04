@@ -45,9 +45,11 @@ const result = await convertOdbArchive(archive);
 if (result.success) {
   console.log(result.kicadPcb);
 } else {
-  console.error(result.error);
+  console.error(result.code, result.error); // e.g. 'not-odb', 'archive', 'crash'
 }
 ```
+
+A failed result carries a `code` (`bad-input`, `archive`, `not-odb`, `no-input`, `bad-matrix`, `no-step`, `no-layers`, `crash`, `internal`) and an `error` that says what to do about it. After a `crash` the WASM module is reset, so the next conversion starts clean.
 
 The API also exposes `convertOdb(files)` for pre-extracted file arrays — see the [type definitions](wasm/dist/index.d.ts) for details.
 

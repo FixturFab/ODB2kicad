@@ -1,4 +1,5 @@
 #include "odb_parser/profile_parser.h"
+#include "odb_parser/contour.h"
 #include "util/string_utils.h"
 #include <fstream>
 #include <sstream>
@@ -17,7 +18,8 @@ bool parseProfile(const std::string& path, OdbProfile& profile) {
         line = trim(line);
         if (line.empty() || line[0] == '#') continue;
 
-        if (startsWith(line, "UNITS=") || startsWith(line, "F ")) continue;
+        if (startsWith(line, "UNITS=")) { profile.units = trim(line.substr(6)); continue; }
+        if (startsWith(line, "F ")) continue;
 
         if (startsWith(line, "S ")) {
             // S polarity dcode
@@ -29,35 +31,8 @@ bool parseProfile(const std::string& path, OdbProfile& profile) {
             continue;
         }
 
-        if (startsWith(line, "OB ")) {
-            // OB x y direction
-            if (!currentSurface) continue;
-            currentSurface->contours.emplace_back();
-            currentContour = &currentSurface->contours.back();
-
-            std::istringstream iss(line.substr(3));
-            double x, y;
-            std::string dir;
-            iss >> x >> y >> dir;
-            currentContour->isHole = (dir == "H");
-            currentContour->points.push_back({x, y});
-            continue;
-        }
-
-        if (startsWith(line, "OS ")) {
-            // OS x y
-            if (!currentContour) continue;
-            std::istringstream iss(line.substr(3));
-            double x, y;
-            iss >> x >> y;
-            currentContour->points.push_back({x, y});
-            continue;
-        }
-
-        if (line == "OE") {
-            currentContour = nullptr;
-            continue;
-        }
+        // Contour records (OB / OS / OC / OE)
+        if (parseContourRecord(line, currentSurface, currentContour, contourTolerance(profile.units))) continue;
 
         if (line == "SE") {
             currentSurface = nullptr;

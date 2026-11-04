@@ -30,8 +30,14 @@ struct KicadPad {
     std::string netName;
     double drill = 0;           // for thru_hole (round hole diameter, or slot width)
     double drillHeight = 0;     // slot length when the hole is oval (0 = round)
+    // Mask / paste opening = pad grown by this much (mm); written only when the flag is set
+    bool hasMaskMargin = false, hasPasteMargin = false;
+    double maskMargin = 0, pasteMargin = 0;
     // custom shape: filled polygons in the pad frame (relative to the pad, unrotated)
     std::vector<std::vector<std::pair<double,double>>> primitives;
+    // Mask / paste openings the pad cannot make by growing (another shape, size ratio or corner):
+    // mask- or paste-only pads of the opening's own shape, added beside this one
+    std::vector<KicadPad> apertures;
 };
 
 struct KicadFpLine {
@@ -62,6 +68,7 @@ struct KicadFootprint {
     std::string value;
     std::string attr;           // "smd" or "through_hole"
     bool dnp = false;           // emitted as a trailing "dnp" in (attr ...)
+    std::vector<std::vector<std::string>> netTiePadGroups;  // pads whose copper joins on purpose
     std::vector<KicadPad> pads;
     std::vector<KicadFpLine> fpLines;   // footprint-frame coordinates, like the pads
     std::vector<KicadFpArc> fpArcs;
@@ -90,6 +97,7 @@ struct KicadVia {
     double drill = 0;
     std::string fromLayer;
     std::string toLayer;
+    bool blind = false;         // blind / buried: does not span F.Cu-B.Cu
     int netId = 0;
 };
 
@@ -133,6 +141,7 @@ struct KicadZone {
     int netId = 0;
     std::string netName;
     std::string layer;
+    int priority = 0;           // file order on its layer: a later surface is on top
     std::vector<std::pair<double,double>> outlinePoints;
     std::vector<std::vector<std::pair<double,double>>> filledPolygons;
 };

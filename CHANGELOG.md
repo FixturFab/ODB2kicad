@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.3.0 (2026-11-04)
+
+Conversion fixes found by a layer-by-layer round-up against an independent reference drawn straight from the ODB++ files, plus clearer failures.
+
+### Copper, zones and polarity
+- Negative-polarity features cut out the surfaces drawn before them; a NEGATIVE matrix layer becomes a plane (the profile less its features) on the net its pins and vias carry.
+- Zone holes stay holes; outline and zone contours start at their OB point.
+- Overlapping copper surfaces get zone priorities in file order; joined custom pads are marked as net ties.
+- Surface and profile arcs (OC records) are parsed.
+- Vias come from the matrix drill layers with their START/END span (`blind` when not F.Cu-B.Cu).
+
+### Pads and symbols
+- Free copper pads (test points, fiducials, mounting pads) reach the board as board-only footprints.
+- Mask and paste openings keep their own size; an opening of another shape becomes a mask- or paste-only pad.
+- Standard symbols without a KiCad pad shape (thermals, octagons, chamfered rectangles, ellipses, ...) and user symbols (`symbols/<name>`) are drawn: custom pads on pins, filled polygons elsewhere.
+- Mirrored flashes (orient 9) are read clockwise per the spec, counter-clockwise only for KiCad-made jobs.
+
+### Layers and units
+- USER.1-USER.9 map to KiCad's User.1-User.9.
+- Units are read per file (`UNITS=`, else misc/info, else INCH); a symbol's `I`/`M` suffix overrides.
+
+### WASM package
+- A failed conversion returns `{ success: false, code, error }`: `code` is one of `bad-input`, `archive`, `not-odb`, `no-input`, `bad-matrix`, `no-step`, `no-layers`, `crash`, `internal`, and `error` says what to do about it.
+- A WASM abort or out-of-memory resets the module (`resetWasmModule()` is exported), so the next conversion starts clean.
+- Archives: the ODB++ root is found by its `matrix/matrix` file (files beside the job and `__MACOSX` entries no longer break it); tar long names (GNU `L`, pax `path=`) are read.
+- `wasm/dist` rebuilt (emsdk 3.1.50; byte-identical to a fresh build of this tree) and `wasm/odb2kicad-wasm.tgz` repacked.
+
+### Tests and docs
+- Round-up harness (`test/roundup.py`, made-up boards in `test/synthetic_odb.py`, `test/test_roundup.py`).
+- Unit tests 33 -> 51; WASM node test 13 cases (failure codes).
+- `docs/rotation.md`: why the CMP rotation is clockwise, checked on public samples.
+- `what-doesnt-work.md` updated, with a DRC triage of an imported board.
+
 ## 0.2.0 (2026-10-31)
 
 Conversion fixes, checked by converting KiCad 9 ODB++ exports back to KiCad and comparing the result with the original board.
