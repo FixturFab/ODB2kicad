@@ -185,9 +185,10 @@ from the ODB++ files. No KiCad, no Pillow, no viewer needed; pure Python 3.10+.
 ```bash
 python3 -I test/roundup.py samples/odb-output samples/odb-kitchen-sink --out /tmp/roundup
 python3 -I test/synthetic_odb.py /tmp/synth                      # made-up boards (basic / edge / mixed units)
+python3 -I test/synthetic_odb.py /tmp/synth --variant symbols    # every standard symbol 0.3.0 missed (also: outline, negative)
 python3 -I test/roundup.py /tmp/synth/* samples/designodb_rigidflex.tgz --out /tmp/roundup \
     --converter odb2kicad=native:odb2kicad/build/odb2kicad --converter other=pcb:/path/to/boards/
-python3 -m unittest discover -s test -p 'test_roundup.py'        # 14 tests, made-up boards only
+python3 -m unittest discover -s test -p 'test_roundup.py'        # 15 tests, made-up boards only
 ```
 
 Writes `<out>/<job>/report.json` (per layer: `xor_ratio` = XOR / union of ink; `missing_ratio` /

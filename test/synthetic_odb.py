@@ -13,6 +13,8 @@
            NEGATIVE matrix layer.
 ``outline`` (only with --variant outline) an L-shaped MM profile whose first OS does not repeat
            OB, with one rounded inner corner, and an L-shaped plane.
+``symbols`` (only with --variant symbols) every standard symbol 0.3.0 drew wrong or not at all, on
+           TOP (turned / mirrored), negative in a GND plane, and on an inner layer.
 ``edge``   the corner cases a converter is most likely to get wrong, one per layer: a thermal
            relief, a chamfered rect, a full-circle arc, a clockwise surface arc, an `I`/`M` unit
            override on a symbol, a 9-orient (mirrored) flash at 30 deg, an octagon and an ellipse.
@@ -144,6 +146,44 @@ NEGATIVE = {
 PROFILE_NEG = "UNITS=MM\nF 1\nS P 0\nOB 0 0 I\nOS 0 30\nOS 40 30\nOS 40 0\nOS 0 0\nOE\nSE\n"
 
 
+# symbols board, MM: one flash of every standard symbol 0.3.0 drew wrong or not at all (ODB++ 8.1
+# Appendix A: thermals with rounded ends, corners or open corners, oval / oblong thermals, the half
+# oval, moire, the stencil symbols and a capitalised name), turned, mirrored and plain, on TOP; the
+# same thermals flashed negative into a GND plane (thermal reliefs) and positive on an inner layer.
+SYMBOL_NAMES = [
+    "thr3000x2000x45x4x400", "thr3000x2000x0x2x400", "ths3000x2000x30x3x400", "s_ths3000x2000x0x4x400xr500",
+    "s_ths3000x2000x45x4x400xc400x13", "s_tho3000x2000x45x4x400", "s_thr3000x2000x45x4x400", "sr_ths3000x2000x45x4x400",
+    "rc_ths4000x2500x45x4x400x400", "rc_ths4000x2500x0x4x400x400xr600", "rc_tho4000x2500x45x4x400x400",
+    "o_ths4000x2500x0x4x400x400", "oblong_ths4000x2500x45x4x400x400xr", "oblong_ths4000x2500x90x2x400x400xs",
+    "oval_h3000x1600", "moire150x400x3x150x3000x15", "hplate3000x2000x800xra200xro100", "rhplate3000x2000x800",
+    "fhplate3000x2000x500x700xra150", "radhplate3000x2000x800xra200", "dshape3000x2000x800xra100",
+    "cross3000x3000x600x600x30x60xrxra200", "dogbone3000x3000x600x800x50xsxra200", "dpack3000x2000x300x300x3x2xra100",
+    "THR3000X2000X45X4X400",
+]
+_ORIENTS = ["0", "8 30.0", "9 30.0", "1", "6", "8 135.0"]
+
+
+def _symbols_top() -> list:
+    out = []
+    for i in range(len(SYMBOL_NAMES)):
+        x, y = 6 + 7 * (i % 5), 6 + 7 * (i // 5)
+        out.append(f"P {x} {y} {i} P 0 {_ORIENTS[i % len(_ORIENTS)]}")
+    return out
+
+
+SYMBOLS = {
+    "TOP": ("MM", SYMBOL_NAMES, _symbols_top()),
+    "GND": ("MM", ["thr3000x2000x45x4x400", "rc_ths4000x2500x45x4x400x400", "s_thr3000x2000x45x4x400", "moire150x400x3x150x3000x15"], [
+        "S P 0", "OB 1 1 I", "OS 1 47", "OS 41 47", "OS 41 1", "OS 1 1", "OE", "SE",
+        "P 6 6 0 N 0 0", "P 13 6 1 N 0 8 20.0", "P 20 6 2 N 0 0", "P 27 6 3 N 0 0",
+    ]),
+    "SIG3": ("MM", ["o_ths4000x2500x0x4x400x400", "oblong_ths4000x2500x45x4x400x400xr", "s_tho3000x2000x45x4x400"], [
+        "P 6 20 0 P 0 8 10.0", "P 13 20 1 P 0 0", "P 20 20 2 P 0 9 45.0",
+    ]),
+}
+PROFILE_SYM = "UNITS=MM\nF 1\nS P 0\nOB 0 0 I\nOS 0 48\nOS 42 48\nOS 42 0\nOS 0 0\nOE\nSE\n"
+
+
 def write_job(root: Path, layers: dict, profile: str, user_symbol=None, units: str = "INCH", units_empty: str = "",
               negative=()) -> Path:
     step = root / "steps" / "pcb"
@@ -195,7 +235,7 @@ def kicad_equivalent() -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("out", type=Path)
-    ap.add_argument("--variant", choices=("all", "basic", "edge", "mixed", "outline", "negative"), default="all")
+    ap.add_argument("--variant", choices=("all", "basic", "edge", "mixed", "outline", "negative", "symbols"), default="all")
     a = ap.parse_args()
     made = []
     if a.variant in ("all", "basic"):
@@ -208,6 +248,8 @@ def main() -> int:
         made.append(write_job(a.out / "synthetic-outline", OUTLINE, PROFILE_L, units="MM"))
     if a.variant == "negative":  # not in "all" either
         made.append(write_job(a.out / "synthetic-negative", NEGATIVE, PROFILE_NEG, units="MM", negative=("SIG3",)))
+    if a.variant == "symbols":  # not in "all" either
+        made.append(write_job(a.out / "synthetic-symbols", SYMBOLS, PROFILE_SYM, units="MM"))
     for m in made:
         print(m)
     return 0
