@@ -213,4 +213,30 @@ console.log('--- Test 12: DNP footprints (odb-dnp) ---');
   console.log(`  PASS: ${dnp} dnp footprints, none on odb-output`);
 }
 
+// --- Test 13: failure reasons: a code and a reason for each kind of bad input ---
+console.log('--- Test 13: Failure reasons ---');
+{
+  const matrix = 'STEP {\n NAME=PCB\n}\nLAYER {\n ROW=1\n NAME=TOP\n TYPE=SIGNAL\n}\n';
+  const cases = [
+    ['not an array', () => convertOdb('matrix/matrix'), 'bad-input'],
+    ['no files', () => convertOdb([]), 'not-odb'],
+    ['no matrix', () => convertOdb([{ path: 'gerbers/top.gbr', content: 'G04*' }]), 'not-odb'],
+    ['empty matrix', () => convertOdb([{ path: 'matrix/matrix', content: 'STEP {\n NAME=PCB\n}\n' }]), 'bad-matrix'],
+    ['no step', () => convertOdb([{ path: 'matrix/matrix', content: matrix }]), 'no-step'],
+    ['no layers', () => convertOdb([{ path: 'matrix/matrix', content: matrix }, { path: 'steps/pcb/profile', content: '' }]), 'no-layers'],
+    ['bad archive', () => convertOdbArchive(new Uint8Array([0xDE, 0xAD, 0xBE, 0xEF])), 'archive'],
+    ['not a buffer', () => convertOdbArchive('x'), 'bad-input'],
+  ];
+  for (const [name, run, code] of cases) {
+    const r = await run();
+    assert.equal(r.success, false, `${name} should fail`);
+    assert.equal(r.code, code, `${name}: code ${r.code} (${r.error})`);
+    assert.ok(r.error && r.error.length > 10, `${name}: a reason`);
+    console.log(`  PASS: ${name}: ${r.code}: ${r.error}`);
+  }
+  // the module still converts after the failures
+  const ok = await convertOdb(loadDir(join(samplesDir, 'odb-output')));
+  assert.equal(ok.success, true, 'a good board still converts after failures');
+}
+
 console.log('\nAll tests PASSED');

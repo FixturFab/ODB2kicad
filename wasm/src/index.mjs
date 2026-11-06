@@ -16,8 +16,29 @@ function getModule() {
       const initModule = (await import(wasmModuleUrl)).default;
       return await initModule();
     })();
+    // a failed init is not cached: the next call retries
+    _modulePromise.catch(() => { _modulePromise = null; });
   }
   return _modulePromise;
+}
+
+/**
+ * Drop the cached WASM module so the next conversion starts a fresh instance. Done after any
+ * abort or throw out of the WASM: an aborted Emscripten runtime is unusable afterwards.
+ */
+export function resetWasmModule() {
+  _modulePromise = null;
+}
+
+// A failed result: `code` says which kind of failure, `error` says what to do about it.
+//   bad-input   the call itself (not an array of files, not an ArrayBuffer/Uint8Array)
+//   archive     the archive could not be unpacked, or holds no files
+//   not-odb     no matrix/matrix: not an ODB++ job (the C++ also says no-input / bad-matrix /
+//               no-step / no-layers for jobs it cannot read)
+//   crash       the converter stopped (WASM abort, out of memory); the module was reset
+//   internal    anything else the converter reported
+function fail(code, error) {
+  return { success: false, code, error };
 }
 
 /**
@@ -66,7 +87,18 @@ function rmrf(FS, path) {
  * @returns {Promise<{success: boolean, kicadPcb?: string, error?: string}>}
  */
 export async function convertOdb(files) {
-  const Module = await getModule();
+  if (!Array.isArray(files)) return fail('bad-input', 'convertOdb expects an array of {path, content} entries');
+  if (files.length === 0) return fail('not-odb', 'no files given: an ODB++ job needs at least matrix/matrix and a steps/ folder');
+  if (!files.some((f) => /(^|\/)matrix\/matrix$/.test(f.path))) {
+    const top = [...new Set(files.map((f) => f.path.split('/')[0]))].slice(0, 8).join(', ');
+    return fail('not-odb', `no matrix/matrix among ${files.length} files (top level: ${top}): not an ODB++ job`);
+  }
+  let Module;
+  try {
+    Module = await getModule();
+  } catch (err) {
+    return fail('crash', 'the converter module could not start: ' + (err && err.message ? err.message : String(err)));
+  }
   const FS = Module.FS;
   const mountPoint = '/odb';
 
@@ -82,21 +114,26 @@ export async function convertOdb(files) {
     FS.writeFile(fullPath, file.content);
   }
 
-  // Run conversion
+  // Run conversion. A WASM abort (a crash, out of memory) throws; the runtime is unusable after
+  // it, so the module is dropped and the next call starts afresh.
   let raw;
   try {
     raw = Module.convertOdb(mountPoint);
+  } catch (err) {
+    resetWasmModule();
+    const what = err && err.message ? err.message : String(err);
+    const oom = /memory|Cannot enlarge/i.test(what);
+    return fail('crash', `the converter stopped (${oom ? 'out of memory' : 'WASM abort'}: ${what.slice(0, 200)}) ` +
+      `after reading ${files.length} files; the module was reset, so the next conversion starts clean`);
   } finally {
-    // Clean up MEMFS
-    rmrf(FS, mountPoint);
+    try { rmrf(FS, mountPoint); } catch (_) { /* an aborted runtime may refuse */ }
   }
 
-  // Parse result — the C++ binding returns "ERROR: ..." on failure
+  // Parse result: the C++ binding returns "ERROR: <code>: <reason>" on failure
   if (raw.startsWith('ERROR: ')) {
-    return {
-      success: false,
-      error: raw.substring(7),
-    };
+    const msg = raw.substring(7);
+    const m = /^([a-z-]+): ([\s\S]*)$/.exec(msg);
+    return m ? fail(m[1], m[2]) : fail('internal', msg);
   }
 
   return {
@@ -115,6 +152,7 @@ function parseTar(data) {
   const files = [];
   const decoder = new TextDecoder();
   let offset = 0;
+  let longName = null;  // GNU 'L' or pax 'x' path for the next entry (names over 100 chars)
 
   while (offset + 512 <= data.length) {
     const header = data.subarray(offset, offset + 512);
@@ -140,6 +178,22 @@ function parseTar(data) {
     const type = header[156];
 
     offset += 512; // move past header
+
+    if (type === 0x4c /* 'L' GNU long name */ || type === 0x78 /* 'x' pax header */) {
+      const body = decoder.decode(data.subarray(offset, offset + size));
+      if (type === 0x4c) {
+        longName = body.replace(/\0.*$/s, '');
+      } else {
+        const m = body.match(/(?:^|\n)\d+ path=([^\n]*)\n/);
+        if (m) longName = m[1];
+      }
+      offset += Math.ceil(size / 512) * 512;
+      continue;
+    }
+    if (longName !== null) {
+      name = longName;
+      longName = null;
+    }
 
     if ((type === 0x30 || type === 0) && size > 0 && name) {
       // Regular file — extract content as string
@@ -239,20 +293,32 @@ export async function convertOdbArchive(buffer) {
   } else if (buffer instanceof Uint8Array) {
     data = buffer;
   } else {
-    return { success: false, error: 'Expected ArrayBuffer or Uint8Array' };
+    return fail('bad-input', 'convertOdbArchive expects an ArrayBuffer or Uint8Array');
   }
 
   let files;
   try {
     files = extractArchive(data);
   } catch (err) {
-    return { success: false, error: 'Archive extraction failed: ' + err.message };
+    return fail('archive', 'the archive could not be unpacked (' + err.message + '); send a .tgz, .tar.gz, .zip or .tar of the ODB++ job');
   }
 
-  files = stripCommonPrefix(files);
+  // Drop macOS zip junk, then anchor on the ODB++ `matrix/matrix` file and rebase
+  // every path to its grandparent dir, so archives with files beside the job convert.
+  files = files.filter(f => !/(^|\/)(__MACOSX\/|\.DS_Store$|\._)/.test(f.path));
+  const anchor = files.find(f => /(^|\/)matrix\/matrix$/.test(f.path));
+  if (anchor) {
+    const root = anchor.path.replace(/matrix\/matrix$/, '');
+    files = files
+      .filter(f => f.path.startsWith(root))
+      .map(f => ({ path: f.path.slice(root.length), content: f.content }))
+      .filter(f => f.path.length > 0);
+  } else {
+    files = stripCommonPrefix(files);
+  }
 
   if (files.length === 0) {
-    return { success: false, error: 'Archive contains no files' };
+    return fail('archive', 'the archive holds no files');
   }
 
   return convertOdb(files);

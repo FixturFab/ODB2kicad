@@ -177,6 +177,43 @@ python test/visual_compare.py samples/odb-output samples/test.kicad_pcb --output
 - Bounding box dimensions
 - Trace/segment counts on copper layers
 
+### ODB++ round-up (Linux / headless)
+
+Per board and per layer: each converter's `.kicad_pcb` vs an independent reference drawn straight
+from the ODB++ files. No KiCad, no Pillow, no viewer needed; pure Python 3.10+.
+
+```bash
+python3 -I test/roundup.py samples/odb-output samples/odb-kitchen-sink --out /tmp/roundup
+python3 -I test/synthetic_odb.py /tmp/synth                      # made-up boards (basic / edge / mixed units)
+python3 -I test/roundup.py /tmp/synth/* samples/designodb_rigidflex.tgz --out /tmp/roundup \
+    --converter odb2kicad=native:odb2kicad/build/odb2kicad --converter other=pcb:/path/to/boards/
+python3 -m unittest discover -s test -p 'test_roundup.py'        # 14 tests, made-up boards only
+```
+
+Writes `<out>/<job>/report.json` (per layer: `xor_ratio` = XOR / union of ink; `missing_ratio` /
+`extra_ratio` = ink farther than `--tol-px` from the other side, over that side's ink; the outline
+alignment; compare_oracle.py's structural diff), `<out>/<job>/sheet.png` (reference | converter |
+diff, one row per non-empty layer; grey both, red missing, green extra), `<out>/index.html` (every
+layer with a "better: ref / converter / same" pick and a comment; **Download verdicts.json**, no
+server) and `<out>/metrics.json` (numbers only).
+
+- `test/raster.py`: the one rasterizer both sides use (even-odd scanline, PNG writer, metrics).
+- `test/odb_render.py`: ODB++ side. Records from `valor_oracle.parse_feature_geometry`; standard
+  symbols per the spec plus `symbols/<name>` user symbols; per-file `UNITS` and `$n name I|M`
+  overrides; polarity in file order; rotation clockwise, orient 4-7/9 mirror X first (the spec,
+  not kicad-cli's counter-clockwise orient 9, so KiCad-made boards show that convention as a diff).
+  Layers from the matrix only: copper rows -> F.Cu / In<n>.Cu / B.Cu, mask/paste/silk by side,
+  every DRILL row -> `Drill`, profile -> `Edge.Cuts` (both sides stroked 0.3 mm).
+- `test/kicad_render.py`: KiCad side (pads, tracks, arcs, vias, zone fills, graphics, holes).
+- Frame: odb2kicad's (x, -y); the Edge.Cuts bbox shifts it only when its size matches the profile.
+- Siemens column: set `ODBVIEWER_HOME`, `DISPLAY` (Xvfb) and have `server.pl` on :56753 with the job
+  open (`ODBVIEWER_JOB`, `ODBVIEWER_TMP`); LIMITS + SYMS_HIST per layer go into report.json. Absent
+  viewer -> one "siemens: skipped (...)" line.
+- PC lane: the same code runs inside `dev-cloud/pc-recipes/odb-shootout` (`roundup: true`) as the
+  `harness` input, pinned by that recipe's `harness.lock.json`; only `metrics_only()` numbers leave.
+- Inputs are untrusted: archives are unpacked (regular files only, no `..`) under `--scratch`;
+  keep customer files out of the repo (`samples/private/` is gitignored) and their outputs too.
+
 **Siemens ODB++ Viewer Integration:**
 
 The Valor TCP client (`valor_oracle.py`) can connect to a running Siemens ODB++ Viewer instance via TCP port 56753 for live structured data extraction. This requires:
@@ -198,7 +235,7 @@ WASM bindings use Emscripten embind. The JS wrapper (`wasm/src/index.mjs`) handl
 
 - C++17, no external dependencies, POSIX filesystem calls only (opendir/readdir/stat)
 - Emscripten MEMFS handles filesystem calls transparently in WASM
-- **Units**: ODB++ defaults to INCH when `UNITS=` line is not present (per ODB++ spec). The converter auto-detects units from component/feature files and scales to mm for KiCad (INCH × 25.4 = mm). Files with `UNITS=MM` are passed through without scaling.
+- **Units**: per file. `normalizeUnits()` (called by `parseOdbDirectory`) scales every file to mm by its own `UNITS=` line, else misc/info's `UNITS`, else INCH (the spec's default); a symbol's `I`/`M` suffix overrides its file's units. The writer then works in mm.
 - Native and WASM outputs must be byte-identical (enforced by test 3)
 - `wasm/dist/` is committed — rebuild and commit after any C++ changes
 

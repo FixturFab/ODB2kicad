@@ -18,7 +18,9 @@ add_library(odb2kicad_core STATIC
     src/odb_parser/eda_parser.cpp
     src/odb_parser/netlist_parser.cpp
     src/odb_parser/symbols.cpp
+    src/odb_parser/contour.cpp
     src/writer/kicad_writer.cpp
+    src/writer/polygon.cpp
 )
 target_include_directories(odb2kicad_core PUBLIC src)
 
