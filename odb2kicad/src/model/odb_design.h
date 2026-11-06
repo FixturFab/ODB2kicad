@@ -74,6 +74,9 @@ struct OdbSymbol {
     // symbol frame (y up, unrotated), same units as width: thermals, chamfered and
     // part-rounded rects, octagons, ellipses, diamonds, hexagons, triangles, butterflies, donuts.
     std::vector<std::vector<std::pair<double,double>>> outline;
+    // Further shapes (each filled even-odd, same frame) unioned with `outline`, and shapes cut out
+    // of that union: thermal air gaps and open corners, moire crosshairs, stencil-symbol fillets.
+    std::vector<std::vector<std::vector<std::pair<double,double>>>> outlineAdd, outlineCut;
 };
 
 // Feature records from layer features files

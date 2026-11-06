@@ -136,17 +136,192 @@ def _ellipse(w, h, ppm):
     return [[(w / 2 * math.cos(2 * math.pi * i / n), h / 2 * math.sin(2 * math.pi * i / n)) for i in range(n)]]
 
 
-def _thermal_gaps(od, angle, num, gap):
-    """Rectangles (gap wide, od long) at the spoke angles, as separate contours."""
+def _thermal_gaps(L, angle, num, gap):
+    """Rectangles (gap wide, L long from the centre) at the spoke angles, as separate contours.
+
+    L only just clears the symbol's rim: these are clearances, and a longer bar would clear the
+    copper of whatever lies next to the thermal on its layer.
+    """
     out = []
     for k in range(int(num)):
         a = math.radians(angle) + 2 * math.pi * k / max(int(num), 1)
         ca, sa = math.cos(a), math.sin(a)
-        L = od  # from the centre to past the rim
         hw = gap / 2
         pts = [(0, -hw), (L, -hw), (L, hw), (0, hw)]
         out.append([(x * ca - y * sa, x * sa + y * ca) for x, y in pts])
     return out
+
+
+def _bar_ops(points):
+    """A clearance op from a polygon."""
+    return (0, [points])
+
+
+def _round_end_pieces(segments, lw, rays, reach, ppm):
+    """Round-ended copper along a centre line made of primitives, broken near the spokes.
+
+    ``segments``: ("L", x0, y0, x1, y1) or ("A", cx, cy, r, a0, sweep). A point of the centre line is
+    cut when it lies on a spoke ray's forward side within ``reach`` of it. The kept runs are drawn as
+    strokes ``lw`` wide with round ends (a disc swept along the run), so a run that crosses from one
+    primitive into the next is still one piece of copper.
+    """
+    def covered(x, y):
+        for dx, dy in rays:
+            if x * dx + y * dy >= 0 and abs(dx * y - dy * x) < reach:
+                return True
+        return False
+
+    ops = []
+    for seg in segments:
+        if seg[0] == "L":
+            _, x0, y0, x1, y1 = seg
+            pt = lambda u, x0=x0, y0=y0, x1=x1, y1=y1: (x0 + (x1 - x0) * u, y0 + (y1 - y0) * u)  # noqa: E731
+        else:
+            _, cx, cy, r, a0, sw = seg
+            pt = lambda u, cx=cx, cy=cy, r=r, a0=a0, sw=sw: (cx + r * math.cos(a0 + sw * u), cy + r * math.sin(a0 + sw * u))  # noqa: E731
+        n = 2000
+        keep = [not covered(*pt(i / n)) for i in range(n + 1)]
+        i = 0
+        while i <= n:
+            if not keep[i]:
+                i += 1
+                continue
+            j = i
+            while j + 1 <= n and keep[j + 1]:
+                j += 1
+            u0, u1 = i / n, j / n
+            # pull each end out to the cut's edge (bisection on the primitive's parameter)
+            for end in (0, 1):
+                if (end == 0 and i > 0) or (end == 1 and j < n):
+                    lo, hi = (u0, (i - 1) / n) if end == 0 else (u1, (j + 1) / n)
+                    for _ in range(40):
+                        mid = (lo + hi) / 2
+                        if covered(*pt(mid)):
+                            hi = mid
+                        else:
+                            lo = mid
+                    if end == 0:
+                        u0 = lo
+                    else:
+                        u1 = lo
+            if seg[0] == "L":
+                (xa, ya), (xb, yb) = pt(u0), pt(u1)
+                ops.append((1, [raster.stroke(xa, ya, xb, yb, lw, ppm)]))
+            else:
+                _, cx, cy, r, a0, sw = seg
+                (xa, ya), (xb, yb) = pt(u0), pt(u1)
+                if u1 - u0 >= 1 - 1e-12:
+                    ops.append((1, raster.arc_stroke(xa, ya, xa, ya, cx, cy, sw < 0, lw, ppm)))
+                else:
+                    ops.append((1, raster.arc_stroke(xa, ya, xb, yb, cx, cy, sw < 0, lw, ppm)))
+            i = j + 1
+    return ops
+
+
+def _spoke_dirs(angle, num):
+    return [(math.cos(math.radians(angle + 360.0 * k / num)), math.sin(math.radians(angle + 360.0 * k / num)))
+            for k in range(int(num))]
+
+
+def _is_corner_angle(deg):
+    return abs((deg % 90.0) - 45.0) < 1e-6
+
+
+def _rect_thermal(w, h, ang, num, gap, air, r, kind, corners, ppm, open_corners):
+    """Rectangle (or square) thermal ops. A spoke at 45 deg (+90 n) is a gap through the corner, or with
+    open corners the corner square taken out; any other spoke a gap from the centre outwards."""
+    if r > 0:
+        ring = _round_rect(w, h, r, corners, ppm, kind == "c") + _round_rect(w - 2 * air, h - 2 * air, max(0.0, r - air), corners, ppm, kind == "c")
+    else:
+        ring = _rect(w, h) + _rect(w - 2 * air, h - 2 * air)
+    ops = [(1, ring)]
+    n = int(num)
+    for k in range(n):
+        deg = ang + 360.0 * k / n
+        dx, dy = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        if not _is_corner_angle(deg):
+            L, hw = math.hypot(w, h) / 2 + gap, gap / 2
+            ops.append(_bar_ops([(-dy * hw, dx * hw), (dx * L - dy * hw, dy * L + dx * hw), (dx * L + dy * hw, dy * L - dx * hw), (dy * hw, -dx * hw)]))
+            continue
+        sx, sy = (1 if dx > 0 else -1), (1 if dy > 0 else -1)
+        if open_corners:
+            x0, y0 = w / 2 - air - gap, h / 2 - air - gap
+            x1, y1 = w / 2 + gap, h / 2 + gap
+            ops.append(_bar_ops([(sx * x0, sy * y0), (sx * x1, sy * y0), (sx * x1, sy * y1), (sx * x0, sy * y1)]))
+        else:
+            xi, yi = sx * (w / 2 - air), sy * (h / 2 - air)  # the inner corner; the outer one is on the same 45 deg line
+            back = max(0.0, min(gap, min(w, h) / 2 - air))
+            out = air * 1.5 + gap  # past the outer corner, which is air * 1.414 further along
+            ops.append((0, [raster.stroke(xi - dx * (back - gap / 2), yi - dy * (back - gap / 2), xi + dx * out, yi + dy * out, gap, ppm, square=True)]))
+    return ops
+
+
+def _fillet(pts, radii, ppm):
+    """Round polygon corners (counter-clockwise points) by radii[i]: arcs tangent to both edges."""
+    out = []
+    n = len(pts)
+    for i in range(n):
+        bx, by = pts[i]
+        ax, ay = pts[i - 1]
+        cx, cy = pts[(i + 1) % n]
+        r = radii[i]
+        e1, e2 = math.hypot(ax - bx, ay - by), math.hypot(cx - bx, cy - by)
+        if r <= 0 or e1 == 0 or e2 == 0:
+            out.append((bx, by))
+            continue
+        a_in, a_out = math.atan2(ay - by, ax - bx), math.atan2(cy - by, cx - bx)
+        half = abs((a_out - a_in + math.pi) % (2 * math.pi) - math.pi) / 2  # half the angle between the edges
+        if half < 1e-9 or half > math.pi / 2 - 1e-9:
+            out.append((bx, by))
+            continue
+        t = min(r / math.tan(half), e1 / 2, e2 / 2)
+        r = t * math.tan(half)
+        bis = math.atan2(math.sin(a_in) + math.sin(a_out), math.cos(a_in) + math.cos(a_out))
+        d = r / math.sin(half)
+        ox, oy = bx + d * math.cos(bis), by + d * math.sin(bis)
+        p1 = (bx + t * math.cos(a_in), by + t * math.sin(a_in))
+        p2 = (bx + t * math.cos(a_out), by + t * math.sin(a_out))
+        s0 = math.atan2(p1[1] - oy, p1[0] - ox)
+        sw = (math.atan2(p2[1] - oy, p2[0] - ox) - s0 + math.pi) % (2 * math.pi) - math.pi
+        out.extend(raster.arc_points(ox, oy, r, s0, sw, ppm))
+    return out
+
+
+def _corner_radii(pts, ra, ro):
+    """ra where a counter-clockwise polygon's inside angle is 90 deg or less, else ro."""
+    out = []
+    n = len(pts)
+    for i in range(n):
+        (ax, ay), (bx, by), (cx, cy) = pts[i - 1], pts[i], pts[(i + 1) % n]
+        turn = math.atan2((bx - ax) * (cy - by) - (by - ay) * (cx - bx), (bx - ax) * (cx - bx) + (by - ay) * (cy - by))
+        inside = math.pi - turn  # a left turn of `turn` leaves pi - turn inside
+        out.append(ra if inside <= math.pi / 2 + 1e-9 else ro)
+    return out
+
+
+def _inner_corner(kx, ky, sx, sy, r, ppm):
+    """Material a concave corner of radius r adds where an edge along sx meets one along sy at (kx, ky)."""
+    ox, oy = kx + sx * r, ky + sy * r
+    a0 = math.atan2(-sy, 0.0)
+    sw = (math.atan2(0.0, -sx) - a0 + math.pi) % (2 * math.pi) - math.pi
+    return [(kx, ky)] + raster.arc_points(ox, oy, r, a0, sw, ppm)
+
+
+def _span(x0, y0, x1, y1, w, round_ends, ppm):
+    """A line w wide whose full length, ends included, runs from (x0, y0) to (x1, y1)."""
+    L = math.hypot(x1 - x0, y1 - y0)
+    if L < 1e-12:
+        return raster.circle(x0, y0, w / 2, ppm)
+    ux, uy = (x1 - x0) / L, (y1 - y0) / L
+    if round_ends:
+        if L <= w:
+            return raster.circle((x0 + x1) / 2, (y0 + y1) / 2, w / 2, ppm)
+        return raster.stroke(x0 + ux * w / 2, y0 + uy * w / 2, x1 - ux * w / 2, y1 - uy * w / 2, w, ppm)
+    nx, ny = -uy * w / 2, ux * w / 2
+    return [(x0 - nx, y0 - ny), (x1 - nx, y1 - ny), (x1 + nx, y1 + ny), (x0 + nx, y0 + ny)]
+
+
+_OPT = r"(?:x(?:{})?(\d+(?:\.\d+)?))?"
 
 
 def standard_symbol(name: str, scale: float, ppm: float):
@@ -173,8 +348,12 @@ def standard_symbol(name: str, scale: float, ppm: float):
     if m:
         return [(1, _oval(float(m.group(1)) * scale, float(m.group(2)) * scale, ppm))]
     m = re.fullmatch(r"oval_h" + _NUM + "x" + _NUM, n)
-    if m:
-        return [(1, _oval(float(m.group(1)) * scale, float(m.group(2)) * scale, ppm))]
+    if m:  # half oval: square left end, round right end
+        w, h = float(m.group(1)) * scale, float(m.group(2)) * scale
+        if w < h / 2:
+            return [(1, _rect(w, h))]
+        return [(1, [[(-w / 2, -h / 2), (w / 2 - h / 2, -h / 2), (w / 2 - h / 2, h / 2), (-w / 2, h / 2)]]),
+                (1, [raster.circle(w / 2 - h / 2, 0, h / 2, ppm)])]
     m = re.fullmatch(r"el" + _NUM + "x" + _NUM, n)
     if m:
         return [(1, _ellipse(float(m.group(1)) * scale, float(m.group(2)) * scale, ppm))]
@@ -228,19 +407,170 @@ def standard_symbol(name: str, scale: float, ppm: float):
         q1 = raster.arc_points(0, 0, d / 2, 0, math.pi / 2, ppm) if m.group(1) == "r" else [(d / 2, 0), (d / 2, d / 2), (0, d / 2)]
         q3 = [(-x, -y) for x, y in q1]
         return [(1, [[(0, 0)] + q1, [(0, 0)] + q3])]
-    m = re.fullmatch(r"(thr|ths|s_ths|s_tho|s_thr|sr_ths)" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM, n)
+    T5 = _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM
+    m = re.fullmatch(r"thr" + T5, n)
+    if m:  # round thermal, rounded ends: arcs of the ring, each end a half disc clear of the gap
+        od, idd = float(m.group(1)) * scale, float(m.group(2)) * scale
+        ang, num, gap = float(m.group(3)), int(round(float(m.group(4)))), float(m.group(5)) * scale
+        rc, lw = (od + idd) / 4, (od - idd) / 2
+        if num <= 0:
+            return [(1, [raster.circle(0, 0, od / 2, ppm), raster.circle(0, 0, idd / 2, ppm)])]
+        d = math.asin(min(1.0, (gap + lw) / 2 / rc)) if rc > 0 else math.pi
+        ops = []
+        for k in range(num):
+            b0 = math.radians(ang + 360.0 * k / num) + d
+            b1 = math.radians(ang + 360.0 * (k + 1) / num) - d
+            if b1 - b0 <= 1e-9:
+                continue
+            ops.append((1, raster.arc_stroke(rc * math.cos(b0), rc * math.sin(b0), rc * math.cos(b1), rc * math.sin(b1), 0, 0, False, lw, ppm)))
+        return ops
+    m = re.fullmatch(r"s_thr" + T5, n)
+    if m:  # line thermal: the square's sides as round-ended lines (os - is) / 2 wide
+        os_, is_ = float(m.group(1)) * scale, float(m.group(2)) * scale
+        ang, num, gap = float(m.group(3)), int(round(float(m.group(4)))), float(m.group(5)) * scale
+        c, lw = (os_ + is_) / 4, (os_ - is_) / 2
+        sides = [("L", c, -c, c, c), ("L", c, c, -c, c), ("L", -c, c, -c, -c), ("L", -c, -c, c, -c)]
+        if num <= 0:
+            return [(1, _rect(os_, os_) + _rect(is_, is_))]
+        return _round_end_pieces(sides, lw, _spoke_dirs(ang, num), gap / 2 + lw / 2, ppm)
+    m = re.fullmatch(r"(ths|s_ths|sr_ths)" + T5 + _CORNER, n)
     if m:
         kind = m.group(1)
         od, idd = float(m.group(2)) * scale, float(m.group(3)) * scale
         ang, num, gap = float(m.group(4)), float(m.group(5)), float(m.group(6)) * scale
-        ring = [raster.circle(0, 0, od / 2, ppm), raster.circle(0, 0, idd / 2, ppm)] if kind in ("thr", "ths") \
-            else _rect(od, od) + _rect(idd, idd)
-        return [(1, ring), (0, _thermal_gaps(od, ang, num, gap))]
-    m = re.fullmatch(r"rc_th[so]" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM, n)
+        if kind == "ths":
+            ring = [raster.circle(0, 0, od / 2, ppm), raster.circle(0, 0, idd / 2, ppm)]
+        else:
+            r, ck, corners = _corner(m, 7, scale)
+            outer = _round_rect(od, od, r, corners, ppm, ck == "c") if ck else _rect(od, od)
+            if kind == "sr_ths":
+                inner = [raster.circle(0, 0, idd / 2, ppm)]
+            else:
+                inner = _round_rect(idd, idd, max(0.0, r - (od - idd) / 2), corners, ppm, ck == "c") if ck else _rect(idd, idd)
+            ring = outer + inner
+        return [(1, ring), (0, _thermal_gaps(od * 0.75 + gap, ang, num, gap))]  # a square's corner is od / 1.414 out
+    m = re.fullmatch(r"s_tho" + T5, n)
+    if m:  # square thermal, open corners
+        od, idd = float(m.group(1)) * scale, float(m.group(2)) * scale
+        return _rect_thermal(od, od, float(m.group(3)), int(round(float(m.group(4)))), float(m.group(5)) * scale,
+                             (od - idd) / 2, 0.0, None, {1, 2, 3, 4}, ppm, True)
+    m = re.fullmatch(r"rc_th(s|o)" + T5 + "x" + _NUM + _CORNER, n)
     if m:
-        w, h, ang, num, gap, air = (float(v) for v in m.groups())
-        w, h, gap, air = w * scale, h * scale, gap * scale, air * scale
-        return [(1, _rect(w, h) + _rect(w - 2 * air, h - 2 * air)), (0, _thermal_gaps(max(w, h), ang, num, gap))]
+        w, h = float(m.group(2)) * scale, float(m.group(3)) * scale
+        ang, num, gap, air = float(m.group(4)), int(round(float(m.group(5)))), float(m.group(6)) * scale, float(m.group(7)) * scale
+        r, ck, corners = _corner(m, 8, scale)
+        return _rect_thermal(w, h, ang, num, gap, air, r, ck, corners, ppm, m.group(1) == "o")
+    m = re.fullmatch(r"(o_ths|oblong_ths)" + T5 + "x" + _NUM + r"(?:x(r|s))?", n)
+    if m:  # oval thermal; oblong with r: round copper ends
+        w, h = float(m.group(2)) * scale, float(m.group(3)) * scale
+        ang, num, gap, lw = float(m.group(4)), int(round(float(m.group(5)))), float(m.group(6)) * scale, float(m.group(7)) * scale
+        if m.group(1) == "oblong_ths" and m.group(8) == "r" and num > 0:
+            a, b = (w - lw) / 2, (h - lw) / 2
+            if a >= b:
+                e, rho = a - b, b
+                path = [("A", e, 0, rho, -math.pi / 2, math.pi), ("L", e, rho, -e, rho),
+                        ("A", -e, 0, rho, math.pi / 2, math.pi), ("L", -e, -rho, e, -rho)]
+            else:
+                e, rho = b - a, a
+                path = [("L", rho, -e, rho, e), ("A", 0, e, rho, 0, math.pi),
+                        ("L", -rho, e, -rho, -e), ("A", 0, -e, rho, math.pi, math.pi)]
+            return _round_end_pieces(path, lw, _spoke_dirs(ang, num), gap / 2 + lw / 2, ppm)
+        return [(1, _oval(w, h, ppm) + _oval(w - 2 * lw, h - 2 * lw, ppm)), (0, _thermal_gaps(math.hypot(w, h) / 2 + gap, ang, num, gap))]
+    m = re.fullmatch(r"moire" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM, n)
+    if m:  # rings rw wide, the i-th reaching i * (rg + rw / 2); a crosshair lw wide, ll long, at la
+        rw, rg, lw, ll = (float(m.group(i)) * scale for i in (1, 2, 4, 5))
+        nr, la = int(round(float(m.group(3)))), math.radians(float(m.group(6)))
+        ops = []
+        for i in range(1, nr + 1):
+            ro = i * (rg + rw / 2)
+            ri = ro - rw
+            ops.append((1, [raster.circle(0, 0, ro, ppm)] + ([raster.circle(0, 0, ri, ppm)] if ri > 1e-9 else [])))
+        for a in (la, la + math.pi / 2):
+            c, sn = math.cos(a) * ll / 2, math.sin(a) * ll / 2
+            ops.append((1, [_span(-c, -sn, c, sn, lw, False, ppm)]))
+        return ops
+    RA, RO = _OPT.format("ra"), _OPT.format("ro")
+    m = re.fullmatch(r"(hplate|rhplate)" + _NUM + "x" + _NUM + "x" + _NUM + RA + RO, n)
+    if m:
+        w, h, c = (float(m.group(i)) * scale for i in (2, 3, 4))
+        ra, ro = (float(m.group(i)) * scale if m.group(i) else 0.0 for i in (5, 6))
+        if m.group(1) == "hplate":
+            pts = [(-w / 2, -h / 2), (w / 2 - c, -h / 2), (w / 2, 0), (w / 2 - c, h / 2), (-w / 2, h / 2)]
+        else:
+            pts = [(-w / 2, -h / 2), (w / 2, -h / 2), (w / 2 - c, 0), (w / 2, h / 2), (-w / 2, h / 2)]
+        pts = [p for i, p in enumerate(pts) if math.dist(p, pts[i - 1]) > 1e-12]
+        return [(1, [_fillet(pts, _corner_radii(pts, ra, ro), ppm)])]
+    m = re.fullmatch(r"fhplate" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + RA + RO, n)
+    if m:
+        w, h, vc, hc = (float(m.group(i)) * scale for i in (1, 2, 3, 4))
+        ra, ro = (float(m.group(i)) * scale if m.group(i) else 0.0 for i in (5, 6))
+        pts = [(-w / 2, -h / 2), (w / 2 - hc, -h / 2), (w / 2, -h / 2 + vc), (w / 2, h / 2 - vc), (w / 2 - hc, h / 2), (-w / 2, h / 2)]
+        pts = [p for i, p in enumerate(pts) if math.dist(p, pts[i - 1]) > 1e-12]
+        return [(1, [_fillet(pts, _corner_radii(pts, ra, ro), ppm)])]
+    m = re.fullmatch(r"radhplate" + _NUM + "x" + _NUM + "x" + _NUM + RA, n)
+    if m:  # a half-circle bite ms across in the middle of the right side; ra on the rectangle's corners
+        w, h, ms = (float(m.group(i)) * scale for i in (1, 2, 3))
+        ra = float(m.group(4)) * scale if m.group(4) else 0.0
+        r = min(ms / 2, h / 2)
+        bite = raster.arc_points(w / 2, 0, r, -math.pi / 2, -math.pi, ppm)  # clockwise: into the plate
+        pts = [(-w / 2, -h / 2), (w / 2, -h / 2)] + bite + [(w / 2, h / 2), (-w / 2, h / 2)]
+        radii = [ra, ra] + [0.0] * len(bite) + [ra, ra]
+        return [(1, [_fillet(pts, radii, ppm)])]
+    m = re.fullmatch(r"dshape" + _NUM + "x" + _NUM + "x" + _NUM + RA, n)
+    if m:  # D shape: the right side an arc through (w/2 - r, -h/2), (w/2, 0), (w/2 - r, h/2)
+        w, h, rel = (float(m.group(i)) * scale for i in (1, 2, 3))
+        ra = float(m.group(4)) * scale if m.group(4) else 0.0
+        if rel <= 0:
+            return [(1, [_fillet(_rect(w, h)[0], [ra] * 4, ppm)])]
+        R = (rel * rel + h * h / 4) / (2 * rel)
+        phi = math.atan2(h / 2, R - rel)
+        arc = raster.arc_points(w / 2 - R, 0, R, -phi, 2 * phi, ppm)
+        pts = [(-w / 2, -h / 2)] + arc + [(-w / 2, h / 2)]
+        return [(1, [_fillet(pts, [ra] + [0.0] * len(arc) + [ra], ppm)])]
+    m = re.fullmatch(r"cross" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + r"x(r|s)(?:x?(?:ra)?" + _NUM + ")?", n)
+    if m:
+        w, h, hs, vs = (float(m.group(i)) * scale for i in (1, 2, 3, 4))
+        xv, yh = -w / 2 + float(m.group(5)) / 100 * w, -h / 2 + float(m.group(6)) / 100 * h
+        rnd = m.group(7) == "r"
+        ra = float(m.group(8)) * scale if m.group(8) else 0.0
+        ops = [(1, [_span(-w / 2, yh, w / 2, yh, hs, rnd, ppm)]), (1, [_span(xv, -h / 2, xv, h / 2, vs, rnd, ppm)])]
+        if ra > 0:
+            for sx in (-1, 1):
+                for sy in (-1, 1):
+                    kx, ky = xv + sx * vs / 2, yh + sy * hs / 2
+                    if abs(kx + sx * ra) <= w / 2 - (hs / 2 if rnd else 0) and abs(ky + sy * ra) <= h / 2 - (vs / 2 if rnd else 0):
+                        ops.append((1, [_inner_corner(kx, ky, sx, sy, ra, ppm)]))
+        return ops
+    m = re.fullmatch(r"dogbone" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + r"x(r|s)(?:x?(?:ra)?" + _NUM + ")?", n)
+    if m:
+        w, h, hs, vs = (float(m.group(i)) * scale for i in (1, 2, 3, 4))
+        xv = -w / 2 + float(m.group(5)) / 100 * w
+        rnd = m.group(6) == "r"
+        ra = float(m.group(7)) * scale if m.group(7) else 0.0
+        ops = [(1, [_span(-w / 2, sy * (h / 2 - hs / 2), w / 2, sy * (h / 2 - hs / 2), hs, rnd, ppm)]) for sy in (-1, 1)]
+        ops.append((1, [[(xv - vs / 2, -h / 2 + hs / 2), (xv + vs / 2, -h / 2 + hs / 2), (xv + vs / 2, h / 2 - hs / 2), (xv - vs / 2, h / 2 - hs / 2)]]))
+        if ra > 0:
+            for sx in (-1, 1):
+                for sy in (-1, 1):
+                    kx, ky = xv + sx * vs / 2, sy * (h / 2 - hs)
+                    if abs(kx + sx * ra) <= w / 2 - (hs / 2 if rnd else 0):
+                        ops.append((1, [_inner_corner(kx, ky, sx, -sy, ra, ppm)]))
+        return ops
+    m = re.fullmatch(r"dpack" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + "x" + _NUM + _OPT.format("ra"), n)
+    if m:
+        w, h, hg, vg = (float(m.group(i)) * scale for i in (1, 2, 3, 4))
+        hn, vn = max(1, int(round(float(m.group(5))))), max(1, int(round(float(m.group(6)))))
+        ra = float(m.group(7)) * scale if m.group(7) else 0.0
+        pw, ph = (w - hg * (hn - 1)) / hn, (h - vg * (vn - 1)) / vn
+        if pw <= 0 or ph <= 0:
+            return []
+        ops = []
+        for i in range(hn):
+            for j in range(vn):
+                cx, cy = -w / 2 + pw / 2 + i * (pw + hg), -h / 2 + ph / 2 + j * (ph + vg)
+                pad = _round_rect(pw, ph, ra, {1, 2, 3, 4}, ppm) if ra > 0 else _rect(pw, ph)
+                ops.append((1, [[(cx + x, cy + y) for x, y in c] for c in pad]))
+        return ops
     m = re.fullmatch(r"hole" + _NUM + r"(?:x.*)?", n)
     if m:
         return [(1, [raster.circle(0, 0, float(m.group(1)) * scale / 2, ppm)])]

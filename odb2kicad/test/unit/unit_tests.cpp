@@ -1504,10 +1504,26 @@ TEST(user_layers_map_to_kicad_user_layers) {
     CHECK_EQ(lines, 1);
 }
 
-static double outlineArea(const OdbSymbol& sym) {
-    poly::Shape sh;
-    for (auto& r : sym.outline) sh.push_back(r);
-    return islandsArea(poly::difference({sh}, {}));
+// A decoded symbol's islands: its outline and added shapes, less its cut shapes
+static std::vector<poly::Island> symbolIslands(const OdbSymbol& sym, const poly::Shape& alsoCut = {}) {
+    auto shape = [](const std::vector<std::vector<std::pair<double,double>>>& rings) {
+        poly::Shape sh;
+        for (auto& r : rings) sh.push_back(r);
+        return sh;
+    };
+    std::vector<poly::Shape> pos, neg;
+    if (!sym.outline.empty()) pos.push_back(shape(sym.outline));
+    for (auto& a : sym.outlineAdd) pos.push_back(shape(a));
+    for (auto& c : sym.outlineCut) neg.push_back(shape(c));
+    if (!alsoCut.empty()) neg.push_back(alsoCut);
+    return poly::difference(pos, neg);
+}
+
+static double outlineArea(const OdbSymbol& sym) { return islandsArea(symbolIslands(sym)); }
+
+// The symbol's area inside the box (x0, y0) - (x1, y1)
+static double areaIn(const OdbSymbol& sym, double x0, double y0, double x1, double y1) {
+    return outlineArea(sym) - islandsArea(symbolIslands(sym, {{{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}}}));
 }
 
 // Standard symbols KiCad has no pad shape for decode to an outline (sizes / 1000, like the others)
@@ -1525,16 +1541,69 @@ TEST(standard_symbols_decode_to_outlines) {
     CHECK_NEAR(outlineArea(decodeSymbol("hex_l2000x1000x500")), 2.0 - 4 * 0.125, 1e-9);
     CHECK_NEAR(outlineArea(decodeSymbol("donut_s2000x1000")), 3.0, 1e-9);
     CHECK_NEAR(outlineArea(decodeSymbol("bfs1000")), 0.5, 1e-9);
-    // a round thermal: the ring less four 0.3 mm air gaps, in four separate pieces
-    auto thr = decodeSymbol("thr2000x1400x45x4x300");
-    poly::Shape sh;
-    for (auto& r : thr.outline) sh.push_back(r);
-    auto pieces = poly::difference({sh}, {});
-    CHECK_EQ(pieces.size(), (size_t)4);
+    // a round thermal, squared ends: the ring less four 0.3 mm air gaps, in four separate pieces
+    auto ths = symbolIslands(decodeSymbol("ths2000x1400x45x4x300"));
+    CHECK_EQ(ths.size(), (size_t)4);
     double ring = 3.14159265 * (1.0 - 0.49);
-    CHECK(islandsArea(pieces) < ring - 4 * 0.3 * 0.3 * 0.9);
-    CHECK(islandsArea(pieces) > ring - 4 * 0.3 * 0.3 * 1.2);
+    CHECK(islandsArea(ths) < ring - 4 * 0.3 * 0.3 * 0.9);
+    CHECK(islandsArea(ths) > ring - 4 * 0.3 * 0.3 * 1.2);
     CHECK_EQ(decodeSymbol("r1000").outline.size(), (size_t)0);  // KiCad shapes keep their own path
+}
+
+// The standard symbols 0.3.0 drew wrong or not at all (ODB++ 8.1, Appendix A), areas worked by hand
+TEST(standard_symbols_spec_shapes) {
+    const double pi = 3.14159265358979;
+    // thr: rounded copper ends. Centre line r 0.85, band 0.3; each piece stops where its end
+    // circle (r 0.15) clears the 0.3 gap: asin(0.3 / 0.85) short of each spoke, plus the two caps
+    auto thr = symbolIslands(decodeSymbol("thr2000x1400x45x4x300"));
+    CHECK_EQ(thr.size(), (size_t)4);
+    double d = std::asin(0.3 / 0.85);
+    CHECK_NEAR(islandsArea(thr), 4 * ((pi / 2 - 2 * d) * 0.85 * 0.3 + pi * 0.15 * 0.15), 0.004);
+    // oval_h: square left end, half circle right end
+    CHECK_NEAR(outlineArea(decodeSymbol("oval_h2000x1000")), 1.5 + pi * 0.25 / 2, 2e-3);
+    // s_tho: open corners; each side stops `gap` short of the next side's inside edge
+    auto stho = decodeSymbol("s_tho2000x1400x45x4x300");
+    CHECK_EQ(symbolIslands(stho).size(), (size_t)4);
+    CHECK_NEAR(outlineArea(stho), 4 * 0.8 * 0.3, 1e-9);
+    auto rctho = decodeSymbol("rc_tho3000x2000x45x4x300x300");
+    CHECK_EQ(symbolIslands(rctho).size(), (size_t)4);
+    CHECK_NEAR(outlineArea(rctho), 2 * 1.8 * 0.3 + 2 * 0.8 * 0.3, 1e-9);
+    // rc_ths at 45 deg: the gap runs through the rectangle's corner, not along the 45 deg ray
+    // from the centre (which would meet the long side 0.5 mm in from the corner)
+    auto rcths = decodeSymbol("rc_ths3000x2000x45x4x300x300");
+    CHECK_EQ(symbolIslands(rcths).size(), (size_t)4);
+    CHECK(areaIn(rcths, 1.2, 0.7, 1.5, 1.0) < 0.01);
+    CHECK_NEAR(areaIn(rcths, 0.6, 0.7, 0.9, 1.0), 0.09, 1e-6);  // the centre ray would cut here
+    // rounded square thermal: the corners round, four pieces
+    auto sthsr = decodeSymbol("s_ths2000x1400x0x4x300xr300");
+    CHECK_EQ(symbolIslands(sthsr).size(), (size_t)4);
+    CHECK(outlineArea(sthsr) < outlineArea(decodeSymbol("s_ths2000x1400x0x4x300")));
+    CHECK_EQ(symbolIslands(decodeSymbol("rc_ths3000x2000x0x4x300x300xr500x13")).size(), (size_t)4);
+    // line thermal: four lines, round ends
+    CHECK_EQ(symbolIslands(decodeSymbol("s_thr2000x1400x45x4x300")).size(), (size_t)4);
+    // oval / oblong thermals
+    CHECK_EQ(symbolIslands(decodeSymbol("o_ths3000x2000x0x4x300x300")).size(), (size_t)4);
+    CHECK_EQ(symbolIslands(decodeSymbol("oblong_ths3000x2000x45x4x300x300xr")).size(), (size_t)4);
+    CHECK_EQ(symbolIslands(decodeSymbol("oblong_ths3000x2000x45x4x300x300xs")).size(), (size_t)4);
+    // moire: rings [0.15, 0.25] and [0.4, 0.5], two 1.0 x 0.05 lines crossing them
+    double moire = pi * (0.25 * 0.25 - 0.15 * 0.15) + pi * (0.25 - 0.16) + 2 * 0.05 - 0.0025 - 8 * 0.05 * 0.1;
+    CHECK_NEAR(outlineArea(decodeSymbol("moire100x200x2x50x1000x0")), moire, 0.006);
+    // stencil symbols
+    CHECK_NEAR(outlineArea(decodeSymbol("hplate2000x1000x500")), 1.75, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("rhplate2000x1000x500")), 1.75, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("fhplate2000x1000x200x500")), 1.9, 1e-9);
+    double hr = outlineArea(decodeSymbol("hplate2000x1000x500xra100xro50"));
+    CHECK(hr < 1.75 && hr > 1.7);
+    CHECK_NEAR(outlineArea(decodeSymbol("radhplate2000x1000x400")), 2 - pi * 0.04 / 2, 1e-3);
+    CHECK_NEAR(outlineArea(decodeSymbol("dshape2000x2000x1000")), 2 + pi / 2, 3e-3);
+    CHECK_NEAR(outlineArea(decodeSymbol("cross3000x2000x400x600x50x50xs")), 1.2 + 1.2 - 0.24, 1e-9);
+    CHECK(outlineArea(decodeSymbol("cross3000x2000x400x600x50x50xsxra100")) > 2.16 + 4 * 0.01 * (1 - pi / 4) - 1e-4);
+    CHECK_NEAR(outlineArea(decodeSymbol("dogbone3000x2000x400x600x50xs")), 2.4 + 0.72, 1e-9);
+    CHECK_NEAR(outlineArea(decodeSymbol("dpack1000x1000x100x100x3x3")), 0.64, 1e-9);
+    CHECK_EQ(symbolIslands(decodeSymbol("dpack1000x1000x100x100x3x3xra50")).size(), (size_t)9);
+    // capitalised names decode like lower-case ones
+    CHECK(decodeSymbol("RECT1000X500").shape == OdbSymbol::RECT);
+    CHECK_NEAR(outlineArea(decodeSymbol("OVAL_H2000X1000")), outlineArea(decodeSymbol("oval_h2000x1000")), 1e-12);
 }
 
 // A pin or free flash of such a symbol becomes a KiCad custom pad; a graphic one a polygon

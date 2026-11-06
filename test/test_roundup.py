@@ -20,6 +20,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import raster  # noqa: E402
+from raster import _popcount  # noqa: E402
 import roundup  # noqa: E402
 import synthetic_odb  # noqa: E402
 from odb_render import OdbJob, map_layers, standard_symbol  # noqa: E402
@@ -80,6 +81,37 @@ class Symbols(unittest.TestCase):
         self.assertIsNone(standard_symbol("special_thing", 0.001, 200))
         self.assertEqual(standard_symbol("null5", 0.001, 200), [])
         self.assertIsNotNone(standard_symbol("donut_rc10520.0x5670.0x120.0xr60.0", 0.001, 200))
+
+    def test_spec_shapes(self):
+        """ODB++ 8.1 Appendix A shapes, areas worked by hand (the converter's unit tests use the same)."""
+        pi = math.pi
+
+        def a(name):
+            return self.area(standard_symbol(name, 0.001, 400), 400)
+        d = math.asin(0.3 / 0.85)  # thr: pieces stop where their round end clears the gap
+        self.assertAlmostEqual(a("thr2000x1400x45x4x300"), 4 * ((pi / 2 - 2 * d) * 0.85 * 0.3 + pi * 0.0225), delta=0.006)
+        self.assertAlmostEqual(a("oval_h2000x1000"), 1.5 + pi * 0.25 / 2, delta=0.005)
+        self.assertAlmostEqual(a("s_tho2000x1400x45x4x300"), 4 * 0.8 * 0.3, delta=0.005)
+        self.assertAlmostEqual(a("rc_tho3000x2000x45x4x300x300"), 2 * 1.8 * 0.3 + 2 * 0.8 * 0.3, delta=0.005)
+        moire = pi * (0.0625 - 0.0225) + pi * (0.25 - 0.16) + 0.1 - 0.0025 - 0.04
+        self.assertAlmostEqual(a("moire100x200x2x50x1000x0"), moire, delta=0.006)
+        for name, want in (("hplate2000x1000x500", 1.75), ("rhplate2000x1000x500", 1.75), ("fhplate2000x1000x200x500", 1.9),
+                           ("radhplate2000x1000x400", 2 - pi * 0.02), ("dshape2000x2000x1000", 2 + pi / 2),
+                           ("cross3000x2000x400x600x50x50xs", 2.16), ("dogbone3000x2000x400x600x50xs", 3.12),
+                           ("dpack1000x1000x100x100x3x3", 0.64)):
+            self.assertAlmostEqual(a(name), want, delta=0.006, msg=name)
+        # rc_ths at 45 deg: the gap runs through the rectangle's corner
+        ops = standard_symbol("rc_ths3000x2000x45x4x300x300", 0.001, 400)
+        v = raster.View(-3, 3, 6, 6, 400, True)
+        b = raster.Bitmap(v.w, v.h)
+        for val, cs in ops:
+            b.fill(v.px(cs), val)
+        corner = raster.Bitmap(v.w, v.h)
+        corner.fill(v.px([[(1.25, 0.75), (1.45, 0.75), (1.45, 0.95), (1.25, 0.95)]]), 1)
+        self.assertLess(_popcount(b.as_int() & corner.as_int()), 0.2 * corner.count())
+        # every name the made-up symbols board uses is drawn
+        for name in synthetic_odb.SYMBOL_NAMES:
+            self.assertTrue(standard_symbol(name, 0.001, 50), name)
 
 
 class Odb(unittest.TestCase):

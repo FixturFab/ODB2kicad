@@ -100,6 +100,10 @@ void normalizeUnits(OdbDesign& design) {
             sym.cornerRadius *= ks; sym.lineWidth *= ks;
             for (auto& ring : sym.outline)
                 for (auto& [x, y] : ring) { x *= ks; y *= ks; }
+            for (auto* shapes : {&sym.outlineAdd, &sym.outlineCut})
+                for (auto& shape : *shapes)
+                    for (auto& ring : shape)
+                        for (auto& [x, y] : ring) { x *= ks; y *= ks; }
             sym.unitOverride = 0;
         }
         for (auto& p : f.pads) { p.x *= k; p.y *= k; }

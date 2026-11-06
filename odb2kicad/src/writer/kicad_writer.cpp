@@ -833,14 +833,21 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         auto it = customCache.find(key);
         if (it != customCache.end()) return &it->second;
         std::vector<poly::Island> islands;
-        if (!sym.outline.empty()) {
-            poly::Shape s;
-            for (auto& ring : sym.outline) {
-                poly::Ring r;
-                for (auto& [x, y] : ring) r.push_back({scaleLen(x), scaleLen(y)});
-                s.push_back(r);
-            }
-            islands = poly::difference({s}, {});
+        if (!sym.outline.empty() || !sym.outlineAdd.empty()) {
+            auto shape = [&](const std::vector<std::vector<std::pair<double,double>>>& rings) {
+                poly::Shape s;
+                for (auto& ring : rings) {
+                    poly::Ring r;
+                    for (auto& [x, y] : ring) r.push_back({scaleLen(x), scaleLen(y)});
+                    if (r.size() >= 3) s.push_back(r);
+                }
+                return s;
+            };
+            std::vector<poly::Shape> pos, neg;
+            if (!sym.outline.empty()) pos.push_back(shape(sym.outline));
+            for (auto& a : sym.outlineAdd) pos.push_back(shape(a));
+            for (auto& c : sym.outlineCut) neg.push_back(shape(c));
+            islands = poly::difference(pos, neg);
         } else if (uit != design.userSymbols.end()) {
             if (userSymbolsOpen.count(uit->first)) return nullptr;
             userSymbolsOpen.insert(uit->first);
