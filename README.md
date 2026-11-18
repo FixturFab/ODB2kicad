@@ -4,7 +4,7 @@ Convert ODB++ PCB designs to KiCad `.kicad_pcb` format.
 
 ## Try It
 
-**[Live Demo](https://henrybtroutman.gitlab.io/odb2kicad/)** — drag and drop an ODB++ archive and get a `.kicad_pcb` file instantly, right in your browser. No install, no upload — everything runs locally via WebAssembly.
+**[Live Demo](https://fixturfab.github.io/ODB2kicad/)** — drag and drop an ODB++ archive and get a `.kicad_pcb` file instantly, right in your browser. No install, no upload — everything runs locally via WebAssembly.
 
 ## Install
 
@@ -13,6 +13,8 @@ Changes per release: [CHANGELOG.md](CHANGELOG.md).
 ```bash
 npm install -g https://raw.githubusercontent.com/FixturFab/odb2kicad/main/wasm/odb2kicad-wasm.tgz
 ```
+
+The demo site serves the package of its own build too: `npm install -g https://fixturfab.github.io/ODB2kicad/odb2kicad-wasm.tgz`.
 
 Or, from a clone of this repository:
 

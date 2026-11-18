@@ -50,3 +50,6 @@ Thumbs.db
 __pycache__/
 samples/private/
 build-wasm/
+
+# demo site assembled by wasm/scripts/build-site.sh
+_site/

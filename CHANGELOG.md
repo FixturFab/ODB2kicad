@@ -19,6 +19,10 @@ Fixes the web demo stopping with "Error: Aborted(). Build with -sASSERTIONS for 
 - The converter's report is shown under the status: its warnings (what it left out or could not read) and notes. The stats bar counts warnings.
 - Folder upload keeps compressed `.z` files as bytes (they were decoded as text, and the board lost most of its contents) and finds the job inside the chosen folder.
 
+### Demo hosting
+- The demo moves to GitHub Pages: https://fixturfab.github.io/ODB2kicad/. `.github/workflows/pages.yml` builds the WASM (emsdk 3.1.50) and the site from every push to `main`, from `v*` tags, and on demand, and deploys it with `actions/deploy-pages`. The build warns if it differs from the committed `wasm/dist`. `wasm/scripts/build-site.sh` assembles the site, in CI and for a local preview. The site also serves the npm package of its build (`odb2kicad-wasm.tgz`).
+- The README's Live Demo link and the page's source links point to GitHub.
+
 ### Tests
 - Unit tests 85/85: `parse_int_does_not_throw`, `named_attribute_keys_and_bad_indices_are_skipped`.
 - WASM node tests 19/19. Test 17: named attribute keys convert, byte-identical to native, and a remaining throw is reported without a crash, after which the module still converts. Test 18: the same through the raw module, which the old demo called. Test 19: `designodb_rigidflex.tgz` (Xpedition) is byte-identical to native. Tests 17 and 18 fail on the 0.4.0 WASM with the reported `Aborted()`.

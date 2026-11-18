@@ -31,8 +31,9 @@ wasm/                       # JS/npm wrapper around the WASM build
   src/index.d.ts            # TypeScript declarations
   bin/odb2kicad.mjs          # CLI entry point for `npx odb2kicad`
   scripts/build.mjs         # Copies WASM artifacts into dist/
+  scripts/build-site.sh     # Assembles the demo site (page + dist + sample + npm .tgz) for GitHub Pages
   dist/                     # Built artifacts (committed)
-  demo/index.html           # Browser demo page (deployed to GitLab Pages); runs dist/index.mjs, served beside it
+  demo/index.html           # Browser demo page (deployed to GitHub Pages); runs dist/index.mjs, served beside it
   test/test-node.mjs        # Node.js integration tests (19 tests)
 
 samples/
@@ -132,7 +133,7 @@ The Docker image uses `emscripten/emsdk:3.1.50` for consistent WASM builds.
 cd wasm && npm pack
 ```
 
-The `wasm/dist/` directory is committed to the repo so the npm package can be installed directly from GitLab Pages without building.
+The `wasm/dist/` directory is committed to the repo so the npm package can be installed directly from the repository (or the demo site) without building.
 
 ## Testing
 
@@ -279,10 +280,11 @@ WASM bindings use Emscripten embind. The JS wrapper (`wasm/src/index.mjs`) handl
 
 ## CI/CD
 
-GitLab CI (`.gitlab-ci.yml`) deploys to GitLab Pages:
-- Copies `wasm/demo/index.html`, `wasm/dist/index.mjs` (the demo runs it), WASM artifacts, and npm `.tgz` to `public/`
-- Demo: https://henrybtroutman.gitlab.io/odb2kicad/
-- npm install: `npm install -g https://henrybtroutman.gitlab.io/odb2kicad/odb2kicad-wasm.tgz`
+GitHub Actions (`.github/workflows/pages.yml`) deploys the demo to GitHub Pages on every push to `main`, on `v*` tags, and on demand:
+- Builds the WASM in `emscripten/emsdk:3.1.50`, warns if it differs from the committed `wasm/dist`, then `wasm/scripts/build-site.sh _site` copies `wasm/demo/index.html`, `wasm/dist/{index.mjs,odb2kicad_wasm.*}`, `samples/test-odb.tgz` and a fresh `npm pack` into the site
+- Demo: https://fixturfab.github.io/ODB2kicad/
+- npm install: `npm install -g https://fixturfab.github.io/ODB2kicad/odb2kicad-wasm.tgz`
+- Preview locally: `bash wasm/scripts/build-site.sh _site && python3 -m http.server -d _site 8000`
 
 ## License
 
