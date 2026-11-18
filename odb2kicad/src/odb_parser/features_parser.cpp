@@ -134,8 +134,8 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
         }
 
         // Arc: A xs ys xe ye xc yc sym_idx [polarity] [dcode] [clockwise Y|N]
-        // The reference reader takes the six coordinates, the symbol and an optional polarity
-        // and no direction: kicad-cli (and others) append one, which is honoured; an arc
+        // Only the six coordinates and the symbol are required; polarity, dcode and the direction
+        // may be missing. kicad-cli (and others) write the direction, which is honoured; an arc
         // without it runs counter-clockwise, its centre on the left of the way from start to end.
         if (line[0] == 'A' && line.size() > 1 && line[1] == ' ') {
             std::istringstream iss(mainPart.substr(2));

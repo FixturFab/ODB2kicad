@@ -229,49 +229,60 @@ grep -q '(at 55 35 45)' $ROT || { echo "FAIL: rotation J2 (bottom, 45) footprint
 
 echo "PASS: rotation test"
 
-# --- demo-design (the ODB++ Viewer 2510 demo job: 10 copper layers, INCH, no eda/data) ---
-echo "--- demo-design test ---"
-"${BUILD_DIR}/odb2kicad" "${SAMPLES}/demo-design" /tmp/test-demo.kicad_pcb
-DEMO=/tmp/test-demo.kicad_pcb
-OPEN=$(grep -o '(' $DEMO | wc -l)
-CLOSE=$(grep -o ')' $DEMO | wc -l)
-[ "$OPEN" -eq "$CLOSE" ] || { echo "FAIL: demo-design mismatched brackets"; exit 1; }
-grep -qE '\([0-9]+ "In8.Cu" signal\)' $DEMO || { echo "FAIL: demo-design has no In8.Cu (10 copper rows)"; exit 1; }
-grep -q '"In9.Cu"' $DEMO && { echo "FAIL: demo-design has an In9.Cu (only 10 copper rows)"; exit 1; }
-# compressed files (features.z, components.z, eda/data.z) are read: 853 components on both sides,
-# bottom copper, and nets from eda/data
-FPS=$(grep -c '^  (footprint "imported:' $DEMO || true)
-[ "$FPS" -eq 853 ] || { echo "FAIL: demo-design expected 853 component footprints (components.z), got $FPS"; exit 1; }
-grep -q '(footprint "imported:[^"]*" (layer "B.Cu")' $DEMO || { echo "FAIL: demo-design has no bottom components"; exit 1; }
-BSEG=$(grep -c '(segment .*(layer "B.Cu")' $DEMO || true)
-[ "$BSEG" -gt 1000 ] || { echo "FAIL: demo-design bottom copper (sigb/features.z) not read: $BSEG tracks on B.Cu"; exit 1; }
-# drill sizes come from layers/drill/tools: tool 1 is DRILL_SIZE=18 (mils) = 0.4572 mm, on 3759 vias
-VIAS=$(grep -c '(via .*(drill 0.4572)' $DEMO || true)
-[ "$VIAS" -eq 3759 ] || { echo "FAIL: demo-design expected 3759 vias drilled 0.4572 (tool 1), got $VIAS"; exit 1; }
-grep -q '(drill 3.70078)' $DEMO || { echo "FAIL: demo-design tool 19 (DRILL_SIZE=145.7) not 3.70078 mm"; exit 1; }
+# --- Multilayer test (synthetic: 10 copper layers, INCH by default, compressed .z files, text) ---
+echo "--- multilayer test ---"
+ML_DIR=/tmp/test-multilayer
+rm -rf "$ML_DIR"
+python3 -I "$(dirname "$0")/../../test/synthetic_odb.py" "$ML_DIR" --variant multilayer > /dev/null
+ML_JOB="$ML_DIR/synthetic-multilayer"
+"${BUILD_DIR}/odb2kicad" "$ML_JOB" /tmp/test-multilayer.kicad_pcb
+ML=/tmp/test-multilayer.kicad_pcb
+OPEN=$(grep -o '(' $ML | wc -l)
+CLOSE=$(grep -o ')' $ML | wc -l)
+[ "$OPEN" -eq "$CLOSE" ] || { echo "FAIL: multilayer mismatched brackets"; exit 1; }
+grep -qE '\([0-9]+ "In8.Cu" signal\)' $ML || { echo "FAIL: multilayer has no In8.Cu (10 copper rows)"; exit 1; }
+grep -q '"In9.Cu"' $ML && { echo "FAIL: multilayer has an In9.Cu (only 10 copper rows)"; exit 1; }
+# compressed files (features.z, components.z, eda/data.z) are read: parts on both sides, bottom
+# copper, and nets from eda/data
+[ -f "$ML_JOB/steps/rev_a/layers/sigb/features.z" ] && [ ! -f "$ML_JOB/steps/rev_a/layers/sigb/features" ] || { echo "FAIL: multilayer fixture is not compressed"; exit 1; }
+FPS=$(grep -c '^  (footprint "imported:' $ML || true)
+[ "$FPS" -eq 6 ] || { echo "FAIL: multilayer expected 6 component footprints (components.z), got $FPS"; exit 1; }
+BFPS=$(grep -c '^  (footprint "imported:[^"]*" (layer "B.Cu")' $ML || true)
+[ "$BFPS" -eq 3 ] || { echo "FAIL: multilayer expected 3 bottom components, got $BFPS"; exit 1; }
+BSEG=$(grep -c '(segment .*(layer "B.Cu")' $ML || true)
+[ "$BSEG" -eq 10 ] || { echo "FAIL: multilayer bottom copper (sigb/features.z) not read: $BSEG tracks on B.Cu"; exit 1; }
+grep -q '(net 4 "NB0")' $ML || { echo "FAIL: multilayer nets (eda/data.z) not read"; exit 1; }
+# drill sizes come from layers/drill/tools, not the r19 / r40 symbols: tool 1 (VIA) is DRILL_SIZE=18
+# mils = 0.4572 mm on 20 vias, tool 2 (PLATED) DRILL_SIZE=42 = 1.0668 mm; the vias keep their 30 mil
+# copper, not the negative planes' 50 mil anti-pads
+VIAS=$(grep -c '(via .*(size 0.762) (drill 0.4572)' $ML || true)
+[ "$VIAS" -eq 20 ] || { echo "FAIL: multilayer expected 20 vias 0.762 / 0.4572 (tool 1), got $VIAS"; exit 1; }
+grep -q '(drill 1.0668)' $ML || { echo "FAIL: multilayer tool 2 (DRILL_SIZE=42) not 1.0668 mm"; exit 1; }
 
-# text: PROCMAP_BOT (a MISC DOCUMENT layer) is drawn on User.1 with its three T records ('FS',
-# 'SMT', 'IR') as font strokes: 14 + 17 + 10 lines, 3 font line widths (36 mil) wide
-grep -qE '\([0-9]+ "User.1" user "PROCMAP_BOT"\)' $DEMO || { echo "FAIL: demo-design PROCMAP_BOT is not on User.1"; exit 1; }
-grep -qE '\([0-9]+ "User.2" user "PROCMAP_TOP"\)' $DEMO || { echo "FAIL: demo-design PROCMAP_TOP is not on User.2"; exit 1; }
-STROKES=$(grep -c '(gr_line .*(stroke (width 0.9144) .*(layer "User.1")' $DEMO || true)
-[ "$STROKES" -eq 41 ] || { echo "FAIL: demo-design expected 41 text strokes on User.1, got $STROKES"; exit 1; }
-# 'FS' is at 2.48232, 7.9765 in (63.050928, -202.6031 mm), where the F's own zero goes: its stem is
-# 0.1 font units left of it, from 0.2 over it to 0.1 under it, at 0.4 / 0.302 of the font's size
-grep -q '(gr_line (start 59.68669 -209.331577) (end 59.68669 -199.238862) (stroke (width 0.9144)' $DEMO || { echo "FAIL: demo-design 'FS' is not at its record's location"; exit 1; }
-"${BUILD_DIR}/odb2kicad" --report "${SAMPLES}/demo-design" /tmp/test-demo2.kicad_pcb 2> /tmp/test-demo.report
-grep -q 'info: layer procmap_bot: 3 text record(s) drawn as 41 font strokes' /tmp/test-demo.report || { echo "FAIL: demo-design report has no text line"; exit 1; }
-# the matrix is captured in full: 22 rows, numbered 1 to 23 with no row 21, each one in the report
-grep -q 'info: matrix: 1 step(s), 22 layer rows (1 to 23, no row 21)' /tmp/test-demo.report || { echo "FAIL: demo-design matrix summary wrong"; exit 1; }
-ROWS=$(grep -c '^info: matrix row ' /tmp/test-demo.report || true)
-[ "$ROWS" -eq 22 ] || { echo "FAIL: demo-design report lists $ROWS matrix rows, expected 22"; exit 1; }
-grep -q 'info: matrix row 23 PROCMAP_TOP (DOCUMENT, MISC) -> User.2' /tmp/test-demo.report || { echo "FAIL: demo-design row 23 not reported"; exit 1; }
-grep -q 'info: matrix row 9 PG5 (POWER_GROUND, NEGATIVE) -> In4.Cu' /tmp/test-demo.report || { echo "FAIL: demo-design row 9 not reported"; exit 1; }
-grep -q '(generator "odb2kicad/' $DEMO || { echo "FAIL: demo-design has no generator"; exit 1; }
+# text: PROCMAP_BOT (a MISC DOCUMENT layer) is drawn on User.1 with its three T records ('TEXT',
+# 'LIE', 'EXIT') as font strokes: 9 + 7 + 10 lines, 3 font line widths (36 mil) wide
+grep -qE '\([0-9]+ "User.1" user "PROCMAP_BOT"\)' $ML || { echo "FAIL: multilayer PROCMAP_BOT is not on User.1"; exit 1; }
+grep -qE '\([0-9]+ "User.2" user "PROCMAP_TOP"\)' $ML || { echo "FAIL: multilayer PROCMAP_TOP is not on User.2"; exit 1; }
+STROKES=$(grep -c '(gr_line .*(stroke (width 0.9144) .*(layer "User.1")' $ML || true)
+[ "$STROKES" -eq 26 ] || { echo "FAIL: multilayer expected 26 text strokes on User.1, got $STROKES"; exit 1; }
+# 'TEXT' is at 0.2, -0.6 in, where the T's own zero goes: its stem runs from 0.2 over it to 0.1
+# under it, at 0.2 / 0.302 of the font's size
+grep -q '(gr_line (start 5.08 11.875762) (end 5.08 16.922119) (stroke (width 0.9144)' $ML || { echo "FAIL: multilayer 'TEXT' is not at its record's location"; exit 1; }
+"${BUILD_DIR}/odb2kicad" --report "$ML_JOB" /tmp/test-multilayer2.kicad_pcb 2> /tmp/test-multilayer.report
+grep -q 'info: layer procmap_bot: 3 text record(s) drawn as 26 font strokes' /tmp/test-multilayer.report || { echo "FAIL: multilayer report has no text line"; exit 1; }
+grep -q 'info: ODB++ version not given' /tmp/test-multilayer.report || { echo "FAIL: multilayer report does not say the version is missing"; exit 1; }
+# the matrix is captured in full: 18 rows, numbered 1 to 19 with no row 13, each one in the report
+grep -q 'info: matrix: 1 step(s), 18 layer rows (1 to 19, no row 13)' /tmp/test-multilayer.report || { echo "FAIL: multilayer matrix summary wrong"; exit 1; }
+ROWS=$(grep -c '^info: matrix row ' /tmp/test-multilayer.report || true)
+[ "$ROWS" -eq 18 ] || { echo "FAIL: multilayer report lists $ROWS matrix rows, expected 18"; exit 1; }
+grep -q 'info: matrix row 19 PROCMAP_TOP (DOCUMENT, MISC) -> User.2' /tmp/test-multilayer.report || { echo "FAIL: multilayer row 19 not reported"; exit 1; }
+grep -q 'info: matrix row 8 PG5 (POWER_GROUND, NEGATIVE) -> In4.Cu' /tmp/test-multilayer.report || { echo "FAIL: multilayer row 8 not reported"; exit 1; }
+grep -q 'info: board thickness 1.5748 mm from THICKNESS of layers/drill/tools' /tmp/test-multilayer.report || { echo "FAIL: multilayer thickness not from the tools file"; exit 1; }
+grep -q "(generator \"odb2kicad/[0-9.]*\")" $ML || { echo "FAIL: multilayer generator should carry no ODB++ version"; exit 1; }
 grep -q '(generator "odb2kicad/[0-9.]* odb++:v8.1")' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink generator has no ODB++ version"; exit 1; }
-cmp -s $DEMO /tmp/test-demo2.kicad_pcb || { echo "FAIL: demo-design converts differently the second time"; exit 1; }
+cmp -s $ML /tmp/test-multilayer2.kicad_pcb || { echo "FAIL: multilayer converts differently the second time"; exit 1; }
 
-echo "PASS: demo-design test"
+echo "PASS: multilayer test"
 
 echo ""
 echo "=== All smoke tests passed ==="

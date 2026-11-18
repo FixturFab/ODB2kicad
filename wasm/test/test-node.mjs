@@ -276,22 +276,25 @@ console.log('--- Test 14: Multi-step job ---');
   console.log(`  PASS: steps ${first.steps.join(', ')}; default ${first.step}; { step: 'flex' } converts ${flex.step}; unknown step: ${none.code}`);
 }
 
-// --- Test 15: demo-design (compressed files, text, drill tools) matches the native CLI ---
-console.log('--- Test 15: demo-design (compressed .z files) vs native ---');
+// --- Test 15: a 10-copper-layer job with compressed files, text and drill tools matches the native CLI ---
+console.log('--- Test 15: synthetic multilayer job (compressed .z files) vs native ---');
 {
-  const dir = join(samplesDir, 'demo-design');
+  const synth = join(__dirname, '..', '..', 'test', 'synthetic_odb.py');
+  execSync(`python3 -I "${synth}" "${tmpDir}/ml" --variant multilayer`);
+  const dir = join(tmpDir, 'ml', 'synthetic-multilayer');
   const files = loadDir(dir);
   const z = files.filter((f) => f.content instanceof Uint8Array).length;
-  assert.ok(z > 10, 'the fixture holds compressed files');
+  assert.equal(z, 5, 'the fixture holds compressed files');
   const result = await convertOdb(files);
   assert.equal(result.success, true, result.error);
   const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
   const nativeOutput = execSync(`"${nativeBin}" "${dir}"`, { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024 });
-  assert.equal(result.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI on demo-design');
+  assert.equal(result.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI on the multilayer job');
   assert.ok(/\(footprint "[^"]*" \(layer "B\.Cu"\)/.test(result.kicadPcb), 'bottom components (components.z) are read');
+  assert.ok(/\(\d+ "In8\.Cu" signal\)/.test(result.kicadPcb), 'ten copper layers');
   // the same job as a .tgz: the archive path keeps the compressed files as bytes too
-  execSync(`tar czf "${tmpDir}/demo-design.tgz" -C "${samplesDir}" demo-design`);
-  const fromTgz = await convertOdbArchive(new Uint8Array(readFileSync(join(tmpDir, 'demo-design.tgz'))));
+  execSync(`tar czf "${tmpDir}/multilayer.tgz" -C "${tmpDir}/ml" synthetic-multilayer`);
+  const fromTgz = await convertOdbArchive(new Uint8Array(readFileSync(join(tmpDir, 'multilayer.tgz'))));
   assert.equal(fromTgz.success, true, fromTgz.error);
   assert.equal(fromTgz.kicadPcb === result.kicadPcb, true, 'the archive converts to the same board');
   console.log(`  PASS: ${files.length} files (${z} compressed), ${result.kicadPcb.length} chars, identical to native and to its .tgz`);

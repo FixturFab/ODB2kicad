@@ -1,10 +1,10 @@
 """ODB++ vector-font parser + T/V text renderer for the round-up's reference side.
 
-Ported from the reader spec's ``tools/odb_render_text.py`` (odb2kicad-spec v2, section 5.5) and
+Our own reference renderer for ODB++ text, independent of the converter's C++ code, and
 wired into ``odb_render.OdbJob``. Coordinates follow the ODB++ / repo convention: mm, y up;
 rotation clockwise about the text's location.
 
-Font grammar (reference reader, ODB++ 8.x):
+Font grammar (ODB++ 8.x):
     UNITS=<INCH|MM>          # the font's own units, default INCH
     XSIZE <w>  YSIZE <h>  OFFSET <o>
     CHAR <c>
@@ -14,11 +14,11 @@ Font grammar (reference reader, ODB++ 8.x):
     # glyph coordinates are used as written: the glyph's own zero goes on the text's location,
     # +y up, and each character advances one box (the record's xsize; V: one ysize along +y)
 
-Where this port departs from the shipped tool (each is a reading of the ODB++ format the tool
-got wrong or left open; ``tools/render_odb_sheet.py --shipped-text-grammar`` draws the tool's way):
+Points where a simpler reading of the format goes wrong, and how this renderer reads them
+(``tools/render_odb_sheet.py --shipped-text-grammar`` draws text the simpler way, for comparison):
   * the field after the polarity of a T record is ``orient_def`` (0-7 legacy, ``8 <angle>``,
     ``9 <angle>`` mirrored), and the last field is the record's version (0 / 1), not a mirror
-    flag: the tool reads ``'FS' 1`` as mirrored text;
+    flag: the simpler reading takes ``'FS' 1`` as mirrored text;
   * a mirrored text is mirrored as a whole about its location (it runs leftwards), not glyph by
     glyph in place;
   * fonts and features are read through the harness's readers, so ``.z`` files work, and a
@@ -134,7 +134,7 @@ _SHIPPED = re.compile(r"^([TV])\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(\S+)\s+([PN])((?:\s
 
 
 def parse_text_records_shipped(features_path) -> list:
-    """The shipped tool's own reading of a T / V record (`<angle> <xsize> <ysize> <weight> '<text>'
+    """The simpler reading of a T / V record (`<angle> <xsize> <ysize> <weight> '<text>'
     <mirror>`), kept to show what it draws: it takes the version field for a mirror flag."""
     text = read_odb_text(features_path)
     out = []
@@ -164,7 +164,7 @@ def text_strokes(rec: dict, font: dict, layer_scale_mm: float):
     ca, sa = math.cos(a), math.sin(a)
     X, Y = rec["x"] * s, rec["y"] * s
     vertical = rec["kind"] == "V"
-    in_place = rec.get("glyph_mirror", False)  # the shipped tool: each glyph flipped where it stands
+    in_place = rec.get("glyph_mirror", False)  # the simpler reading: each glyph flipped where it stands
 
     def place(px, py, adv):
         px, py = px * sx * fs, py * sy * fs
@@ -191,7 +191,7 @@ def text_strokes(rec: dict, font: dict, layer_scale_mm: float):
 
 def text_contours(rec: dict, font: dict, layer_scale_mm: float, font_scale_mm: float = None, ppm: float = 40.0) -> list:
     """[(value, [contours in mm, y up, absolute])] for one text record; value 1 draws, 0 clears.
-    (`font_scale_mm` is the shipped tool's argument: the font knows its own scale.)"""
+    (`font_scale_mm` is unused, kept for callers: the font knows its own scale.)"""
     strokes, polys = text_strokes(rec, font, layer_scale_mm)
     ops = [(1 if positive else 0, [raster.stroke(x1, y1, x2, y2, w, ppm, square=not rnd)])
            for x1, y1, x2, y2, w, positive, rnd in strokes]

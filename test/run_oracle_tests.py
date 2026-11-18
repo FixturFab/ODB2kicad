@@ -17,6 +17,7 @@ Usage:
 """
 
 import os
+import shutil
 import sys
 import json
 import argparse
@@ -66,11 +67,13 @@ class OracleTestRunner:
                 'expected_components': None,  # TBD
                 'expected_nets': None
             },
-            # The ODB++ Viewer 2510 demo job (INCH, compressed files, text, drill tools)
-            'demo-design': {
-                'odb_path': 'demo-design',
-                'description': 'ODB++ Viewer 2510 demo job (853 parts, 10 copper layers)',
-                'expected_components': 853,
+            # made up by test/synthetic_odb.py at run time: 10 copper layers, INCH by default,
+            # compressed (.z) files, text, drill tools, parts on both sides
+            'multilayer': {
+                'odb_path': None,
+                'synthetic': 'multilayer',
+                'description': 'synthetic 10-copper-layer job (6 parts, both sides)',
+                'expected_components': 6,
                 'expected_nets': None
             }
         }
@@ -153,7 +156,17 @@ class OracleTestRunner:
             return result
 
         config = self.samples[sample_name]
-        odb_path = self.samples_dir / config['odb_path']
+        if config.get('synthetic'):
+            import synthetic_odb  # noqa: PLC0415 - test/ is on the path (this file's folder)
+            gen = self.output_dir / 'synthetic'
+            shutil.rmtree(gen / f"synthetic-{config['synthetic']}", ignore_errors=True)
+            if config['synthetic'] == 'multilayer':
+                odb_path = synthetic_odb.write_multilayer_job(gen / 'synthetic-multilayer')
+            else:
+                result.error = f"Unknown synthetic job: {config['synthetic']}"
+                return result
+        else:
+            odb_path = self.samples_dir / config['odb_path']
 
         if not odb_path.exists():
             result.error = f"ODB++ path not found: {odb_path}"

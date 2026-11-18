@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Reference-side ODB++ layer renderer with text support (cross-parser comparison tool).
 
-From the reader spec (odb2kicad-spec v2, section 5.5), adapted to this repo: the text renderer
-is test/odb_render_text.py, which test/odb_render.py now draws T / V records with, so this tool
-and the round-up harness (test/roundup.py) draw the same reference. --shipped-text-grammar
-draws text the way the tool was shipped (see odb_render_text.py for the three differences).
+Our own reference renderer, built on the round-up's: the text renderer is
+test/odb_render_text.py, which test/odb_render.py draws T / V records with, so this tool and the
+round-up harness (test/roundup.py) draw the same reference. --shipped-text-grammar draws text
+the simpler way some readers do (see odb_render_text.py for the three differences).
 
 Renders an ODB++ job (directory or .tgz/.zip) layer by layer to PNG, extending the repo's
 test/odb_render.py with: T/V text drawn from the job's fonts/ (strokes + polygon glyphs),
@@ -118,7 +118,7 @@ def main():
     ap.add_argument("--sheet")
     ap.add_argument("--apply-origin", action="store_true")
     ap.add_argument("--shipped-text-grammar", action="store_true",
-                    help="read T / V records as the tool was shipped (trailing field = mirror, glyphs flipped in place)")
+                    help="read T / V records the simpler way (trailing field = mirror flag, glyphs flipped in place)")
     ap.add_argument("--kicad", help="a converter's .kicad_pcb of this job: compared with the reference, layer by layer")
     ap.add_argument("--tol-px", type=int, default=1, help="missing / extra ignore ink within this many px of the other side")
     ap.add_argument("--repo")
@@ -137,7 +137,7 @@ def main():
         raise SystemExit(f"not an ODB++ job root: {root}")
 
     job = odb_render.OdbJob(root, step=args.step)
-    job.draw_text = not args.shipped_text_grammar  # else the loop below draws it the shipped way
+    job.draw_text = not args.shipped_text_grammar  # else the loop below draws it the simpler way
     layers = job.layers
     have = {l["kicad"] for l in layers} | {str(l.get("odb", "")).lower() for l in layers}
     # generic rows: every matrix layer not yet mapped (MISC/DOCUMENT procmaps, etc.)

@@ -39,9 +39,6 @@ wasm/                       # JS/npm wrapper around the WASM build
 samples/
   odb-output/               # Simple 2-resistor test board
   odb-kitchen-sink/         # Complex board (vias, TH, zones, arcs, polygons)
-  demo-design/              # ODB++ Viewer 2510 demo job (not KiCad-made): INCH, compressed files
-                            #   (features.z, components.z, eda/data.z), drill tools, T text + font,
-                            #   negative planes, matrix with a skipped row. See its PROVENANCE.txt
   test-odb.tgz              # Archive of odb-output for archive tests
   test.kicad_pcb            # Reference KiCad file for oracle comparison
 
@@ -71,7 +68,7 @@ Produces `odb2kicad/build/odb2kicad`. Requires CMake 3.10+ and a C++17 compiler.
 # (a panel step, STEP-REPEAT, holds a copy of each placed step; --no-panels leaves them out)
 # (with an output file, every other step is written beside it as <job>__<step>.kicad_pcb);
 # --document-layers all|none|N: document layers drawn on free User.N layers (default N = 100000)
-./odb2kicad/build/odb2kicad --report samples/demo-design /tmp/demo.kicad_pcb
+./odb2kicad/build/odb2kicad --report samples/odb-kitchen-sink /tmp/kitchen.kicad_pcb
 ```
 
 ### Docker Build (Cross-Platform)
@@ -149,7 +146,10 @@ bash odb2kicad/test/run_unit_tests.sh [name-filter]   # plain g++, no cmake need
 cd odb2kicad && bash test/test_simple.sh
 ```
 
-Requires the native CLI to be built first (the CMake build defaults to Release; demo-design takes about 4 s). Tests the five sample boards.
+Requires the native CLI to be built first (the CMake build defaults to Release) and `python3` (the
+multilayer section makes its job with `test/synthetic_odb.py --variant multilayer`: 10 copper
+layers, INCH by default, compressed `.z` files, text, drill tools, parts on both sides). Tests the
+sample boards and made-up jobs.
 
 ### WASM integration tests (19 tests)
 
@@ -159,7 +159,7 @@ cd /root/odb2kicad/wasm && node test/test-node.mjs
 
 Requires both native CLI and WASM to be built. Tests include:
 - Directory-based and archive-based conversion (.tgz, .zip)
-- WASM vs native byte-identical parity (odb-output, and demo-design with its compressed files)
+- WASM vs native byte-identical parity (odb-output, and the synthetic multilayer job with its compressed files; needs `python3`)
 - Multi-step jobs (`{ step }`), the `report` and `steps` fields
 - Error handling (empty input, invalid archives)
 - Sequential conversion cleanup (MEMFS isolation)
@@ -180,7 +180,7 @@ test/
 **Run all oracle tests:**
 ```bash
 python test/run_oracle_tests.py                          # converts and compares every registered sample
-python test/run_oracle_tests.py --sample demo-design     # one sample (converted first)
+python test/run_oracle_tests.py --sample multilayer      # one sample (converted first; this one is made up at run time)
 python test/run_oracle_tests.py --sample simple --stored # compare samples/test.kicad_pcb instead
 python3 -m unittest discover -s test -p 'test_compare_oracle.py'  # the checks fail on broken boards
 ```
@@ -216,10 +216,11 @@ python3 -I test/synthetic_odb.py /tmp/synth                      # made-up board
 python3 -I test/synthetic_odb.py /tmp/synth --variant symbols    # every standard symbol 0.3.0 missed (also: outline, negative)
 python3 -I test/roundup.py /tmp/synth/* samples/designodb_rigidflex.tgz --out /tmp/roundup \
     --converter odb2kicad=native:odb2kicad/build/odb2kicad --converter other=pcb:/path/to/boards/
-python3 -I test/synthetic_odb.py /tmp/synth --variant text       # also: origin, stackup, steps (the 0.4.0 gap-closure boards)
-python3 -I test/synthetic_odb.py /tmp/synth --variant specv2     # reader spec v2: mm font, POLYGON glyphs, V text, arcs without a direction
+python3 -I test/synthetic_odb.py /tmp/synth --variant text       # also: origin, stackup, steps (the 0.4.0 boards)
+python3 -I test/synthetic_odb.py /tmp/synth --variant glyphs     # mm font, POLYGON glyphs, V text, arcs without a direction
+python3 -I test/synthetic_odb.py /tmp/synth --variant multilayer # 10 copper layers, INCH by default, .z files, both-side parts
 python3 -m unittest discover -s test -p 'test_roundup.py'        # 25 tests, made-up boards only
-python3 -I tools/render_odb_sheet.py samples/demo-design --layer procmap_bot --out /tmp/sheet   # the reference side alone, as PNGs
+python3 -I tools/render_odb_sheet.py /tmp/synth/synthetic-multilayer --layer procmap_bot --out /tmp/sheet   # the reference side alone, as PNGs
 ```
 
 Writes `<out>/<job>/report.json` (per layer: `xor_ratio` = XOR / union of ink; `missing_ratio` /
@@ -231,13 +232,13 @@ server) and `<out>/metrics.json` (numbers only).
 
 - `test/raster.py`: the one rasterizer both sides use (even-odd scanline, PNG writer, metrics).
 - `test/odb_render.py`: ODB++ side. Records from `valor_oracle.parse_feature_geometry`; standard
-  symbols per the spec plus `symbols/<name>` user symbols; per-file `UNITS` and `$n name I|M`
+  symbols per the ODB++ spec plus `symbols/<name>` user symbols; per-file `UNITS` and `$n name I|M`
   overrides; polarity in file order; rotation clockwise, orient 4-7/9 mirror X first (the spec,
   not kicad-cli's counter-clockwise orient 9, so KiCad-made boards show that convention as a diff).
   Layers from the matrix only: copper rows -> F.Cu / In<n>.Cu / B.Cu, mask/paste/silk by side,
   every DRILL row -> `Drill`, profile -> `Edge.Cuts` (both sides stroked 0.3 mm).
-- `test/odb_render_text.py`: the reader spec's font parser + T / V text renderer (spec v2 section
-  5.5), which `odb_render.py` draws text with; `tools/render_odb_sheet.py` is the spec's CLI over
+- `test/odb_render_text.py`: our own reference font parser + T / V text renderer, which
+  `odb_render.py` draws text with; `tools/render_odb_sheet.py` is our reference renderer's CLI over
   the same code (any job / step / layer to PNG).
 - `test/kicad_render.py`: KiCad side (pads, tracks, arcs, vias, zone fills, graphics, holes).
 - Frame: odb2kicad's (x, -y); the Edge.Cuts bbox shifts it only when its size matches the profile.
