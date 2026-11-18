@@ -10,6 +10,7 @@ Fixes the web demo stopping with "Error: Aborted(). Build with -sASSERTIONS for 
 
 ### Converter
 - The WASM build compiles with WebAssembly exception handling (`-fwasm-exceptions`). Anything that still throws now comes back as the converter's error, `internal: the converter failed: <what>`, the same as the native CLI, and the module keeps working. Running out of memory is reported as such. This needs Node 18+ or Chrome / Edge 95+, Firefox 100+, Safari 15.2+. The `.wasm` grows from 478 KB to 550 KB.
+- The WASM memory may grow to 4 GB, the most a 32-bit WebAssembly module can address (was Emscripten's default of 2 GB). The 11 MB `designodb_rigidflex` archive peaks near 200 MB. Running out of memory was also an abort; it is now reported as `internal: out of memory: ...`.
 - Numbers in records are read without exceptions (`parseInt()`). Named attribute keys (`ID=`, `UID=`) are skipped wherever they sit in the list, in features and in components. A symbol, attribute or string definition whose index is not a number, is negative, or is absurdly large is skipped, where the reader used to stop. A negative symbol index used to write outside the symbol table.
 
 ### Web demo
