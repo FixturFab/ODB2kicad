@@ -1,0 +1,30 @@
+target (125 8 8)
+# width height rigid plate_thick mask_thick thick_type vendor layer_match
+stk_info 0 0 0 1 1 Laminate Any Yes
+valid 0 0
+begin_pile
+# thickness is_mirror construct cost resin_Er copper_loss
+pile_info (124.6 3.3 3.3) Yes FU-2 27.94 4.7 0
+begin_materials
+# width height cost num material weave thick ...
+#    vendor name cat_num construct upsidedown
+mat (16 18 0.51 1 Foil None (0.5 0 0) A 0.5 CU0.5OZ-16X18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 No)
+mat (16 18 4.39 1 Core Vert (14.8 0.2 0.2) B LAM0120-11 LAM0120-11-16x18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 No)
+mat (16 18 4.93 1 Core Vert (20.8 0.2 0.2) B LAM0180-11 LAM0180-11-16x18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 No)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 Yes)
+mat (16 18 4.93 1 Core Vert (20.8 0.2 0.2) B LAM0180-11 LAM0180-11-16x18 FU-2 Yes)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 Yes)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 Yes)
+mat (16 18 4.39 1 Core Vert (14.8 0.2 0.2) B LAM0120-11 LAM0120-11-16x18 FU-2 Yes)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 Yes)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 Yes)
+mat (16 18 0.69 1 Prepreg Vert (4.3 0.3 0.3) B 2116 PRE2116-16X18 FU-2 Yes)
+mat (16 18 0.51 1 Foil None (0.5 0 0) A 0.5 CU0.5OZ-16X18 FU-2 Yes)
+end_materials
+end_pile

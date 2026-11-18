@@ -1,16 +1,27 @@
 #include "odb_parser/matrix_parser.h"
+#include "util/odb_file.h"
 #include "util/string_utils.h"
+#include <cstdlib>
 #include <fstream>
 
 namespace odb2kicad {
 
 bool parseMatrix(const std::string& path, std::string& stepName, std::vector<OdbLayer>& layers) {
-    std::ifstream file(path);
-    if (!file.is_open()) return false;
+    std::vector<OdbMatrixStep> steps;
+    if (!parseMatrix(path, steps, layers)) return false;
+    if (!steps.empty()) stepName = steps.front().name;
+    return true;
+}
+
+bool parseMatrix(const std::string& path, std::vector<OdbMatrixStep>& steps, std::vector<OdbLayer>& layers) {
+    auto opened = openOdbFile(path);  // the file, or its compressed twin <path>.z
+    if (!opened) return false;
+    std::istream& file = *opened;
 
     std::string line;
     enum { NONE, IN_STEP, IN_LAYER } state = NONE;
     OdbLayer currentLayer;
+    OdbMatrixStep currentStep;
 
     while (std::getline(file, line)) {
         line = trim(line);
@@ -18,6 +29,7 @@ bool parseMatrix(const std::string& path, std::string& stepName, std::vector<Odb
 
         if (line == "STEP {") {
             state = IN_STEP;
+            currentStep = OdbMatrixStep();
             continue;
         }
         if (line == "LAYER {") {
@@ -28,6 +40,8 @@ bool parseMatrix(const std::string& path, std::string& stepName, std::vector<Odb
         if (line == "}") {
             if (state == IN_LAYER) {
                 layers.push_back(currentLayer);
+            } else if (state == IN_STEP && !currentStep.name.empty()) {
+                steps.push_back(currentStep);
             }
             state = NONE;
             continue;
@@ -39,9 +53,10 @@ bool parseMatrix(const std::string& path, std::string& stepName, std::vector<Odb
         std::string val = trim(line.substr(eq + 1));
 
         if (state == IN_STEP) {
-            if (key == "NAME") stepName = val;
+            if (key == "NAME") currentStep.name = val;
+            else if (key == "COL") currentStep.col = std::atoi(val.c_str());
         } else if (state == IN_LAYER) {
-            if (key == "ROW") currentLayer.row = std::stoi(val);
+            if (key == "ROW") currentLayer.row = std::atoi(val.c_str());  // rows keep their numbers: gaps are legal
             else if (key == "CONTEXT") currentLayer.context = val;
             else if (key == "TYPE") currentLayer.type = val;
             else if (key == "NAME") currentLayer.name = val;
@@ -49,6 +64,9 @@ bool parseMatrix(const std::string& path, std::string& stepName, std::vector<Odb
             else if (key == "START_NAME") currentLayer.startName = val;
             else if (key == "END_NAME") currentLayer.endName = val;
             else if (key == "DIELECTRIC_TYPE") currentLayer.dielectricType = val;
+            else if (key == "OLD_NAME") currentLayer.oldName = val;
+            else if (key == "COLOR") currentLayer.color = val;
+            else if (key == "ID") currentLayer.id = val;
         }
     }
     return true;

@@ -1,0 +1,67 @@
+ROW = 3
+NAME = valor_analysis_sm
+ERF = STD
+PARAMS {
+    pp_layers = .type=solder_mask & context=board
+    pp_ar = 10.0000
+    pp_coverage = 10.0000
+    pp_sm2r = 10.0000
+    pp_sliver = 4.0000
+    pp_spacing = 6.0000
+    pp_bridge = 0.0000
+    pp_tests = Drill;Pads;Coverage;Rout;Bridge;Sliver;Missing
+    pp_use_compensated_rout = No
+}
+LAST_PARAMS {
+    pp_layers = .type=solder_mask & context=board
+    pp_ar = 10.0000
+    pp_coverage = 10.0000
+    pp_sm2r = 10.0000
+    pp_sliver = 4.0000
+    pp_spacing = 6.0000
+    pp_bridge = 0.0000
+    pp_tests = Drill;Pads;Coverage;Rout;Bridge;Sliver;Missing
+    pp_use_compensated_rout = No
+}
+ONLINE_PARAMS {
+    pp_layers = .type=solder_mask  & context=board
+    pp_ar = 6.0000
+    pp_coverage = 8.0000
+    pp_sm2r = 8.0000
+    pp_sliver = 4.0000
+    pp_spacing = 6.0000
+    pp_bridge = 0.0000
+    pp_tests = Drill;Pads;Coverage;Rout;Bridge;Sliver;Missing;Spacing
+    pp_use_compensated_rout = No
+}
+ONLINE_VALUES {
+    *:ar_pth = 6.0000
+    *:ar_npth = 6.0000
+    *:ar_via = 6.0000
+    *:ar_smd = 5.0000
+    *:ar_pad = 5.0000
+    *:ar_via_pad = 5.0000
+    *:ar_pth_pad = 5.0000
+    *:ar_npth_pad = 5.0000
+    *:ar_ndrl_pad = 5.0000
+    *:neg_ar_smd = 5.0000
+    *:neg_ar_ndrl_pad = 5.0000
+    *:neg_ar_pth_pad = 5.0000
+    *:neg_ar_npth_pad = 5.0000
+    *:neg_ar_via_pad = 5.0000
+    *:npth2m = 0.0000
+    *:coverage = 6.0000
+    *:rout = 6.0000
+    *:no_bridge = 6.0000
+    *:sliver = 5.0000
+    *:pad_to_pad = unused
+    *:pad_to_non = unused
+    *:non_to_non = unused
+    *:smd_miss = 1000.0000
+    *:ndrl_miss = 1000.0000
+    *:pth_miss = 1000.0000
+    *:via_miss = 1000.0000
+    *:npth_miss = 1000.0000
+    *:rout_clearance = 1000.0000
+    *:too_large_nets = 1000.0000
+}

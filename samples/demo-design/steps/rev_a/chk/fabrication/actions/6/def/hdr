@@ -1,0 +1,36 @@
+ROW = 5
+NAME = valor_dfm_smooth_data
+ERF = STD
+PARAMS {
+    pp_layer = .type=power_ground&context=board
+    pp_max_sliver = 3.0000
+    pp_max_angle = 30
+    pp_space = 2.0000
+    pp_overlap = 1.0000
+    pp_pg = Yes
+    pp_acute = Yes
+    pp_mode = Analyze
+    pp_copper = Copper
+}
+LAST_PARAMS {
+    pp_layer = .type=power_ground&context=board
+    pp_max_sliver = 3.0000
+    pp_max_angle = 30
+    pp_space = 2.0000
+    pp_overlap = 1.0000
+    pp_pg = Yes
+    pp_acute = Yes
+    pp_mode = Analyze
+    pp_copper = Copper
+}
+ONLINE_PARAMS {
+    pp_layer = .affected
+    pp_max_sliver = 3.0000
+    pp_max_angle = 30
+    pp_space = 2.0000
+    pp_overlap = 1.0000
+    pp_pg = Yes
+    pp_acute = Yes
+    pp_mode = Analyze
+    pp_copper = Copper
+}

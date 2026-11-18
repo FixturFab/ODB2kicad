@@ -1,0 +1,62 @@
+ROW = 2
+NAME = valor_analysis_pg
+ERF = STD
+PARAMS {
+    pp_layers = .type=power_ground | mixed & context=board
+    pp_d2c = 20.0000
+    pp_sliver = 4.0000
+    pp_r2c = 20.0000
+    pp_nfp_spacing = 10.0000
+    pp_pln_spacing = 14.0000
+    pp_tests = Drill;Sliver;Rout;Thermal;NFP spacing;Plane spacing
+    pp_use_compensated_rout = No
+}
+LAST_PARAMS {
+    pp_layers = .type=power_ground | mixed & context=board
+    pp_d2c = 20.0000
+    pp_sliver = 4.0000
+    pp_r2c = 20.0000
+    pp_nfp_spacing = 10.0000
+    pp_pln_spacing = 14.0000
+    pp_tests = Drill;Sliver;Rout;Thermal;NFP spacing;Plane spacing
+    pp_use_compensated_rout = No
+}
+ONLINE_PARAMS {
+    pp_layers = .type=power_ground|mixed  & context=board
+    pp_d2c = 6.0000
+    pp_sliver = 4.0000
+    pp_r2c = 8.0000
+    pp_nfp_spacing = 4.0000
+    pp_pln_spacing = 8.0000
+    pp_tests = Drill;Sliver;Rout;Thermal;NFP spacing;Plane spacing;Keepin/Keepout Areas
+    pp_use_compensated_rout = No
+}
+ONLINE_VALUES {
+    *:npth2c = 8.0000
+    *:npth2p = unused
+    *:pth2t = 6.0000
+    *:pth2c = 6.0000
+    *:pth_cont_clr = 2.0000
+    *:pth2p = unused
+    *:r2c = 8.0000
+    *:sliver = 4.0000
+    *:npth_cont_c = 8.0000
+    *:spot_nfp = unused
+    *:spoke_width = 4.0000
+    *:thermal_percent_red = 50.0000
+    *:nfp_spacing = 4.0000
+    *:nfp_pos_spacing = 4.0000
+    *:plane_spacing = 8.0000
+    *:segmentation_lines = 8.0000
+    *:pth_reg = unused
+    *:npth_reg = unused
+    *:via_reg = unused
+    *:miss_cu = 1000.0000
+    *:rout_clearance = 1000.0000
+    *:via2t = 8.0000
+    *:via2c = 8.0000
+    *:via2p = 8.0000
+    *:via_cont_clr = 2.0000
+    *:etch_out_keepin_area = unused
+    *:etch_in_keepout_area = unused
+}

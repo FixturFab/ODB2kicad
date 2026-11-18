@@ -685,7 +685,8 @@ function parseTar(data) {
     const type = header[156];
     offset += 512;
     if ((type === 0x30 || type === 0) && size > 0 && name) {
-      files.push({ path: name, content: decoder.decode(data.subarray(offset, offset + size)) });
+      // compressed ODB++ files (<name>.z) are bytes, not text
+      files.push({ path: name, content: /\.z$/i.test(name) ? data.slice(offset, offset + size) : decoder.decode(data.subarray(offset, offset + size)) });
     }
     offset += Math.ceil(size / 512) * 512;
   }
@@ -702,7 +703,7 @@ function extractArchive(data) {
     const decoder = new TextDecoder();
     for (const [name, content] of Object.entries(entries)) {
       if (name.endsWith('/')) continue;
-      files.push({ path: name, content: decoder.decode(content) });
+      files.push({ path: name, content: /\.z$/i.test(name) ? content : decoder.decode(content) });
     }
     return files;
   }

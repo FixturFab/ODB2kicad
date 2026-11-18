@@ -106,6 +106,50 @@ def arc3(s, m, e, ppm):
     return raster.arc_points(ux, uy, r, a1, sweep, ppm)
 
 
+def _copper_order(name: str) -> int:
+    if name == "F.Cu":
+        return 0
+    if name == "B.Cu":
+        return 1000
+    try:
+        return int(name[2:].split(".")[0])
+    except ValueError:
+        return 999
+
+
+def _padstack(node) -> dict:
+    """KiCad 9 (padstack (mode ..) (layer "In1.Cu" | "Inner" | "B.Cu" ..) ..) -> {layer: entry}."""
+    ps = _kid(node, "padstack")
+    if not ps:
+        return {}
+    return {str(e[1]): e for e in _kids(ps, "layer") if len(e) > 1}
+
+
+def _stack_entry(stack: dict, layer: str):
+    """the padstack entry that draws a copper layer (None: the item's own size / shape)"""
+    if not stack or layer == "F.Cu":
+        return None
+    if layer in stack:
+        return stack[layer]
+    if layer != "B.Cu" and "Inner" in stack:
+        return stack["Inner"]
+    return None
+
+
+def _via_flashed(node, span: list) -> set:
+    """the copper layers a via has a pad on. KiCad 9 (remove_unused_layers yes): only the layers
+    zone_layer_connections forces, and both ends with (keep_end_layers yes) -- a track joining it
+    on another layer would flash that one too, which this renderer does not follow."""
+    ru = _kid(node, "remove_unused_layers")
+    if not ru or (len(ru) > 1 and str(ru[1]) == "no"):
+        return set(span)
+    on = {str(x) for x in (_kid(node, "zone_layer_connections") or [])[1:]}
+    ke = _kid(node, "keep_end_layers")
+    if span and ke and not (len(ke) > 1 and str(ke[1]) == "no"):
+        on |= {span[0], span[-1]}
+    return on & set(span)
+
+
 def _rot(px, py, deg):
     """KiCad rotation (degrees, counter-clockwise on screen, y down)."""
     a = math.radians(deg)
@@ -125,8 +169,10 @@ class KicadBoard:
                 if isinstance(L, list) and len(L) >= 3:
                     self.layer_names.append(str(L[1]))
                     if str(L[1]).endswith(".Cu"):
-                        self.copper.append((int(L[0]), str(L[1])))
-        self.copper = [n for _, n in sorted(self.copper)]
+                        self.copper.append(str(L[1]))
+        # stack order by name: KiCad 8 numbers copper 0..31 in stack order, KiCad 9 0 (F.Cu),
+        # 2 (B.Cu), 4.. (In1.Cu..), so the ids do not give the order
+        self.copper.sort(key=_copper_order)
         self._ops = None
 
     # -- every item -> (layer, value, contours) ------------------------------------------------
@@ -218,8 +264,15 @@ class KicadBoard:
                 if len(ls) >= 2 and ls[0] in self.copper and ls[1] in self.copper:
                     i0, i1 = sorted((self.copper.index(ls[0]), self.copper.index(ls[1])))
                     span = self.copper[i0:i1 + 1]
+                stack = _padstack(node)
+                flashed = _via_flashed(node, span)
                 for L in span:
-                    add(L, [raster.circle(x, y, size / 2, ppm)])
+                    if L not in flashed:
+                        continue
+                    e = _stack_entry(stack, L)
+                    sz = _kid(e, "size") if e else None
+                    d = float(sz[1]) if sz else size
+                    add(L, [raster.circle(x, y, d / 2, ppm)])
                 if drill and len(drill) > 1:
                     add("Drill", [raster.circle(x, y, float(drill[1]) / 2, ppm)])
             elif t == "zone":
@@ -335,8 +388,16 @@ class KicadBoard:
         world = []
         for reg in regions:
             world.append([[(cx + rx, cy + ry) for rx, ry in (_rot(x, y, prot) for x, y in c)] for c in reg])
+        stack = _padstack(pad)
         layers = self._expand(_layers_of(pad))
         for L in layers:
+            e = _stack_entry(stack, L) if L.endswith(".Cu") else None
+            if e is not None:   # KiCad 9 padstack: this copper layer's own shape
+                es, ez, er = _kid(e, "shape"), _kid(e, "size"), _kid(e, "roundrect_rratio")
+                ew, eh = (float(ez[1]), float(ez[2])) if ez else (w, h)
+                own = _basic_shape(str(es[1]) if es else shape, ew, eh, float(er[1]) if er else 0.0, ppm)
+                add(L, [[(cx + rx, cy + ry) for rx, ry in (_rot(x, y, prot) for x, y in c)] for c in own])
+                continue
             g = margins.get(L.split(".")[-1], 0.0) if L[:2] in ("F.", "B.") else 0.0
             grown = outline(g) if g else None
             if grown is not None:
@@ -375,6 +436,17 @@ class KicadBoard:
         for reg in self.ops(view.ppm).get(name, []):
             bm.fill(view.px(reg), 1)
         return bm
+
+
+def _basic_shape(shape, w, h, rratio, ppm):
+    """contours of a circle / oval / rect / roundrect pad of w x h in the pad frame"""
+    if shape == "circle":
+        return [raster.circle(0, 0, w / 2, ppm)]
+    if shape == "oval":
+        return [raster.stroke(-(w - h) / 2, 0, (w - h) / 2, 0, h, ppm)] if w >= h else [raster.stroke(0, -(h - w) / 2, 0, (h - w) / 2, w, ppm)]
+    if shape in ("roundrect", "chamfered_rect"):
+        return _rrect(w, h, rratio * min(w, h), ppm)
+    return [[(-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2)]]
 
 
 def _rrect(w, h, r, ppm):

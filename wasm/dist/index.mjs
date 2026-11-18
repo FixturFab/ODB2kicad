@@ -41,6 +41,12 @@ function fail(code, error) {
   return { success: false, code, error };
 }
 
+// ODB++ stores any file of a job compressed with UNIX compress as <name>.z (or .Z): binary, so
+// it is handed to the converter as bytes, never decoded as text.
+function isCompressedName(name) {
+  return /\.z$/i.test(name);
+}
+
 /**
  * Recursively create directories in Emscripten MEMFS.
  */
@@ -81,12 +87,20 @@ function rmrf(FS, path) {
 /**
  * Convert ODB++ files to KiCad .kicad_pcb format.
  *
- * @param {Array<{path: string, content: string}>} files
+ * @param {Array<{path: string, content: string|Uint8Array}>} files
  *   Array of file entries representing the ODB++ directory tree.
- *   Each entry has a relative path (e.g. "matrix/matrix") and string content.
- * @returns {Promise<{success: boolean, kicadPcb?: string, error?: string}>}
+ *   Each entry has a relative path (e.g. "matrix/matrix") and its content: a string, or the
+ *   file's bytes (required for compressed files, "features.z": their bytes are not text).
+ * @param {{step?: string, documentLayers?: 'all'|'none'|number}} [options]
+ *   step: convert this step of a multi-step job (default: the job's first step).
+ *   documentLayers: document layers with no KiCad layer of their name (assembly drawings, process
+ *   maps) are drawn on free User.N layers when they hold at most this many features (default
+ *   100000); 'all' draws them whatever their size, 'none' leaves them out.
+ * @returns {Promise<{success: boolean, kicadPcb?: string, step?: string, steps?: string[], report?: string[], error?: string}>}
+ *   steps lists every step of the job in conversion order; report holds the reader's
+ *   "warning: ..." / "info: ..." lines.
  */
-export async function convertOdb(files) {
+export async function convertOdb(files, options = {}) {
   if (!Array.isArray(files)) return fail('bad-input', 'convertOdb expects an array of {path, content} entries');
   if (files.length === 0) return fail('not-odb', 'no files given: an ODB++ job needs at least matrix/matrix and a steps/ folder');
   if (!files.some((f) => /(^|\/)matrix\/matrix$/.test(f.path))) {
@@ -118,7 +132,11 @@ export async function convertOdb(files) {
   // it, so the module is dropped and the next call starts afresh.
   let raw;
   try {
-    raw = Module.convertOdb(mountPoint);
+    const step = options && typeof options.step === 'string' ? options.step : '';
+    // documentLayers: 'all' | 'none' | a feature count per layer (default: the converter's 100000)
+    const doc = options ? options.documentLayers : undefined;
+    const limit = doc === 'all' ? -1 : doc === 'none' ? 0 : (Number.isFinite(doc) && doc >= 0 ? Math.floor(doc) : null);
+    raw = limit === null ? Module.convertOdbStep(mountPoint, step) : Module.convertOdbWith(mountPoint, step, limit);
   } catch (err) {
     resetWasmModule();
     const what = err && err.message ? err.message : String(err);
@@ -136,9 +154,13 @@ export async function convertOdb(files) {
     return m ? fail(m[1], m[2]) : fail('internal', msg);
   }
 
+  const lines = (text) => text.split('\n').filter((l) => l.length > 0);
   return {
     success: true,
     kicadPcb: raw,
+    step: Module.lastStep(),
+    steps: lines(Module.lastSteps()),
+    report: lines(Module.lastReport()),
   };
 }
 
@@ -197,7 +219,8 @@ function parseTar(data) {
 
     if ((type === 0x30 || type === 0) && size > 0 && name) {
       // Regular file — extract content as string
-      const content = decoder.decode(data.subarray(offset, offset + size));
+      const bytes = data.subarray(offset, offset + size);
+      const content = isCompressedName(name) ? bytes.slice() : decoder.decode(bytes);
       files.push({ path: name, content });
     }
 
@@ -228,7 +251,7 @@ function extractArchive(data) {
     for (const [name, content] of Object.entries(entries)) {
       // Skip directories (names ending with /)
       if (name.endsWith('/')) continue;
-      files.push({ path: name, content: decoder.decode(content) });
+      files.push({ path: name, content: isCompressedName(name) ? content : decoder.decode(content) });
     }
     return files;
   }
@@ -286,7 +309,7 @@ function stripCommonPrefix(files) {
  * @param {ArrayBuffer|Uint8Array} buffer — archive data
  * @returns {Promise<{success: boolean, kicadPcb?: string, error?: string}>}
  */
-export async function convertOdbArchive(buffer) {
+export async function convertOdbArchive(buffer, options = {}) {
   let data;
   if (buffer instanceof ArrayBuffer) {
     data = new Uint8Array(buffer);
@@ -321,5 +344,5 @@ export async function convertOdbArchive(buffer) {
     return fail('archive', 'the archive holds no files');
   }
 
-  return convertOdb(files);
+  return convertOdb(files, options);
 }

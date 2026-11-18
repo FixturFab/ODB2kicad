@@ -229,5 +229,49 @@ grep -q '(at 55 35 45)' $ROT || { echo "FAIL: rotation J2 (bottom, 45) footprint
 
 echo "PASS: rotation test"
 
+# --- demo-design (the ODB++ Viewer 2510 demo job: 10 copper layers, INCH, no eda/data) ---
+echo "--- demo-design test ---"
+"${BUILD_DIR}/odb2kicad" "${SAMPLES}/demo-design" /tmp/test-demo.kicad_pcb
+DEMO=/tmp/test-demo.kicad_pcb
+OPEN=$(grep -o '(' $DEMO | wc -l)
+CLOSE=$(grep -o ')' $DEMO | wc -l)
+[ "$OPEN" -eq "$CLOSE" ] || { echo "FAIL: demo-design mismatched brackets"; exit 1; }
+grep -qE '\([0-9]+ "In8.Cu" signal\)' $DEMO || { echo "FAIL: demo-design has no In8.Cu (10 copper rows)"; exit 1; }
+grep -q '"In9.Cu"' $DEMO && { echo "FAIL: demo-design has an In9.Cu (only 10 copper rows)"; exit 1; }
+# compressed files (features.z, components.z, eda/data.z) are read: 853 components on both sides,
+# bottom copper, and nets from eda/data
+FPS=$(grep -c '^  (footprint "imported:' $DEMO || true)
+[ "$FPS" -eq 853 ] || { echo "FAIL: demo-design expected 853 component footprints (components.z), got $FPS"; exit 1; }
+grep -q '(footprint "imported:[^"]*" (layer "B.Cu")' $DEMO || { echo "FAIL: demo-design has no bottom components"; exit 1; }
+BSEG=$(grep -c '(segment .*(layer "B.Cu")' $DEMO || true)
+[ "$BSEG" -gt 1000 ] || { echo "FAIL: demo-design bottom copper (sigb/features.z) not read: $BSEG tracks on B.Cu"; exit 1; }
+# drill sizes come from layers/drill/tools: tool 1 is DRILL_SIZE=18 (mils) = 0.4572 mm, on 3759 vias
+VIAS=$(grep -c '(via .*(drill 0.4572)' $DEMO || true)
+[ "$VIAS" -eq 3759 ] || { echo "FAIL: demo-design expected 3759 vias drilled 0.4572 (tool 1), got $VIAS"; exit 1; }
+grep -q '(drill 3.70078)' $DEMO || { echo "FAIL: demo-design tool 19 (DRILL_SIZE=145.7) not 3.70078 mm"; exit 1; }
+
+# text: PROCMAP_BOT (a MISC DOCUMENT layer) is drawn on User.1 with its three T records ('FS',
+# 'SMT', 'IR') as font strokes: 14 + 17 + 10 lines, 3 font line widths (36 mil) wide
+grep -qE '\([0-9]+ "User.1" user "PROCMAP_BOT"\)' $DEMO || { echo "FAIL: demo-design PROCMAP_BOT is not on User.1"; exit 1; }
+grep -qE '\([0-9]+ "User.2" user "PROCMAP_TOP"\)' $DEMO || { echo "FAIL: demo-design PROCMAP_TOP is not on User.2"; exit 1; }
+STROKES=$(grep -c '(gr_line .*(stroke (width 0.9144) .*(layer "User.1")' $DEMO || true)
+[ "$STROKES" -eq 41 ] || { echo "FAIL: demo-design expected 41 text strokes on User.1, got $STROKES"; exit 1; }
+# 'FS' is at 2.48232, 7.9765 in (63.050928, -202.6031 mm), where the F's own zero goes: its stem is
+# 0.1 font units left of it, from 0.2 over it to 0.1 under it, at 0.4 / 0.302 of the font's size
+grep -q '(gr_line (start 59.68669 -209.331577) (end 59.68669 -199.238862) (stroke (width 0.9144)' $DEMO || { echo "FAIL: demo-design 'FS' is not at its record's location"; exit 1; }
+"${BUILD_DIR}/odb2kicad" --report "${SAMPLES}/demo-design" /tmp/test-demo2.kicad_pcb 2> /tmp/test-demo.report
+grep -q 'info: layer procmap_bot: 3 text record(s) drawn as 41 font strokes' /tmp/test-demo.report || { echo "FAIL: demo-design report has no text line"; exit 1; }
+# the matrix is captured in full: 22 rows, numbered 1 to 23 with no row 21, each one in the report
+grep -q 'info: matrix: 1 step(s), 22 layer rows (1 to 23, no row 21)' /tmp/test-demo.report || { echo "FAIL: demo-design matrix summary wrong"; exit 1; }
+ROWS=$(grep -c '^info: matrix row ' /tmp/test-demo.report || true)
+[ "$ROWS" -eq 22 ] || { echo "FAIL: demo-design report lists $ROWS matrix rows, expected 22"; exit 1; }
+grep -q 'info: matrix row 23 PROCMAP_TOP (DOCUMENT, MISC) -> User.2' /tmp/test-demo.report || { echo "FAIL: demo-design row 23 not reported"; exit 1; }
+grep -q 'info: matrix row 9 PG5 (POWER_GROUND, NEGATIVE) -> In4.Cu' /tmp/test-demo.report || { echo "FAIL: demo-design row 9 not reported"; exit 1; }
+grep -q '(generator "odb2kicad/' $DEMO || { echo "FAIL: demo-design has no generator"; exit 1; }
+grep -q '(generator "odb2kicad/[0-9.]* odb++:v8.1")' /tmp/test-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink generator has no ODB++ version"; exit 1; }
+cmp -s $DEMO /tmp/test-demo2.kicad_pcb || { echo "FAIL: demo-design converts differently the second time"; exit 1; }
+
+echo "PASS: demo-design test"
+
 echo ""
 echo "=== All smoke tests passed ==="

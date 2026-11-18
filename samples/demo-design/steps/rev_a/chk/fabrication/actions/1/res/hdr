@@ -1,0 +1,212 @@
+STAT = D
+SEVERITY = 0
+LAST_TIME = 946297551
+DURATION = 8 SECONDS
+CATEGORY {
+    NAME = pth
+    TITLE = PTH Summary
+    DESCRIPTION = Shape;Hole
+    SORT_ORDER = 0
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = npth
+    TITLE = NPTH Summary
+    DESCRIPTION = Shape;Hole
+    SORT_ORDER = 1
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = via
+    TITLE = Via Summary
+    DESCRIPTION = Shape;Hole
+    SORT_ORDER = 2
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = 2drill
+    TITLE = 2nd Drilled Holes
+    DESCRIPTION = Shape;Hole
+    SORT_ORDER = 3
+    RANGE = 0.0010000 0.0020000 0.0030000 
+}
+CATEGORY {
+    NAME = duph
+    TITLE = Duplicate Holes
+    DESCRIPTION = Spacing;Hole 1;Hole 2
+    SORT_ORDER = 4
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = touchh
+    TITLE = Touching Holes
+    DESCRIPTION = Spacing;Hole 1;Hole 2
+    SORT_ORDER = 5
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = closeh
+    TITLE = Close Holes
+    DESCRIPTION = Spacing;Hole 1;Hole 2
+    SORT_ORDER = 6
+    RANGE = 0.0120000 0.0240000 0.0360000 
+}
+CATEGORY {
+    NAME = missh
+    TITLE = Missing Holes
+    DESCRIPTION = Pos;Pad
+    SORT_ORDER = 7
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = extrah
+    TITLE = Extra Holes
+    DESCRIPTION = Hole
+    SORT_ORDER = 8
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_3
+    TITLE = Short_3
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 9
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_4
+    TITLE = Short_4
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 10
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_5
+    TITLE = Short_5
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 11
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_6
+    TITLE = Short_6
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 12
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_7
+    TITLE = Short_7
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 13
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_8
+    TITLE = Short_8
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 14
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_9
+    TITLE = Short_9
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 15
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = pgshort_10_up
+    TITLE = Short_10_up
+    DESCRIPTION = Pos;Hole
+    SORT_ORDER = 16
+    RANGE = 1.0000000 1.0010000 1.0020000 
+}
+CATEGORY {
+    NAME = npth2rout
+    TITLE = NPTH to Rout
+    DESCRIPTION = Ratio;Hole
+    SORT_ORDER = 17
+    RANGE = 0.1000000 0.2000000 0.4000000 
+}
+CATEGORY {
+    NAME = tooling_holes
+    TITLE = Tooling Holes
+    DESCRIPTION = Shape;Hole
+    SORT_ORDER = 18
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = mount_holes
+    TITLE = Mounting Holes
+    DESCRIPTION = Shape;Hole
+    SORT_ORDER = 19
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = slot_pt
+    TITLE = Plated Slot Summary
+    DESCRIPTION = Shape;Slot
+    SORT_ORDER = 20
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = slot_npt
+    TITLE = Non Plated Slot Summary
+    DESCRIPTION = Shape;Slot
+    SORT_ORDER = 21
+    RANGE = 0.0100000 0.1000000 1.0000000 
+}
+CATEGORY {
+    NAME = non_standard
+    TITLE = Non Standard Symbol
+    DESCRIPTION = Shape;Non Standard
+    SORT_ORDER = 22
+    RANGE = 0.0000000 1.0000000 1.0010000 
+}
+CATEGORY {
+    NAME = non_standard_f
+    TITLE = Non Standard Feature
+    DESCRIPTION = Shape;Non Standard
+    SORT_ORDER = 23
+    RANGE = 0.0000000 1.0000000 1.0010000 
+}
+ATTRIBUTE {
+    drill_num_pth = 289
+    drill_num_npth = 14
+    drill_num_via = 3759
+    drill_num_2drill = 0
+    drill_num_duph = 1
+    drill_num_touchh = 0
+    drill_num_closeh = 1
+    drill_num_missh = 0
+    drill_num_extrah = 0
+    drill_min_npth2rout = N/A
+    drill_num_npth2rout = 0
+    drill_typ_npth2rout = N/A
+    drill_num_tooling_holes = 0
+    drill_num_mount_holes = 0
+    drill_num_slot_pt = 0
+    drill_num_slot_npt = 0
+    drill_num_non_standard = 0
+    drill_num_non_standard_f = 0
+    drill_num_pgshort = 0
+    num_pth = 289
+    num_npth = 14
+    num_via = 3759
+    num_2drill = 0
+    num_duph = 1
+    num_touchh = 0
+    num_closeh = 1
+    num_missh = 0
+    num_extrah = 0
+    min_npth2rout = N/A
+    num_npth2rout = 0
+    typ_npth2rout = N/A
+    num_tooling_holes = 0
+    num_mount_holes = 0
+    num_slot_pt = 0
+    num_slot_npt = 0
+    num_non_standard = 0
+    num_non_standard_f = 0
+    num_pgshort = 0
+}

@@ -1,0 +1,70 @@
+begin_fill
+#
+# This file is a sample -- for instructional use only,
+# It does not neccesarily reflect on the results of any lamination process.
+# Not to be used for production.
+# Ben Michelson 1 Feb 96
+#
+# A - ounce range for first facing copper (currently unused)
+# B - Copper area for first facing copper (currently unused)
+# C - ounce range for second facing copper (currently unused)
+# D - Copper area for second facing copper (currently unused)
+# E - Thickness of fill
+# F - Positive tolerace on width of fill (currently unused)
+# G - Negative tolerace on width of fill (currently unused)
+# H - ordered list of prepregs
+#
+#         A     B            C       D            E  F   G        H
+##########################################################################
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (5.2 0.5 0.5) (1080 1080))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (5.2 0.5 0.5) (1080 1080))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (4.2 0.5 0.5) (1080 1080))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (5.2 0.5 0.5) (1080 106))
+fill ((0.5-1oz50-100 any) (2-2oz   50-100 any) (5.2 0.5 0.5) (1080 106))
+fill ((0.5-1oz50-100 any) (2-2oz    0-50  any) (4.2 0.5 0.5) (1080 106))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (5.8 0.5 0.5) (2113 1080))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (5.8 0.5 0.5) (2113 1080))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (4.8 0.5 0.5) (2113 1080))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (6.8 0.5 0.5) (2113 2113))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (6.8 0.5 0.5) (2113 2113))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (5.8 0.5 0.5) (2113 2113))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (7.8 0.5 0.5) (2116 2113))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (7.8 0.5 0.5) (2113 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (6.8 0.5 0.5) (2113 2116))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (8.8 0.5 0.5) (2116 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (8.8 0.5 0.5) (2116 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (7.8 0.5 0.5) (2116 2116))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (9.2  0.5 0.5) (2113 1080 2113))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (10.2 0.5 0.5) (2113 2113 2113))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (11.2 0.5 0.5) (2113 2116 2113))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (12.2 0.5 0.5) (2116 2113 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (12.2 0.5 0.5) (2116 2113 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (11.2 0.5 0.5) (2116 2113 2116))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (12.8 0.5 0.5) (2116 2116 2116))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (14.2 0.5 0.5) (2113 2113 2113 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz   50-100 any) (14.2 0.5 0.5) (2113 2113 2113 2116))
+fill ((0.5-1oz 0-100 any) (2-2oz    0-50  any) (13.2 0.5 0.5) (2113 2113 2113 2116))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (16.2 0.5 0.5) (2116 2116 2116 2113))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (15.2 0.5 0.5) (2113 2116 2116 2113))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (15.2 0.5 0.5) (2116 2116 2116 1080))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (13.8 0.5 0.5) (1080 2116 2116 1080))
+
+fill ((0.5-1oz 0-100 any) (0.5-1oz  0-100 any) (17.2 0.5 0.5) (2116 2116 2116 2116))
+
+end_fill
+

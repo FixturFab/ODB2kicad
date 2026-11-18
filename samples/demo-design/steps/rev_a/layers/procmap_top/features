@@ -1,0 +1,21 @@
+#
+#Feature attribute names
+#
+@0 .area_name
+
+#
+#Feature attribute text strings
+#
+&0 SMT
+
+#
+#Layer features
+#
+S P 0;0=0
+OB -1.351371259843 -0.859384547244 I
+OS -1.351371259843 7.991282874016
+OS 6.295753543307 7.991282874016
+OS 6.295753543307 -0.859384547244
+OS -1.351371259843 -0.859384547244
+OE
+SE

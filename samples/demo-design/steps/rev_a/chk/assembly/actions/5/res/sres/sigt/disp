@@ -1,0 +1,7 @@
+DISPLAY {
+    L0 = sigt
+}
+DISPLAY {
+    L0 = sigt
+    L1 = spt
+}

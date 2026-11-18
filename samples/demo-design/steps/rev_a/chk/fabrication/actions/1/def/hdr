@@ -1,0 +1,40 @@
+ROW = 0
+NAME = valor_analysis_drill
+ERF = STD
+PARAMS {
+    pp_drill_layer = .type=drill & context=board
+    pp_rout_distance = 400.0000
+    pp_tests = Hole Size;Hole Separation;Missing Holes;Extra Holes;Power/Ground Shorts
+    pp_extra_hole_type = Pth
+}
+LAST_PARAMS {
+    pp_drill_layer = .type=drill & context=board
+    pp_rout_distance = 400.0000
+    pp_tests = Hole Size;Hole Separation;Missing Holes;Extra Holes;Power/Ground Shorts
+    pp_extra_hole_type = Pth
+}
+ONLINE_PARAMS {
+    pp_drill_layer = .type=drill  & context=board
+    pp_rout_distance = 400.0000
+    pp_tests = Hole Separation;Missing Holes;Extra Holes;NPTH to Rout
+    pp_extra_hole_type = Pth
+}
+ONLINE_VALUES {
+    *:pth = unused
+    *:npth = unused
+    *:via = unused
+    *:2drill = unused
+    *:duph = 1000.0000
+    *:touchh = 1000.0000
+    *:closeh = 12.0000
+    *:missh = 1000.0000
+    *:extrah = 1000.0000
+    *:pgshort* = 1000.0000
+    *:npth2rout = unused
+    *:tooling_holes = unused
+    *:mount_holes = unused
+    *:slot_pt = unused
+    *:slot_npt = unused
+    *:non_standard = unused
+    *:non_standard_f = unused
+}

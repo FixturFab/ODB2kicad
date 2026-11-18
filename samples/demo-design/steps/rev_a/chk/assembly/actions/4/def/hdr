@@ -1,0 +1,33 @@
+ROW = 3
+NAME = valor_assembly_testpoint
+ERF = STD
+PARAMS {
+    pp_side = Top;Bottom
+    pp_t_spacing = 100.0000
+    pp_h_spacing = 100.0000
+    pp_c_spacing = 100.0000
+    pp_r_spacing = 100.0000
+    pp_sm_clearance = 0.0000
+    pp_tests = Review;Spacing;Drill;Rout;Component;Solder Mask
+    pp_ce_by_rout = Profile
+}
+LAST_PARAMS {
+    pp_side = Top;Bottom
+    pp_t_spacing = 100.0000
+    pp_h_spacing = 100.0000
+    pp_c_spacing = 100.0000
+    pp_r_spacing = 100.0000
+    pp_sm_clearance = 0.0000
+    pp_tests = Review;Spacing;Drill;Rout;Component;Solder Mask
+    pp_ce_by_rout = Profile
+}
+ONLINE_PARAMS {
+    pp_side = Top;Bottom
+    pp_t_spacing = 100.0000
+    pp_h_spacing = 250.0000
+    pp_c_spacing = 100.0000
+    pp_r_spacing = 250.0000
+    pp_sm_clearance = 100.0000
+    pp_tests = Review;Spacing;Drill;Rout;Component;Solder Mask;Via Capping;Keepin/Keepout Areas
+    pp_ce_by_rout = Profile
+}

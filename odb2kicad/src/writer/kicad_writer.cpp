@@ -1,11 +1,14 @@
 #include "writer/kicad_writer.h"
 #include "writer/polygon.h"
+#include "writer/keyhole.h"
+#include "odb2kicad_lib.h"
 #include "util/coord.h"
 #include "util/string_utils.h"
 #include <algorithm>
 #include <array>
 #include <functional>
 #include <cmath>
+#include <cstdlib>
 #include <iomanip>
 #include <map>
 #include <set>
@@ -318,14 +321,79 @@ static std::string featureAttr(const OdbFeatures& feats, const std::map<int, std
 // Classify a drill hit. ODB++ .drill is an option attribute: 0 = plated, 1 = non_plated, 2 = via
 // (text values are accepted too). Without it, a non-plated layer name or a .geometry VIA* string
 // decides; everything else is plated.
+// A hit's tool in its layer's tools table, nullptr when the table does not name one for it.
+// In order: the P record's dcode is the tool NUM (Genesis / Valor and Cadence write it so); a
+// .bit attribute naming a tool's BIT; a .geometry / .bit string "TOOL<n>"; else the one drill
+// size the symbol's diameter equals (KiCad writes dcode 0 and one tool per hit, so several tools
+// may share a size: any of them gives the size, and the type only when they all agree).
+// symSize and the table are in the same unit (mm once normalizeUnits has run).
+static const OdbDrillTool* drillToolFor(const OdbDrillTools* tools, const OdbFeatures& feats, const OdbPad& p,
+                                        double symSize, bool* typeKnown) {
+    if (typeKnown) *typeKnown = false;
+    if (!tools || tools->tools.empty()) return nullptr;
+    auto byNum = [&](int n) -> const OdbDrillTool* {
+        for (auto& t : tools->tools) if (t.num == n) return &t;
+        return nullptr;
+    };
+    auto sizeFits = [&](const OdbDrillTool& t) {
+        return symSize <= 0 || t.drillSize <= 0 || std::abs(t.drillSize - symSize) <= 0.1 * std::max(t.drillSize, symSize);
+    };
+    auto stringOf = [&](const char* attr) -> std::string {
+        std::string v = trim(featureAttr(feats, p.attrs, attr));
+        if (v.empty()) return "";
+        char* end = nullptr;
+        long idx = std::strtol(v.c_str(), &end, 10);
+        if (end == v.c_str() + v.size()) {
+            auto it = feats.strings.find((int)idx);
+            if (it != feats.strings.end()) return trim(it->second);
+        }
+        return v;
+    };
+    const OdbDrillTool* found = nullptr;
+    // a tool more than 10% off the hit's symbol is not that hit's tool (a stale table, or a
+    // dcode that is not a tool number)
+    if (p.dcode > 0) { found = byNum(p.dcode); if (found && !sizeFits(*found)) found = nullptr; }
+    std::string bit = toUpper(stringOf(".bit"));
+    if (!found && !bit.empty()) {
+        for (auto& t : tools->tools)
+            if (toUpper(t.bit) == bit && sizeFits(t)) { found = &t; break; }
+    }
+    for (const char* attr : {".geometry", ".bit"}) {
+        if (found) break;
+        std::string g = toUpper(stringOf(attr));
+        if (g.size() > 4 && g.compare(0, 4, "TOOL") == 0 && g.find_first_not_of("0123456789", 4) == std::string::npos) {
+            found = byNum(std::atoi(g.c_str() + 4));
+            if (found && !sizeFits(*found)) found = nullptr;
+        }
+    }
+    if (found) {
+        if (typeKnown) *typeKnown = !found->type.empty();
+        return found;
+    }
+    if (symSize <= 0) return nullptr;
+    bool sameType = true;
+    for (auto& t : tools->tools) {
+        if (t.drillSize <= 0 || std::abs(t.drillSize - symSize) > 1e-3 * std::max(1.0, symSize)) continue;
+        if (!found) found = &t;
+        else if (t.type != found->type) sameType = false;
+    }
+    if (found && typeKnown) *typeKnown = sameType && !found->type.empty();
+    return found;
+}
+
 static DrillHit::Kind classifyDrill(const OdbFeatures& feats, const std::map<int, std::string>& attrs,
-                                    bool layerNonPlated) {
+                                    bool layerNonPlated, const OdbDrillTool* tool = nullptr) {
     std::string d = toLower(trim(featureAttr(feats, attrs, ".drill")));
     if (d == "0" || d == "plated") return DrillHit::PLATED;
     if (d == "1" || d == "non_plated") return DrillHit::NON_PLATED;
     if (d == "2" || d == "via") return DrillHit::VIA;
     std::string u = toLower(trim(featureAttr(feats, attrs, ".pad_usage")));  // option: 1 = via
     if (u == "1" || u == "via") return DrillHit::VIA;
+    if (tool) {  // the tools table's TYPE, when the hit has no .drill of its own
+        if (tool->type == "VIA") return DrillHit::VIA;
+        if (tool->type == "NON_PLATED") return DrillHit::NON_PLATED;
+        if (tool->type == "PLATED") return DrillHit::PLATED;
+    }
     if (layerNonPlated) return DrillHit::NON_PLATED;
     std::string geom = featureAttr(feats, attrs, ".geometry");
     if (!geom.empty()) {
@@ -417,40 +485,6 @@ static std::vector<std::pair<double,double>> roundRectOutline(double cx, double 
     return out;
 }
 
-static double signedArea(const std::vector<std::pair<double,double>>& pts) {
-    double a = 0;
-    for (size_t i = 0; i < pts.size(); i++) {
-        auto& p = pts[i];
-        auto& q = pts[(i + 1) % pts.size()];
-        a += p.first * q.second - q.first * p.second;
-    }
-    return a / 2;
-}
-
-// Fold the holes of an island into its outline with zero-width keyhole cuts (KiCad's gr_poly has
-// no holes): each hole is spliced in at its vertex closest to the outline, wound against it.
-static std::vector<std::pair<double,double>> keyhole(std::vector<std::pair<double,double>> outer,
-                                                     std::vector<std::vector<std::pair<double,double>>> holes) {
-    for (auto& hole : holes) {
-        if (hole.size() < 3 || outer.empty()) continue;
-        if ((signedArea(hole) > 0) == (signedArea(outer) > 0)) std::reverse(hole.begin(), hole.end());
-        size_t bi = 0, bj = 0;
-        double best = 1e300;
-        for (size_t i = 0; i < outer.size(); i++) {
-            for (size_t j = 0; j < hole.size(); j++) {
-                double dx = outer[i].first - hole[j].first, dy = outer[i].second - hole[j].second;
-                double d = dx * dx + dy * dy;
-                if (d < best) { best = d; bi = i; bj = j; }
-            }
-        }
-        std::vector<std::pair<double,double>> merged(outer.begin(), outer.begin() + bi + 1);
-        for (size_t k = 0; k <= hole.size(); k++) merged.push_back(hole[(bj + k) % hole.size()]);
-        merged.insert(merged.end(), outer.begin() + bi, outer.end());
-        outer.swap(merged);
-    }
-    return outer;
-}
-
 // Point (raw ODB++ coords) inside a surface: inside an island and not inside one of its holes
 static bool pointInSurface(const OdbSurface& srf, double x, double y) {
     int depth = 0;
@@ -536,8 +570,13 @@ struct CourtyardPiece {
     bool claimed = false;
 };
 
-KicadPcb transformToKicad(const OdbDesign& design) {
+KicadPcb transformToKicad(const OdbDesign& design, std::vector<std::string>* report) {
     KicadPcb pcb;
+    pcb.generator = std::string("odb2kicad/") + ODB2KICAD_VERSION;
+    if (design.info.versionMajor >= 0)
+        pcb.generator += " odb++:v" + std::to_string(design.info.versionMajor) + "." +
+                         std::to_string(std::max(design.info.versionMinor, 0));
+    if (design.boardThickness > 0) pcb.boardThickness = design.boardThickness;  // else 1.6 (kicad_pcb.h)
 
     // Unit scale: 1 once normalizeUnits has put every file in mm (parseOdbDirectory does). A
     // design built in memory without it keeps the old single job-wide scale: the component
@@ -561,6 +600,64 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     // Build layer name mapping (handles both KiCad and non-KiCad ODB++ sources)
     auto layerMap = buildLayerMap(design.layers);
 
+    // DOCUMENT layers no KiCad layer answers to by name (assembly drawings, process maps, notes)
+    // are drawn on the User.1 .. User.9 layers the job leaves free, in matrix row order, under
+    // their own name. Only layers that hold something, and not for KiCad-made jobs: kicad-cli's
+    // own DOCUMENT rows either have a KiCad layer or are its tenting / plugging / filling rows.
+    std::map<int, std::string> userLayerNames;  // KiCad id -> the ODB++ layer drawn there
+    {
+        const std::string k = "KiCad";
+        const bool kicadJob = design.info.odbSource.compare(0, k.size(), k) == 0 ||
+                              design.info.saveApp.compare(0, k.size(), k) == 0;
+        std::set<int> taken;
+        for (auto& [name, m] : layerMap) taken.insert(m->id);
+        std::vector<const OdbLayer*> rows;
+        for (auto& l : design.layers) rows.push_back(&l);
+        std::stable_sort(rows.begin(), rows.end(), [](const OdbLayer* a, const OdbLayer* b) { return a->row < b->row; });
+        int next = 50;
+        for (auto* l : rows) {
+            std::string lower = toLower(l->name);
+            if (kicadJob || toUpper(l->type) != "DOCUMENT" || layerMap.count(lower)) continue;
+            auto fit = design.layerFeatures.find(lower);
+            if (fit == design.layerFeatures.end()) continue;
+            auto& f = fit->second;
+            if (f.pads.empty() && f.lines.empty() && f.arcs.empty() && f.surfaces.empty()) continue;
+            // a drawing of several hundred thousand strokes multiplies the board file: left out
+            // unless asked for (OdbDesign::documentFeatureLimit; the reader reports it)
+            const long long count = (long long)f.pads.size() + (long long)f.lines.size() + (long long)f.arcs.size() + (long long)f.surfaces.size();
+            if (design.documentFeatureLimit >= 0 && count > design.documentFeatureLimit) continue;
+            while (next <= 58 && taken.count(next)) next++;
+            if (next > 58) break;  // more document layers than free user layers: the rest stay out
+            for (auto& m : kLayerMappings)
+                if (m.id == next) layerMap[lower] = &m;
+            taken.insert(next);
+            userLayerNames[next] = l->name;
+        }
+    }
+
+    // Every matrix row and where it went
+    if (report) {
+        std::vector<const OdbLayer*> rows;
+        for (auto& l : design.layers) rows.push_back(&l);
+        std::stable_sort(rows.begin(), rows.end(), [](const OdbLayer* a, const OdbLayer* b) { return a->row < b->row; });
+        for (auto* l : rows) {
+            std::string lower = toLower(l->name), type = toUpper(l->type);
+            std::string where;
+            auto it = layerMap.find(lower);
+            const bool hasFeatures = design.layerFeatures.count(lower) > 0;
+            if (type == "COMPONENT") where = "its components become footprints";
+            else if (type == "DIELECTRIC") where = "stackup only";
+            else if (type == "DRILL") where = hasFeatures ? "holes and vias" : "no features file";
+            else if (it != layerMap.end()) where = std::string(it->second->canonical) + (hasFeatures ? "" : " (no features file)");
+            else if (!hasFeatures) where = "not drawn (no features file)";
+            else where = "not drawn (no KiCad layer for it)";
+            report->push_back("info: matrix row " + std::to_string(l->row) + " " + l->name + " (" +
+                              (l->writtenType.empty() ? l->type : l->writtenType + " read as DOCUMENT") +
+                              (toUpper(l->context) == "MISC" ? ", MISC" : "") +
+                              (toUpper(l->polarity) == "NEGATIVE" ? ", NEGATIVE" : "") + ") -> " + where);
+        }
+    }
+
     // Coordinate transforms with unit scaling (ODB++ INCH -> KiCad MM)
     auto scaleX = [unitScale](double x) { return x * unitScale; };
     auto scaleY = [unitScale](double y) { return -y * unitScale; };  // Also negate Y for KiCad
@@ -581,6 +678,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         kl.canonicalName = mapping->canonical;
         kl.type = (mapping->id <= 31) ? "signal" : "user";
         if (mapping->alias) kl.alias = mapping->alias;
+        auto un = userLayerNames.find(mapping->id);
+        if (un != userLayerNames.end()) kl.alias = un->second;
         pcb.layers.push_back(kl);
     }
 
@@ -932,6 +1031,20 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     for (auto& [name, f] : design.layerFeatures) {
         if (name.find("drill") != std::string::npos) drillLayerNames.insert(name);
     }
+    // Tools tables are mm once normalizeUnits has run; a design built in memory holds them in
+    // thousandths of its unit, like symbol names
+    const double toolScale = design.unitsNormalized ? 1.0 : unitScale / 1000.0;
+    auto hitTool = [&](const std::string& layerLower, const OdbFeatures& feats, const OdbPad& p,
+                       bool* typed) -> const OdbDrillTool* {
+        auto tit = design.layerTools.find(layerLower);
+        if (tit == design.layerTools.end()) { if (typed) *typed = false; return nullptr; }
+        double symSize = 0;
+        if (p.symIdx >= 0 && p.symIdx < (int)feats.symbols.size()) {
+            auto& ds = feats.symbols[p.symIdx];
+            symSize = scaleLen((ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width) / toolScale;
+        }
+        return drillToolFor(&tit->second, feats, p, symSize, typed);
+    };
     std::vector<DrillHit> drillHits;
     for (auto& dlName : drillLayerNames) {
         auto it = design.layerFeatures.find(dlName);
@@ -945,6 +1058,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             DrillHit h;
             h.x = p.x;
             h.y = p.y;
+            bool typed = false;
+            const OdbDrillTool* tool = hitTool(dlName, feats, p, &typed);
             if (p.symIdx >= 0 && p.symIdx < (int)feats.symbols.size()) {
                 auto& ds = feats.symbols[p.symIdx];
                 h.size = scaleLen((ds.shape == OdbSymbol::ROUND) ? ds.diameter : ds.width);
@@ -954,9 +1069,12 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     if (std::lround(padAngleKicad(p) / 90.0) % 2 == 1) std::swap(w, hh);
                     h.size = w;
                     h.slotLength = hh;
+                    tool = nullptr;  // a slot keeps its symbol: the table has one size per tool
                 }
             }
-            h.kind = classifyDrill(feats, p.attrs, layerNonPlated);
+            // the tools table is the drill size; the flash symbol only when it names no tool
+            if (tool && tool->drillSize > 0) h.size = tool->drillSize * toolScale;
+            h.kind = classifyDrill(feats, p.attrs, layerNonPlated, typed ? tool : nullptr);
             drillHits.push_back(h);
         }
     }
@@ -989,6 +1107,70 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         return false;
     };
     const bool havePaste = layerPresent(odbFPaste) || layerPresent(odbBPaste);
+    // Positive copper of net netId (KiCad id, not 0) drawn through a point on an ODB++ layer, other
+    // than a pad flash: a surface covering it, or a line / arc whose stroke reaches it (by the
+    // pen's size). A feature whose FID names another net does not count; one with no FID does.
+    auto copperUnder = [&](const std::string& odbLayer, double x, double y, int netId) -> bool {
+        auto it = design.layerFeatures.find(odbLayer);
+        if (netId == 0 || odbLayer.empty() || it == design.layerFeatures.end()) return false;
+        auto& f = it->second;
+        auto sameNet = [&](int featIdx) { int n = fidNet(odbLayer, featIdx); return n == -1 || n == netId; };
+        auto halfWidth = [&](int symIdx) {
+            if (symIdx < 0 || symIdx >= (int)f.symbols.size()) return 0.0;
+            auto& sym = f.symbols[symIdx];
+            return std::max({sym.diameter, sym.width, sym.height}) / 2;
+        };
+        for (auto& srf : f.surfaces)
+            if (srf.polarity != "N" && sameNet(srf.featIdx) && pointInSurface(srf, x, y)) return true;
+        for (auto& l : f.lines) {
+            if (l.polarity == "N" || l.textIdx >= 0 || !sameNet(l.featIdx)) continue;
+            double vx = l.x2 - l.x1, vy = l.y2 - l.y1, len2 = vx * vx + vy * vy;
+            double t = len2 > 0 ? std::clamp(((x - l.x1) * vx + (y - l.y1) * vy) / len2, 0.0, 1.0) : 0.0;
+            if (std::hypot(l.x1 + t * vx - x, l.y1 + t * vy - y) <= halfWidth(l.symIdx)) return true;
+        }
+        for (auto& a : f.arcs) {
+            if (a.polarity == "N" || !sameNet(a.featIdx)) continue;
+            double r = std::hypot(a.xs - a.xc, a.ys - a.yc), hw = halfWidth(a.symIdx);
+            // the point within the pen of the arc's circle, or of its ends (the swept-angle test
+            // is left out: a point near the full circle but off the arc only adds a candidate)
+            if (std::abs(std::hypot(x - a.xc, y - a.yc) - r) <= hw) return true;
+            if (std::hypot(x - a.xs, y - a.ys) <= hw || std::hypot(x - a.xe, y - a.ye) <= hw) return true;
+        }
+        return false;
+    };
+    // A pin outline is copper when a 9 x 9 grid of points inside it (in board ODB++ units, each
+    // ring placed about the terminal like the package) all lie on copper of the pin's net
+    auto outlineIsCopper = [&](const OdbEdaPin& pin, const OdbTerminal& term, auto&& placeOffset,
+                               bool mirrored, const std::string& cuLayer) -> bool {
+        const int netId = resolveNet(term.netIdx).first;
+        if (netId == 0) return false;
+        int probes = 0;
+        for (auto& ring : pin.outlines) {
+            std::vector<std::pair<double,double>> b;
+            double minX = 1e300, minY = 1e300, maxX = -1e300, maxY = -1e300;
+            for (auto& [qx, qy] : ring) {
+                auto [ox, oy] = placeOffset(qx - pin.x, qy - pin.y, mirrored);
+                b.push_back({term.x + ox, term.y + oy});  // placeOffset is in ODB++ units
+                minX = std::min(minX, b.back().first); maxX = std::max(maxX, b.back().first);
+                minY = std::min(minY, b.back().second); maxY = std::max(maxY, b.back().second);
+            }
+            if (b.size() < 3) continue;
+            const int n = 9;
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++) {
+                    double x = minX + (maxX - minX) * (i + 0.5) / n, y = minY + (maxY - minY) * (j + 0.5) / n;
+                    bool in = false;
+                    for (size_t k = 0, m = b.size() - 1; k < b.size(); m = k++)
+                        if ((b[k].second > y) != (b[m].second > y) &&
+                            x < (b[m].first - b[k].first) * (y - b[k].second) / (b[m].second - b[k].second) + b[k].first)
+                            in = !in;
+                    if (!in) continue;
+                    if (!copperUnder(cuLayer, x, y, netId)) return false;
+                    probes++;
+                }
+        }
+        return probes > 0;
+    };
     // Mask / paste openings of a pad from the flash at its centre on each of its mask / paste
     // layers. KiCad grows the pad by one margin, so an opening that is the pad grown evenly (same
     // shape, same angle, the same margin in X and Y, a rounded corner grown by it too) becomes
@@ -1173,10 +1355,97 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             crtydPadIdx[{ln, i}] = add(pc);
         }
     }
+    // Inner layers of a plated through-hole pad, one by one (KiCad 9 padstack): the flash on each
+    // inner copper layer, where the job has one of a shape KiCad draws; a negative plane's flash is
+    // a clearance or thermal, not copper, and a layer with no flash has none, so there the pad is
+    // the hole's own size. The outer layers keep the pad's shape. Equal entries collapse to one
+    // "Inner" entry; entries equal to the pad to none.
+    std::vector<std::pair<std::string, std::string>> innerCopper;  // (odb layer, KiCad layer), stack order
+    {
+        std::vector<std::pair<int, std::string>> ids;
+        for (auto& [name, m] : layerMap)
+            if (m->id >= 1 && m->id <= 30) ids.push_back({m->id, name});
+        std::sort(ids.begin(), ids.end());
+        for (auto& [id, name] : ids) innerCopper.push_back({name, mapLayerName(name)});
+    }
+    auto setInnerPadstack = [&](KicadPad& pad, double x, double y) {
+        pad.padstack.clear();
+        pad.padstackMode.clear();
+        if (pad.type != "thru_hole" || pad.shape == "custom" || innerCopper.empty() || pad.drill <= 0) return;
+        auto same = [](const KicadPadLayer& a, const KicadPadLayer& b) {
+            return a.shape == b.shape && std::abs(a.width - b.width) < 1e-6 &&
+                   std::abs(a.height - b.height) < 1e-6 && std::abs(a.roundrectRatio - b.roundrectRatio) < 1e-6;
+        };
+        KicadPadLayer own{"", pad.shape, pad.width, pad.height, pad.shape == "roundrect" ? pad.roundrectRatio : 0};
+        KicadPadLayer hole{"", "circle", pad.drill, pad.drill, 0};
+        if (pad.drillHeight > 0) hole = {"", "oval", pad.drill, pad.drillHeight, 0};
+        // inner layers the pad is on (a free hole may list only some): the others stay as the pad
+        bool allCu = std::find(pad.layerNames.begin(), pad.layerNames.end(), "*.Cu") != pad.layerNames.end();
+        std::vector<KicadPadLayer> entries;
+        for (auto& [odbName, kname] : innerCopper) {
+            if (!allCu && std::find(pad.layerNames.begin(), pad.layerNames.end(), kname) == pad.layerNames.end()) {
+                entries.push_back(own);
+                entries.back().layer = kname;
+                continue;
+            }
+            KicadPadLayer e = hole;
+            const OdbSymbol* sym = nullptr;
+            const OdbPad* f = negativeLayers.count(odbName) ? nullptr : padFeatureAt(odbName, x, y, &sym, true);
+            if (f && sym && f->polarity != "N") {
+                double w = scaleLen(sym->shape == OdbSymbol::ROUND ? sym->diameter : sym->width);
+                double h = scaleLen(sym->shape == OdbSymbol::ROUND ? sym->diameter : sym->height);
+                double d = std::fmod(std::abs(padAngleKicad(*f) - pad.angle), 180.0);
+                bool quarter = std::abs(d - 90.0) < 0.5, straight = d < 0.5 || d > 179.5;
+                bool round = sym->shape == OdbSymbol::ROUND || std::abs(w - h) < 1e-9;
+                switch (sym->shape) {
+                    case OdbSymbol::ROUND: e.shape = "circle"; break;
+                    case OdbSymbol::RECT: case OdbSymbol::SQUARE: e.shape = "rect"; break;
+                    case OdbSymbol::OVAL: e.shape = "oval"; break;
+                    case OdbSymbol::ROUNDRECT: e.shape = "roundrect"; break;
+                    default: e.shape.clear(); break;  // a shape KiCad has no pad for: the pad's own
+                }
+                if (e.shape.empty() || !(round || straight || quarter)) {
+                    e = own;
+                } else {
+                    if (quarter && !round) std::swap(w, h);
+                    e.width = w;
+                    e.height = h;
+                    e.roundrectRatio = sym->shape == OdbSymbol::ROUNDRECT && sym->cornerRadius > 0
+                                           ? sym->cornerRadius / std::max(std::min(sym->width, sym->height), 1e-9) : 0;
+                    if (e.shape == "circle") e.height = e.width;
+                    if (std::max(e.width, e.height) <= std::max(pad.drill, pad.drillHeight)) e = hole;  // no ring
+                }
+            }
+            e.layer = kname;
+            entries.push_back(e);
+        }
+        bool allOwn = true, allEqual = true;
+        for (auto& e : entries) {
+            allOwn = allOwn && same(e, own);
+            allEqual = allEqual && same(e, entries.front());
+        }
+        if (allOwn) return;
+        if (allEqual) {
+            pad.padstackMode = "front_inner_back";
+            pad.padstack = {entries.front()};
+            pad.padstack.front().layer = "Inner";
+        } else {
+            pad.padstackMode = "custom";
+            pad.padstack = entries;
+        }
+    };
     const double eda2mm = design.edaData.units.empty() ? unitScale : (isInchUnits(design.edaData.units) ? 25.4 : 1.0);
 
     // 3. Transform components -> footprints
-    auto processComponents = [&](const OdbComponents& comps, bool isBottom) {
+    // Component files with their side: comp_+_top, comp_+_bot, then any other COMPONENT row.
+    // sideKey is the SNT TOP side letter the file answers to ("" for the others: eda/data only
+    // knows T and B); uuidBase keeps footprint uuids apart.
+    struct ComponentSet { const OdbComponents* comps; bool bottom; const char* sideKey; int uuidBase; };
+    std::vector<ComponentSet> componentSets = {{&design.topComponents, false, "T", 0}, {&design.botComponents, true, "B", 1000}};
+    for (size_t k = 0; k < design.otherComponents.size(); k++)
+        componentSets.push_back({&design.otherComponents[k].components, design.otherComponents[k].bottom, "", 100000 * (int)(k + 1)});
+
+    auto processComponents = [&](const OdbComponents& comps, bool isBottom, const char* sideKey, int uuidBase) {
         for (int ci = 0; ci < (int)comps.components.size(); ci++) {
             auto& comp = comps.components[ci];
             KicadFootprint fp;
@@ -1189,7 +1458,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             }
 
             fp.layer = isBottom ? "B.Cu" : "F.Cu";
-            fp.uuid = makeUuid(isBottom ? ci + 1000 : ci);
+            fp.uuid = makeUuid(ci + uuidBase);
             fp.x = scaleX(comp.x);
             fp.y = scaleY(comp.y);
             // ODB++ rotation is clockwise (both sides; bottom parts carry mirror M), KiCad's is
@@ -1209,6 +1478,33 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
             const std::string& sideCu = isBottom ? odbBCu : odbFCu;
             const std::string& otherCu = isBottom ? odbFCu : odbBCu;
+
+            // The component's package placed on the board: a clockwise rotation about the
+            // component origin; for a mirrored (M) part the ODB++ spec also mirrors the package X,
+            // but kicad-cli writes bottom packages already flipped. The package pins decide: the
+            // variant that puts them on the component's terminals wins (no pins: kicad-cli's).
+            const OdbEdaPackage* pkgPtr = (comp.pkgIdx >= 0 && comp.pkgIdx < (int)design.edaData.packages.size())
+                                              ? &design.edaData.packages[comp.pkgIdx] : nullptr;
+            const double pkgCos = std::cos(degToRad(comp.rotation)), pkgSin = std::sin(degToRad(comp.rotation));
+            auto placeOffset = [&](double px, double py, bool mirror) {  // package offset -> board offset, ODB++ units
+                px = (mirror ? -px : px) * eda2mm / unitScale;
+                py = py * eda2mm / unitScale;
+                return std::make_pair(px * pkgCos + py * pkgSin, -px * pkgSin + py * pkgCos);
+            };
+            bool pkgMirrored = false;
+            if (pkgPtr && comp.mirror == "M") {
+                double err[2] = {0, 0};
+                int n = 0;
+                for (auto& t : comp.terminals) {
+                    if (t.pinIdx < 0 || t.pinIdx >= (int)pkgPtr->pins.size()) continue;
+                    for (int m = 0; m < 2; m++) {
+                        auto [ox, oy] = placeOffset(pkgPtr->pins[t.pinIdx].x, pkgPtr->pins[t.pinIdx].y, m == 1);
+                        err[m] = std::max(err[m], std::hypot(comp.x + ox - t.x, comp.y + oy - t.y));
+                    }
+                    n++;
+                }
+                pkgMirrored = n > 0 && err[1] < err[0];
+            }
 
             // Process terminals -> pads
             for (auto& term : comp.terminals) {
@@ -1302,7 +1598,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 // Custom-shape pad: no flash (or a sub-0.02 mm one) and the pin owns copper surfaces.
                 // The surfaces become the pad's primitives, in the pad frame; the anchor is a 0.01 mm
                 // circle inside them (the export does not keep the anchor's own shape).
-                auto psIt = pinSurfaces.find({isBottom ? "B" : "T", ci, term.pinIdx});
+                auto psIt = pinSurfaces.find({sideKey, ci, term.pinIdx});
                 if (psIt != pinSurfaces.end() && pad.type == "smd" &&
                     (!symPtr || std::max(padSym.width, padSym.height) * unitScale < 0.02)) {
                     pad.shape = "custom";
@@ -1325,6 +1621,73 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                         if (!flashPad) onOther = (ln == otherCu);
                     }
                     customAnchors.push_back({term.x, term.y});
+                }
+
+                // No copper to take the shape from (no flash on either side, no surface of its
+                // own): the pin's outline in eda/data is its land, but only when the pin is copper.
+                // A CAD system also lists paste-only and mask-only pads (KiCad: a pad on F.Paste or
+                // B.Mask alone) as pins with an outline; they have an opening on a paste or mask
+                // layer and no copper flash, and stay what they were (a placeholder, its opening a
+                // paste- or mask-only pad on its own side). So the outline is used for a
+                // surface-mount pin on a net, with no paste or mask opening at all, whose whole
+                // outline is covered by copper of that net on its side's layer (the tracks, arcs or
+                // surfaces the CAD drew the land with). A pin with no net, over another net's copper,
+                // or only partly over copper (a key-dome ring under a square outline) is not a land. Its points
+                // are placed about the terminal like the package (offsets from the pin's own
+                // position), then turned into the pad frame. A rectangle centred on the pin is a
+                // rect pad; any other outline a custom pad.
+                if (!flashPad && pad.shape != "custom" && pad.type == "smd" && pkgPtr && term.pinIdx >= 0 &&
+                    term.pinIdx < (int)pkgPtr->pins.size() && !pkgPtr->pins[term.pinIdx].outlines.empty() &&
+                    !openingAt(odbFPaste, term.x, term.y, true) && !openingAt(odbBPaste, term.x, term.y, true) &&
+                    !openingAt(odbFMask, term.x, term.y, true) && !openingAt(odbBMask, term.x, term.y, true) &&
+                    outlineIsCopper(pkgPtr->pins[term.pinIdx], term, placeOffset, pkgMirrored, sideCu)) {
+                    auto& pin = pkgPtr->pins[term.pinIdx];
+                    pad.angle = normDeg(-term.rotation);
+                    const double pc = std::cos(degToRad(pad.angle)), ps = std::sin(degToRad(pad.angle));
+                    std::vector<std::vector<std::pair<double,double>>> rings;
+                    for (auto& ring : pin.outlines) {
+                        std::vector<std::pair<double,double>> local;
+                        for (auto& [qx, qy] : ring) {
+                            auto [ox, oy] = placeOffset(qx - pin.x, qy - pin.y, pkgMirrored);
+                            double dx = scaleLen(ox), dy = -scaleLen(oy);  // KiCad board offset from the pad centre
+                            std::pair<double,double> q{dx * pc - dy * ps, dx * ps + dy * pc};
+                            // KiCad repeats the OB point as its first OS: drop repeated points
+                            if (!local.empty() && std::hypot(q.first - local.back().first, q.second - local.back().second) < 1e-9) continue;
+                            local.push_back(q);
+                        }
+                        if (local.size() > 1 && std::hypot(local.front().first - local.back().first,
+                                                           local.front().second - local.back().second) < 1e-9)
+                            local.pop_back();
+                        if (local.size() >= 3) rings.push_back(local);
+                    }
+                    bool isRect = false;
+                    double w = 0, h = 0;
+                    if (rings.size() == 1 && rings[0].size() == 4) {
+                        double minX = 1e300, minY = 1e300, maxX = -1e300, maxY = -1e300;
+                        for (auto& [x, y] : rings[0]) {
+                            minX = std::min(minX, x); maxX = std::max(maxX, x);
+                            minY = std::min(minY, y); maxY = std::max(maxY, y);
+                        }
+                        const double e = 1e-4;
+                        isRect = std::abs(minX + maxX) < e && std::abs(minY + maxY) < e;
+                        for (auto& [x, y] : rings[0])
+                            isRect = isRect && (std::abs(x - minX) < e || std::abs(x - maxX) < e) &&
+                                     (std::abs(y - minY) < e || std::abs(y - maxY) < e);
+                        w = maxX - minX; h = maxY - minY;
+                        isRect = isRect && w > 1e-3 && h > 1e-3;
+                    }
+                    if (isRect) {
+                        pad.shape = "rect";
+                        pad.width = w;
+                        pad.height = h;
+                        pad.roundrectRatio = 0;
+                    } else if (!rings.empty() && pad.type == "smd") {
+                        pad.shape = "custom";
+                        pad.width = pad.height = 0.01;
+                        pad.roundrectRatio = 0;
+                        pad.primitives = rings;
+                        customAnchors.push_back({term.x, term.y});
+                    }
                 }
 
                 // Pad layers: copper from the pad type / flash side, mask and paste from
@@ -1356,6 +1719,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 }
 
                 setOpeningMargins(pad, term.x, term.y);
+                setInnerPadstack(pad, term.x, term.y);
 
                 // Net assignment from terminal
                 auto [netId, netName] = resolveNet(term.netIdx);
@@ -1414,34 +1778,14 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             // Courtyard: the package outline placed like the component claims the courtyard
             // strokes it runs along, on the component's side first. A ring is a courtyard when
             // its strokes cover at least 90% of its length; the strokes move into the footprint
-            // (and out of the board graphics of step 10). Placement is a clockwise rotation about
-            // the component origin; for a mirrored (M) part the ODB++ spec also mirrors the
-            // package X, but kicad-cli writes bottom packages already flipped. The package pins
-            // decide: the variant that puts them on the component's terminals wins (no pins:
-            // kicad-cli's).
-            if (comp.pkgIdx >= 0 && comp.pkgIdx < (int)design.edaData.packages.size()) {
+            // (and out of the board graphics of step 10).
+            if (pkgPtr) {
                 const double tol = 0.025;  // mm: KiCad rounds both records independently
-                auto& pkg = design.edaData.packages[comp.pkgIdx];
-                double rc = std::cos(degToRad(comp.rotation)), rs = std::sin(degToRad(comp.rotation));
                 auto place = [&](double px, double py, bool mirror) {  // package -> board ODB++ units
-                    px = (mirror ? -px : px) * eda2mm / unitScale;
-                    py = py * eda2mm / unitScale;
-                    return std::make_pair(comp.x + px * rc + py * rs, comp.y - px * rs + py * rc);
+                    auto [ox, oy] = placeOffset(px, py, mirror);
+                    return std::make_pair(comp.x + ox, comp.y + oy);
                 };
-                bool mirrored = false;
-                if (comp.mirror == "M") {
-                    double err[2] = {0, 0};
-                    int n = 0;
-                    for (auto& t : comp.terminals) {
-                        if (t.pinIdx < 0 || t.pinIdx >= (int)pkg.pins.size()) continue;
-                        for (int m = 0; m < 2; m++) {
-                            auto [bx, by] = place(pkg.pins[t.pinIdx].x, pkg.pins[t.pinIdx].y, m == 1);
-                            err[m] = std::max(err[m], std::hypot(bx - t.x, by - t.y));
-                        }
-                        n++;
-                    }
-                    mirrored = n > 0 && err[1] < err[0];
-                }
+                const bool mirrored = pkgMirrored;
                 auto local = [&](double x, double y) {  // board (KiCad mm) -> footprint frame
                     double dx = x - fp.x, dy = y - fp.y;
                     return std::make_pair(dx * fpCos - dy * fpSin, dx * fpSin + dy * fpCos);
@@ -1503,8 +1847,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         }
     };
 
-    processComponents(design.topComponents, false);
-    processComponents(design.botComponents, true);
+    for (auto& cs : componentSets) processComponents(*cs.comps, cs.bottom, cs.sideKey, cs.uuidBase);
 
     // Build a set of component terminal positions to exclude from via detection
     // This prevents thermal vias/drills under pads from being created as standalone vias
@@ -1518,8 +1861,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             }
         }
     };
-    addTerminals(design.topComponents);
-    addTerminals(design.botComponents);
+    for (auto& cs : componentSets) addTerminals(*cs.comps);
 
     // 4. Vias: hits on the matrix's DRILL layers (any name) classified as a via (.drill=via,
     // .geometry VIA*, or .pad_usage=via on the hit or on a copper flash it passes through).
@@ -1528,6 +1870,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         double x, y;           // ODB++ coordinates
         double drillDiameter;  // from drill layer symbol
         double padSize;        // from copper layer symbol
+        std::vector<std::pair<std::string, double>> layerSizes;  // KiCad layer -> pad diameter
         int netId;
         bool netFromFid;       // net taken from an FID record
         std::string fromLayer = "F.Cu", toLayer = "B.Cu";
@@ -1581,7 +1924,9 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                 if (auto* f = padFeatureAt(copperStack[k].second, pad.x, pad.y, nullptr))
                     cuFlashes.push_back({copperStack[k].second, f});
             }
-            DrillHit::Kind kind = classifyDrill(features, pad.attrs, layerNonPlated);
+            bool toolTyped = false;
+            const OdbDrillTool* tool = hitTool(dlName, features, pad, &toolTyped);
+            DrillHit::Kind kind = classifyDrill(features, pad.attrs, layerNonPlated, toolTyped ? tool : nullptr);
             bool isVia = kind == DrillHit::VIA || isViaUsage(featureAttr(features, pad.attrs, ".pad_usage"));
             if (!isVia && kind == DrillHit::PLATED) {
                 for (auto& [ln, f] : cuFlashes)
@@ -1611,17 +1956,31 @@ KicadPcb transformToKicad(const OdbDesign& design) {
             } else {
                 vi.drillDiameter = 0.3; // default (mm)
             }
+            if (tool && tool->drillSize > 0) vi.drillDiameter = tool->drillSize * toolScale;
 
-            // Pad size: the largest copper flash along the span (a KiCad 8 via has one size)
+            // Pad size per copper layer of the span: the flash there. A negative plane's flash is
+            // the plane's clearance (or thermal), not copper, so the via has no ring of its own
+            // on it; nor where the job has no flash. Those layers get the drill's size.
             vi.padSize = 0;
-            for (auto& [ln, f] : cuFlashes) {
-                auto& syms = design.layerFeatures.at(ln).symbols;
-                if (f->symIdx < 0 || f->symIdx >= (int)syms.size()) continue;
-                auto& cuSym = syms[f->symIdx];
-                double sz = cuSym.shape == OdbSymbol::ROUND ? cuSym.diameter : std::max(cuSym.width, cuSym.height);
-                vi.padSize = std::max(vi.padSize, scaleLen(sz));
+            bool anyRing = false;
+            for (int k = i0; k <= i1 && k < (int)copperStack.size(); k++) {
+                const std::string& ln = copperStack[k].second;
+                double sz = 0;
+                const OdbSymbol* cuSym = nullptr;
+                const OdbPad* f = negativeLayers.count(ln) ? nullptr : padFeatureAt(ln, pad.x, pad.y, &cuSym);
+                if (f && cuSym && f->polarity != "N") {
+                    sz = scaleLen(cuSym->shape == OdbSymbol::ROUND ? cuSym->diameter
+                                                                   : std::max(cuSym->width, cuSym->height));
+                }
+                if (sz > vi.drillDiameter) anyRing = true;
+                else sz = vi.drillDiameter;
+                vi.layerSizes.push_back({mapLayerName(ln), sz});
+                vi.padSize = std::max(vi.padSize, sz);
             }
-            if (vi.padSize <= vi.drillDiameter) vi.padSize = vi.drillDiameter + 0.3; // default annular ring
+            if (!anyRing) {  // no copper flash anywhere along the span: a default annular ring
+                vi.padSize = vi.drillDiameter + 0.3;
+                for (auto& ls : vi.layerSizes) ls.second = vi.padSize;
+            }
 
             viaInfos.push_back(vi);
         }
@@ -1697,7 +2056,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
         KicadVia kv;
         kv.x = scaleX(vi.x);
         kv.y = scaleY(vi.y);
-        kv.size = vi.padSize;
+        kv.size = vi.layerSizes.empty() ? vi.padSize : vi.layerSizes.front().second;
+        kv.layerSizes = vi.layerSizes;
         kv.drill = vi.drillDiameter;
         kv.fromLayer = vi.fromLayer;
         kv.toLayer = vi.toLayer;
@@ -1715,8 +2075,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
     std::vector<std::pair<double,double>> freePadOpenings;  // raw coords, pads carrying mask/paste
     {
         auto atPin = [&](double x, double y) {
-            for (auto* comps : {&design.topComponents, &design.botComponents})
-                for (auto& comp : comps->components)
+            for (auto& cs : componentSets)
+                for (auto& comp : cs.comps->components)
                     for (auto& t : comp.terminals)
                         if (near(t.x, t.y, x, y)) return true;
             for (auto& [ax, ay] : customAnchors)
@@ -1896,6 +2256,7 @@ KicadPcb transformToKicad(const OdbDesign& design) {
                     int n = netOfFlash(*f);
                     if (n > 0) { pad.netId = n; break; }
                 }
+                setInnerPadstack(pad, site.x, site.y);
                 maskPaste(pad, site.x, site.y, true, true);
                 addFootprint(site.x, site.y, pad, true, "H");
                 continue;
@@ -2552,8 +2913,8 @@ KicadPcb transformToKicad(const OdbDesign& design) {
 
     // Pad centres (raw ODB++ coords): the mask/paste flash there is the pad's opening
     std::vector<std::pair<double,double>> ownedOpenings;
-    for (auto* comps : {&design.topComponents, &design.botComponents}) {
-        for (auto& comp : comps->components) {
+    for (auto& cs : componentSets) {
+        for (auto& comp : cs.comps->components) {
             for (auto& term : comp.terminals) ownedOpenings.push_back({term.x, term.y});
         }
     }
@@ -2720,8 +3081,43 @@ static void writeIndent(std::ostream& out, int depth) {
     for (int i = 0; i < depth; i++) out << "  ";
 }
 
+// KiCad 9 layer id for a KiCad 8 one (KiCad 9 numbers copper 0, 2, 4.. and the others odd)
+static int kicad9LayerId(int id8) {
+    if (id8 == 0) return 0;
+    if (id8 == 31) return 2;
+    if (id8 >= 1 && id8 <= 30) return 4 + 2 * (id8 - 1);
+    static const int tech[] = {11, 9, 15, 13, 7, 5, 3, 1,      // 32 B.Adhes .. 39 F.Mask
+                               17, 19, 21, 23, 25, 27,          // 40 Dwgs.User .. 45 Margin
+                               29, 31, 33, 35};                 // 46 B.CrtYd .. 49 F.Fab
+    if (id8 >= 32 && id8 <= 49) return tech[id8 - 32];
+    if (id8 >= 50 && id8 <= 58) return 39 + 2 * (id8 - 50);    // User.1 .. User.9
+    return id8;
+}
+
+static bool viaHasPadstack(const KicadVia& v) {
+    for (auto& ls : v.layerSizes)
+        if (std::abs(ls.second - v.layerSizes.front().second) > 1e-6) return true;
+    return false;
+}
+
+// KiCad 9 (padstack ...) of one pad layer entry
+static void writePadLayer(std::ostream& out, const std::string& layer, const std::string& shape,
+                          double w, double h, double rratio) {
+    out << "\n        (layer \"" << escapeString(layer) << "\" (shape " << shape << ") (size " << formatFloat(w)
+        << " " << formatFloat(h) << ")";
+    if (shape == "roundrect" && rratio > 0) out << " (roundrect_rratio " << formatFloat(rratio) << ")";
+    out << ")";
+}
+
 void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
-    out << "(kicad_pcb (version 20240108) (generator \"odb2kicad\") (generator_version \"1.0\")\n";
+    // File format: KiCad 9 when asked, or (by default) when a via or pad differs between layers
+    bool v9 = pcb.fileFormat == 9;
+    if (pcb.fileFormat == 0) {
+        for (auto& v : pcb.vias) v9 = v9 || viaHasPadstack(v);
+        for (auto& fp : pcb.footprints)
+            for (auto& p : fp.pads) v9 = v9 || !p.padstack.empty();
+    }
+    out << "(kicad_pcb (version " << (v9 ? "20241229" : "20240108") << ") (generator \"" << escapeString(pcb.generator) << "\") (generator_version \"1.0\")\n";
 
     // General
     out << "  (general\n";
@@ -2734,7 +3130,7 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
     // Layers
     out << "  (layers\n";
     for (auto& layer : pcb.layers) {
-        out << "    (" << layer.id << " \"" << escapeString(layer.canonicalName) << "\" " << layer.type;
+        out << "    (" << (v9 ? kicad9LayerId(layer.id) : layer.id) << " \"" << escapeString(layer.canonicalName) << "\" " << layer.type;
         if (!layer.alias.empty()) out << " \"" << escapeString(layer.alias) << "\"";
         out << ")\n";
     }
@@ -2744,10 +3140,12 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
     out << "  (setup\n";
     out << "    (pad_to_mask_clearance 0)\n";
     out << "    (allow_soldermask_bridges_in_footprints no)\n";
-    out << "    (pcbplotparams\n";
-    out << "      (layerselection 0x00010fc_ffffffff)\n";
-    out << "      (plot_on_all_layers_selection 0x0000000_00000000)\n";
-    out << "    )\n";
+    if (!v9) {  // KiCad 8 layer masks; KiCad 9 numbers its layers apart and takes its defaults
+        out << "    (pcbplotparams\n";
+        out << "      (layerselection 0x00010fc_ffffffff)\n";
+        out << "      (plot_on_all_layers_selection 0x0000000_00000000)\n";
+        out << "    )\n";
+    }
     out << "  )\n";
 
     // Nets
@@ -2830,6 +3228,14 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
             if (pad.netId > 0) {
                 out << " (net " << pad.netId << " \"" << escapeString(pad.netName) << "\")";
             }
+            if (v9 && !pad.padstack.empty()) {
+                // Outer layers: the pad's own shape (F.Cu is the fields above); inner ones the entries
+                out << "\n      (padstack (mode " << pad.padstackMode << ")";
+                for (auto& e : pad.padstack) writePadLayer(out, e.layer, e.shape, e.width, e.height, e.roundrectRatio);
+                writePadLayer(out, "B.Cu", pad.shape, pad.width, pad.height,
+                              pad.shape == "roundrect" ? pad.roundrectRatio : 0);
+                out << ")\n    ";
+            }
             if (pad.shape == "custom") {
                 out << "\n      (options (clearance outline) (anchor circle))\n      (primitives";
                 for (auto& prim : pad.primitives) {
@@ -2876,13 +3282,76 @@ void writeKicadPcb(std::ostream& out, const KicadPcb& pcb) {
         writeArc(arc.xs, arc.ys, arc.xm, arc.ym, arc.xe, arc.ye, arc);
     }
 
-    // Vias
+    // Vias. KiCad 9: a padstack when the pad differs between layers -- front_inner_back for a
+    // through via whose outer pads match and whose inner ones match, else one size per layer.
+    // KiCad 8: one size, the largest.
     for (auto& via : pcb.vias) {
+        bool stack = v9 && viaHasPadstack(via);
+        double size = via.size;
+        if (!v9)
+            for (auto& ls : via.layerSizes) size = std::max(size, ls.second);
+        if (stack && size <= via.drill + 1e-6) {  // a bare F.Cu: the smallest ring, as below
+            double m = 0;
+            for (auto& ls : via.layerSizes)
+                if (ls.second > via.drill + 1e-6) m = m > 0 ? std::min(m, ls.second) : ls.second;
+            if (m > 0) size = m;
+        }
         out << "\n  (via " << (via.blind ? "blind " : "") << "(at " << formatFloat(via.x) << " " << formatFloat(via.y)
-            << ") (size " << formatFloat(via.size)
+            << ") (size " << formatFloat(size)
             << ") (drill " << formatFloat(via.drill)
-            << ") (layers \"" << escapeString(via.fromLayer) << "\" \"" << escapeString(via.toLayer)
-            << "\") (net " << via.netId << "))\n";
+            << ") (layers \"" << escapeString(via.fromLayer) << "\" \"" << escapeString(via.toLayer) << "\")";
+        if (stack) {
+            // A layer with no ring of its own in the job (the drill's size): the CAD removed the
+            // via's pad there. KiCad 9 says so with remove_unused_layers -- the via is not flashed
+            // on a layer nothing connects to -- and flashes each layer that has a ring through
+            // keep_end_layers (both ends ringed) and zone_layer_connections. KiCad's annular-width
+            // check reads the padstack size even on a layer it does not flash, so a bare layer
+            // takes the via's smallest real ring instead of a 0 mm one; it draws no copper there.
+            auto ls = via.layerSizes;
+            const double eps = 1e-6;
+            double minRing = 0;
+            bool bare = false;
+            for (auto& l : ls) {
+                if (l.second > via.drill + eps) minRing = minRing > 0 ? std::min(minRing, l.second) : l.second;
+                else bare = true;
+            }
+            bool removeUnused = bare && minRing > 0;
+            std::vector<bool> ringed(ls.size());
+            for (size_t k = 0; k < ls.size(); k++) {
+                ringed[k] = ls[k].second > via.drill + eps;
+                if (removeUnused && !ringed[k]) ls[k].second = minRing;
+            }
+            bool fib = ls.size() >= 3 && via.fromLayer == "F.Cu" && via.toLayer == "B.Cu" &&
+                       std::abs(ls.front().second - ls.back().second) < eps;
+            for (size_t k = 2; fib && k + 1 < ls.size(); k++)
+                fib = std::abs(ls[k].second - ls[1].second) < eps;
+            bool uniform = true;
+            for (auto& l : ls) uniform = uniform && std::abs(l.second - ls.front().second) < eps;
+            if (uniform) {
+                // one size on every layer once the bare layers are filled in: no padstack
+            } else if (fib) {
+                out << "\n    (padstack (mode front_inner_back) (layer \"Inner\" (size " << formatFloat(ls[1].second)
+                    << ")) (layer \"B.Cu\" (size " << formatFloat(ls.back().second) << ")))";
+            } else {
+                out << "\n    (padstack (mode custom)";
+                for (auto& [layer, sz] : ls)
+                    if (layer != "F.Cu")
+                        out << " (layer \"" << escapeString(layer) << "\" (size " << formatFloat(sz) << "))";
+                out << ")";
+            }
+            if (removeUnused) {
+                bool ends = ringed.front() && ringed.back();
+                out << "\n    (remove_unused_layers yes)";
+                if (ends) out << " (keep_end_layers yes)";
+                std::string zl;
+                for (size_t k = 0; k < ls.size(); k++)
+                    if (ringed[k] && !(ends && (k == 0 || k + 1 == ls.size())))
+                        zl += " \"" + escapeString(ls[k].first) + "\"";
+                if (!zl.empty()) out << " (zone_layer_connections" << zl << ")";
+            }
+            out << "\n   ";
+        }
+        out << " (net " << via.netId << "))\n";
     }
 
     // Graphic lines

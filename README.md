@@ -27,7 +27,16 @@ odb2kicad input.tgz -o output.kicad_pcb
 odb2kicad input.zip > output.kicad_pcb
 ```
 
-Supports `.tgz`, `.tar.gz`, `.zip`, and `.tar` archives.
+Supports `.tgz`, `.tar.gz`, `.zip`, and `.tar` archives. A job with several steps converts its first step; `--step <name>` picks another.
+
+The native CLI (see [Building](#building)) takes a job folder and has a few more switches:
+
+```bash
+odb2kicad job-folder output.kicad_pcb                   # a multi-step job also writes <job>__<step>.kicad_pcb per other step
+odb2kicad --step flex job-folder flex.kicad_pcb         # one step only
+odb2kicad --report job-folder output.kicad_pcb          # what the reader chose and assumed, on stderr
+odb2kicad --document-layers all job-folder out.kicad_pcb   # draw document layers of any size (default: up to 100000 features each; `none` leaves them out)
+```
 
 ## Use as a Library
 
@@ -65,7 +74,13 @@ The API also exposes `convertOdb(files)` for pre-extracted file arrays — see t
 - **Board outline** — rectangular and polygonal profiles, including cutout holes
 - **Graphics** — silkscreen, mask, fab, courtyard and user-layer lines, arcs, flashes and filled shapes
 - **Footprint courtyards** — courtyard strokes claimed by the eda/data package outline become the footprint's own F/B.CrtYd lines, arcs and circles
-- **Layer mapping** — ODB++ layers mapped to KiCad canonical layer names
+- **Layer mapping** — ODB++ layers mapped to KiCad canonical layer names; document layers without a KiCad name (assembly drawings, process maps) drawn on free `User.N` layers under their own name
+- **Text** — `T` records stroked from the job's vector font (`fonts/<name>`)
+- **Drill tools** — hole sizes and plated / non-plated / via from the drill layer's `tools` file
+- **Board thickness** — an explicit `.board_thickness` attribute, else the stackup the layer attrlists describe, else the drill table
+- **Step origin, multi-step jobs** — the stephdr origin is applied; every step of a job can be converted
+- **Compressed jobs** — files stored with UNIX compress (`features.z`, `components.z`, `eda/data.z`) are read
+- **Report** — `result.report` (and `--report`) lists the ODB++ version, every matrix row with the layer it went to, and what the reader had to assume
 
 ## DNP Footprints
 
@@ -102,17 +117,19 @@ The unit tests build small designs in memory or as tiny ODB++ files, one or more
 conversion rule (pad typing from drill hits, inner layers, FID nets, NPTH, outline, rotation,
 custom pads, non-copper graphics).
 
-`test_simple.sh` runs 60+ assertions against four sample boards:
+`test_simple.sh` runs 80+ assertions against five sample boards:
 - **Simple** (`samples/odb-output`) — 2-resistor board: nets, components, pads, traces, board outline
 - **Kitchen-sink** (`samples/odb-kitchen-sink`) — complex board: vias, through-hole, copper zones, arcs, polygonal outline with holes
 - **DNP** (`samples/odb-dnp`) — kicad-cli 9.0.9 export: R1 has the DNP flag (`.no_pop`), R2 a `Config` field `Rev B; DNP`
 - **Rotation** (`samples/odb-rotation`) — kicad-cli 9.0.9 export: SOT-23s and 1x03 headers at 0/30/45/90/270°, on top and flipped to the bottom
+- **demo-design** (`samples/demo-design`) — the ODB++ Viewer 2510 demo job (not KiCad-made; INCH, 10 copper layers, 853 parts): compressed files, drill tools, text and its font, negative planes, a matrix with a skipped row
 
 ## Known Limitations
 
-- **Text is rasterized** — ODB++ exports text as line strokes; imported as line segments, not editable KiCad text objects
+- **Text is strokes** — text arrives as line strokes (drawn from the job's font for `T` records), not as editable KiCad text objects
 - **Zone outlines are the fill** — ODB++ carries the filled copper, not the zone's drawn outline, priority or rules
-- **Blind/buried vias** — every via is written through (F.Cu-B.Cu)
+- **KiCad 9 when a pad differs by layer** — vias and plated through-hole pads take each copper layer's own flash (a KiCad 9 padstack); such a board is written in KiCad 9 format (`20241229`), any other stays KiCad 8 (`20240108`). `--kicad 8` forces one size per via / pad (the largest copper flash), which inner layers with smaller pads then over-draw. A through-hole pad's far outer side keeps the component side's shape
+- **Panels** — a panel step (STEP-REPEAT) is one board holding a copy of each placed step, each copy's nets named `Board_<n>-<net>`; flipped or mirrored copies are not drawn
 - **Precision** — ODB++ coordinates may have minor rounding differences vs. the original design
 
 Details in [odb2kicad/what-doesnt-work.md](odb2kicad/what-doesnt-work.md).

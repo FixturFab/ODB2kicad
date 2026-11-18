@@ -1,0 +1,724 @@
+STAT = D
+SEVERITY = 0
+LAST_TIME = 944158967
+DURATION = 82 SECONDS
+CATEGORY {
+    NAME = tp_toep
+    TITLE = Toeprint testpoints
+    DESCRIPTION = Teoprint;Pad
+    SORT_ORDER = 0
+    RANGE = 0.0300000 0.0600000 99.9990000 
+}
+CATEGORY {
+    NAME = tp_via
+    TITLE = VIA testpoints
+    DESCRIPTION = Via;Pad
+    SORT_ORDER = 1
+    RANGE = 0.0250000 0.0600000 99.9990000 
+}
+CATEGORY {
+    NAME = tp2tp
+    TITLE = Testpoint to testpoint
+    DESCRIPTION = Spacing;Testpoint;Testpoint
+    SORT_ORDER = 3
+    RANGE = 0.0600000 0.0800000 0.1000000 
+}
+CATEGORY {
+    NAME = tp2npth
+    TITLE = Testpoint to NPTH
+    DESCRIPTION = Spacing;Testpoint;Hole
+    SORT_ORDER = 8
+    RANGE = 0.1000000 0.1250000 0.2500000 
+}
+CATEGORY {
+    NAME = tp2r
+    TITLE = Testpoint to rout
+    DESCRIPTION = Spacing;Testpoint;Rout
+    SORT_ORDER = 10
+    RANGE = 0.1000000 0.1250000 0.2500000 
+}
+CATEGORY {
+    NAME = tp2comp
+    TITLE = Testpoint to component
+    DESCRIPTION = Spacing;Testpoint;Component
+    SORT_ORDER = 12
+    RANGE = 0.0400000 0.0600000 0.1000000 
+}
+CATEGORY {
+    NAME = tp_u_comp
+    TITLE = Testpoint under component
+    DESCRIPTION = Distance;Component
+    SORT_ORDER = 13
+    RANGE = 99.9980000 99.9990000 99.9990000 
+}
+CATEGORY {
+    NAME = tp2sm
+    TITLE = Testpoint to SM
+    DESCRIPTION = Clearance;Testpoint
+    SORT_ORDER = 15
+    RANGE = 0.0200000 0.0600000 0.1000000 
+}
+CATEGORY {
+    NAME = tp2capvia
+    TITLE = Testpoint to capped via
+    DESCRIPTION = Spacing;Testpoint;Pad
+    SORT_ORDER = 4
+    RANGE = 0.0100000 0.0250000 0.1000000 
+}
+CATEGORY {
+    NAME = tp2uncapvia
+    TITLE = Testpoint to uncapped via
+    DESCRIPTION = Spacing;Testpoint;Pad
+    SORT_ORDER = 5
+    RANGE = 0.0150000 0.0250000 0.1000000 
+}
+CATEGORY {
+    NAME = tp2toep
+    TITLE = Testpoint to toeprint
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = tp2thmt
+    TITLE = Testpoint to THMT toeprint
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 9
+    RANGE = 0.0600000 0.0800000 0.1000000 
+}
+CATEGORY {
+    NAME = nets_without_tp
+    TITLE = Nets without testpoints
+    DESCRIPTION = Pad
+    SORT_ORDER = 19
+    RANGE = 99.9970000 99.9980000 99.9990000 
+}
+CATEGORY {
+    NAME = uncap_non_tp
+    TITLE = Uncapped non-testpoint vias
+    DESCRIPTION = Pad
+    SORT_ORDER = 16
+    RANGE = 99.9970000 99.9980000 99.9990000 
+}
+CATEGORY {
+    NAME = capped_tp
+    TITLE = Capped testpoint vias
+    DESCRIPTION = Pad
+    SORT_ORDER = 17
+    RANGE = 99.9970000 99.9980000 99.9990000 
+}
+CATEGORY {
+    NAME = capped_both
+    TITLE = Vias capped on both sides
+    DESCRIPTION = Pad
+    SORT_ORDER = 18
+    RANGE = 99.9970000 99.9980000 99.9990000 
+}
+CATEGORY {
+    NAME = tp2c
+    TITLE = Testpoint to exposed copper
+    DESCRIPTION = Spacing;Testpoint;Feature
+    SORT_ORDER = 6
+    RANGE = 0.0150000 0.0300000 0.1000000 
+}
+CATEGORY {
+    NAME = tp_wrong_shape
+    TITLE = Testpoints of wrong shape
+    DESCRIPTION = Size;Pad
+    SORT_ORDER = 2
+    RANGE = 99.9970000 99.9980000 99.9990000 
+}
+CATEGORY {
+    NAME = tp2comp_angle
+    TITLE = Testpoint to component angle
+    DESCRIPTION = Spacing;Testpoint;Component
+    SORT_ORDER = 14
+    RANGE = 0.0600000 0.0450000 0.0300000 
+}
+CATEGORY {
+    NAME = tp2uc
+    TITLE = Testpoint to unexposed copper
+    DESCRIPTION = Spacing;Testpoint;Feature
+    SORT_ORDER = 7
+    RANGE = 0.0100000 0.0250000 0.1000000 
+}
+CATEGORY {
+    NAME = nets_with_multiple_tp
+    TITLE = Nets with multiple testpoints
+    DESCRIPTION = Pad
+    SORT_ORDER = 20
+    RANGE = 99.9970000 99.9980000 99.9990000 
+}
+CATEGORY {
+    NAME = tp_out_keepin_area
+    TITLE = Testpoints outside keepin area
+    DESCRIPTION = Size;Testpoint
+    SORT_ORDER = 22
+    RANGE = 0.0010000 0.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = tp_in_keepout_area
+    TITLE = Testpoints within keepout area
+    DESCRIPTION = Size;Testpoint
+    SORT_ORDER = 23
+    RANGE = 0.0010000 0.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = tp2ce
+    TITLE = Testpoint to Conveyed Edge
+    DESCRIPTION = Spacing;Toeprint;Conveyed Edge
+    SORT_ORDER = 11
+    RANGE = 0.0200000 0.0600000 0.1000000 
+}
+CATEGORY {
+    NAME = SMT:tp2uncapvia
+    TITLE = SMT:Testpoint to uncapped via
+    DESCRIPTION = Spacing;Testpoint;Pad
+    SORT_ORDER = 5
+    RANGE = 0.0150000 0.0250000 0.1000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;discrete603_n
+    TITLE = SMT:Testpoint to toeprint;discrete603_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;discrete603_w
+    TITLE = SMT:Testpoint to toeprint;discrete603_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;printed_w
+    TITLE = SMT:Testpoint to toeprint;printed_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;discrete_w
+    TITLE = SMT:Testpoint to toeprint;discrete_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;discrete_n
+    TITLE = SMT:Testpoint to toeprint;discrete_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;smtmisc_w
+    TITLE = SMT:Testpoint to toeprint;smtmisc_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;soic_w
+    TITLE = SMT:Testpoint to toeprint;soic_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;soic_n
+    TITLE = SMT:Testpoint to toeprint;soic_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;printed_n
+    TITLE = SMT:Testpoint to toeprint;printed_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;smtconn_w
+    TITLE = SMT:Testpoint to toeprint;smtconn_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;sot_w
+    TITLE = SMT:Testpoint to toeprint;sot_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2c
+    TITLE = SMT:Testpoint to exposed copper
+    DESCRIPTION = Spacing;Testpoint;Feature
+    SORT_ORDER = 6
+    RANGE = 0.0150000 0.0300000 0.1000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;sot_n
+    TITLE = SMT:Testpoint to toeprint;sot_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;smtmisc_n
+    TITLE = SMT:Testpoint to toeprint;smtmisc_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2comp
+    TITLE = SMT:Testpoint to component
+    DESCRIPTION = Spacing;Testpoint;Component
+    SORT_ORDER = 12
+    RANGE = 0.0400000 0.0600000 0.1000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;qfp_w
+    TITLE = SMT:Testpoint to toeprint;qfp_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;qfp_n
+    TITLE = SMT:Testpoint to toeprint;qfp_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;tsoic_n
+    TITLE = FS:Testpoint to toeprint;tsoic_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;tsoic_w
+    TITLE = FS:Testpoint to toeprint;tsoic_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;pihconn_n
+    TITLE = SMT:Testpoint to toeprint;pihconn_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;sop_n
+    TITLE = SMT:Testpoint to toeprint;sop_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;soj_w
+    TITLE = SMT:Testpoint to toeprint;soj_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;soj_n
+    TITLE = SMT:Testpoint to toeprint;soj_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;sop_w
+    TITLE = SMT:Testpoint to toeprint;sop_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2toep;tsoic_n
+    TITLE = FS_SMT:Testpoint to toeprint;tsoic_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2toep;pihconn_n
+    TITLE = FS_SMT:Testpoint to toeprint;pihconn_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2toep;pihconn_w
+    TITLE = FS_SMT:Testpoint to toeprint;pihconn_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2uncapvia
+    TITLE = FS_SMT:Testpoint to uncapped via
+    DESCRIPTION = Spacing;Testpoint;Pad
+    SORT_ORDER = 5
+    RANGE = 0.0150000 0.0250000 0.1000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;radial_n
+    TITLE = FS:Testpoint to toeprint;radial_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;smtconn_w
+    TITLE = FS:Testpoint to toeprint;smtconn_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2toep;radial_n
+    TITLE = FS_SMT:Testpoint to toeprint;radial_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS:tp2uncapvia
+    TITLE = FS:Testpoint to uncapped via
+    DESCRIPTION = Spacing;Testpoint;Pad
+    SORT_ORDER = 5
+    RANGE = 0.0250000 0.0400000 0.1000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;radial_w
+    TITLE = FS:Testpoint to toeprint;radial_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;pihconn_w
+    TITLE = SMT:Testpoint to toeprint;pihconn_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;smtconn_n
+    TITLE = SMT:Testpoint to toeprint;smtconn_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;radial_w
+    TITLE = SMT:Testpoint to toeprint;radial_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2toep;tsoic_w
+    TITLE = FS_SMT:Testpoint to toeprint;tsoic_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;plcc_w
+    TITLE = SMT:Testpoint to toeprint;plcc_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;plcc_n
+    TITLE = SMT:Testpoint to toeprint;plcc_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;smtconn_n
+    TITLE = FS:Testpoint to toeprint;smtconn_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2toep;printed_n
+    TITLE = FS_SMT:Testpoint to toeprint;printed_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS:tp2toep;pihconn_n
+    TITLE = FS:Testpoint to toeprint;pihconn_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;pihmisc_n
+    TITLE = SMT:Testpoint to toeprint;pihmisc_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = SMT:tp2toep;radial_n
+    TITLE = SMT:Testpoint to toeprint;radial_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 21
+    RANGE = 0.0200000 0.0600000 1.0000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2thmt;pihconn_w
+    TITLE = FS_SMT:Testpoint to THMT toeprint;pihconn_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 9
+}
+CATEGORY {
+    NAME = FS_SMT:tp2thmt;radial_n
+    TITLE = FS_SMT:Testpoint to THMT toeprint;radial_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 9
+}
+CATEGORY {
+    NAME = FS_SMT:tp2thmt;pihconn_n
+    TITLE = FS_SMT:Testpoint to THMT toeprint;pihconn_n
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 9
+}
+CATEGORY {
+    NAME = SMT:tp2thmt;pihconn_w
+    TITLE = SMT:Testpoint to THMT toeprint;pihconn_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 9
+}
+CATEGORY {
+    NAME = SMT:tp2thmt;radial_w
+    TITLE = SMT:Testpoint to THMT toeprint;radial_w
+    DESCRIPTION = Spacing;Testpoint;Toeprint
+    SORT_ORDER = 9
+}
+CATEGORY {
+    NAME = FS:tp2ce
+    TITLE = FS:Testpoint to Conveyed Edge
+    DESCRIPTION = Spacing;Toeprint;Conveyed Edge
+    SORT_ORDER = 11
+    RANGE = 0.0200000 0.0600000 0.1000000 
+}
+CATEGORY {
+    NAME = FS:tp2comp
+    TITLE = FS:Testpoint to component
+    DESCRIPTION = Spacing;Testpoint;Component
+    SORT_ORDER = 12
+    RANGE = 0.0400000 0.0600000 0.1000000 
+}
+CATEGORY {
+    NAME = FS_SMT:tp2comp
+    TITLE = FS_SMT:Testpoint to component
+    DESCRIPTION = Spacing;Testpoint;Component
+    SORT_ORDER = 12
+    RANGE = 0.0400000 0.0600000 0.1000000 
+}
+ATTRIBUTE {
+    sigt_num_tp_toep = 0
+    sigt_num_tp_via = 583
+    sigt_min_tp2tp = 50.000
+    sigt_num_tp2tp = 669
+    sigt_typ_tp2tp = 50.000
+    sigt_min_tp2npth = N/A
+    sigt_num_tp2npth = 0
+    sigt_typ_tp2npth = N/A
+    sigt_min_tp2r = 70.450
+    sigt_num_tp2r = 5
+    sigt_typ_tp2r = 95.500
+    sigt_min_tp2ce = N/A
+    sigt_num_tp2ce = 0
+    sigt_typ_tp2ce = N/A
+    sigt_max_tp2ce = N/A
+    sigt_min_FS:tp2ce = N/A
+    sigt_num_FS:tp2ce = 0
+    sigt_typ_FS:tp2ce = N/A
+    sigt_max_FS:tp2ce = N/A
+    sigt_min_tp2comp = N/A
+    sigt_num_tp2comp = 0
+    sigt_typ_tp2comp = N/A
+    sigt_max_tp2comp = N/A
+    sigt_min_SMT:tp2comp = 18.500
+    sigt_num_SMT:tp2comp = 364
+    sigt_typ_SMT:tp2comp = 75.700
+    sigt_max_SMT:tp2comp = 98.500
+    sigt_min_FS:tp2comp = N/A
+    sigt_num_FS:tp2comp = 0
+    sigt_typ_FS:tp2comp = N/A
+    sigt_max_FS:tp2comp = N/A
+    sigt_min_FS_SMT:tp2comp = N/A
+    sigt_num_FS_SMT:tp2comp = 0
+    sigt_typ_FS_SMT:tp2comp = N/A
+    sigt_max_FS_SMT:tp2comp = N/A
+    sigt_num_tp_u_comp = 0
+    sigt_min_tp2sm = 3.000
+    sigt_num_tp2sm = 583
+    sigt_typ_tp2sm = 3.000
+    sigt_min_tp2capvia = N/A
+    sigt_num_tp2capvia = 0
+    sigt_typ_tp2capvia = N/A
+    sigt_min_tp2uncapvia = N/A
+    sigt_num_tp2uncapvia = 0
+    sigt_typ_tp2uncapvia = N/A
+    sigt_min_SMT:tp2uncapvia = 22.000
+    sigt_num_SMT:tp2uncapvia = 2580
+    sigt_typ_SMT:tp2uncapvia = 22.000
+    sigt_min_FS_SMT:tp2uncapvia = N/A
+    sigt_num_FS_SMT:tp2uncapvia = 0
+    sigt_typ_FS_SMT:tp2uncapvia = N/A
+    sigt_min_FS:tp2uncapvia = N/A
+    sigt_num_FS:tp2uncapvia = 0
+    sigt_typ_FS:tp2uncapvia = N/A
+    sigt_min_tp2thmt = N/A
+    sigt_num_tp2thmt = 0
+    sigt_typ_tp2thmt = N/A
+    sigt_min_FS_SMT:tp2thmt;pihconn_w = N/A
+    sigt_num_FS_SMT:tp2thmt;pihconn_w = 0
+    sigt_typ_FS_SMT:tp2thmt;pihconn_w = N/A
+    sigt_min_FS_SMT:tp2thmt;radial_n = N/A
+    sigt_num_FS_SMT:tp2thmt;radial_n = 0
+    sigt_typ_FS_SMT:tp2thmt;radial_n = N/A
+    sigt_min_FS_SMT:tp2thmt;pihconn_n = N/A
+    sigt_num_FS_SMT:tp2thmt;pihconn_n = 0
+    sigt_typ_FS_SMT:tp2thmt;pihconn_n = N/A
+    sigt_min_SMT:tp2thmt;pihconn_w = N/A
+    sigt_num_SMT:tp2thmt;pihconn_w = 0
+    sigt_typ_SMT:tp2thmt;pihconn_w = N/A
+    sigt_min_SMT:tp2thmt;radial_w = N/A
+    sigt_num_SMT:tp2thmt;radial_w = 0
+    sigt_typ_SMT:tp2thmt;radial_w = N/A
+    sigt_num_nets_without_tp = 162
+    sigt_num_uncap_non_tp = 0
+    sigt_num_capped_tp = 0
+    sigt_num_capped_both = 0
+    sigt_min_tp2c = N/A
+    sigt_num_tp2c = 0
+    sigt_typ_tp2c = N/A
+    sigt_min_SMT:tp2c = 33.500
+    sigt_num_SMT:tp2c = 4
+    sigt_typ_SMT:tp2c = 43.500
+    sigt_min_tp2uc = 56.387
+    sigt_num_tp2uc = 4
+    sigt_typ_tp2uc = 96.700
+    sigt_min_tp2comp_angle = 5.797
+    sigt_num_tp2comp_angle = 364
+    sigt_typ_tp2comp_angle = 14.800
+    sigt_max_tp2comp_angle = 83.942
+    sigt_num_nets_with_multiple_tp = 8
+    sigt_num_tp_out_keepin_area = 0
+    sigt_num_tp_in_keepout_area = 0
+    sigb_num_tp_toep = 2
+    sigb_num_tp_via = 438
+    sigb_min_tp2tp = 50.000
+    sigb_num_tp2tp = 470
+    sigb_typ_tp2tp = 50.000
+    sigb_min_tp2npth = N/A
+    sigb_num_tp2npth = 0
+    sigb_typ_tp2npth = N/A
+    sigb_min_tp2r = 34.450
+    sigb_num_tp2r = 51
+    sigb_typ_tp2r = 59.500
+    sigb_min_tp2ce = N/A
+    sigb_num_tp2ce = 0
+    sigb_typ_tp2ce = N/A
+    sigb_max_tp2ce = N/A
+    sigb_min_FS:tp2ce = 34.451
+    sigb_num_FS:tp2ce = 27
+    sigb_typ_FS:tp2ce = 59.500
+    sigb_max_FS:tp2ce = 59.451
+    sigb_min_tp2comp = N/A
+    sigb_num_tp2comp = 0
+    sigb_typ_tp2comp = N/A
+    sigb_max_tp2comp = N/A
+    sigb_min_SMT:tp2comp = 3.000
+    sigb_num_SMT:tp2comp = 821
+    sigb_typ_SMT:tp2comp = 61.800
+    sigb_max_SMT:tp2comp = 99.716
+    sigb_min_FS:tp2comp = 41.500
+    sigb_num_FS:tp2comp = 75
+    sigb_typ_FS:tp2comp = 41.500
+    sigb_max_FS:tp2comp = 94.806
+    sigb_min_FS_SMT:tp2comp = 74.407
+    sigb_num_FS_SMT:tp2comp = 5
+    sigb_typ_FS_SMT:tp2comp = 74.400
+    sigb_max_FS_SMT:tp2comp = 94.806
+    sigb_num_tp_u_comp = 0
+    sigb_min_tp2sm = 3.000
+    sigb_num_tp2sm = 440
+    sigb_typ_tp2sm = 3.000
+    sigb_min_tp2capvia = N/A
+    sigb_num_tp2capvia = 0
+    sigb_typ_tp2capvia = N/A
+    sigb_min_tp2uncapvia = N/A
+    sigb_num_tp2uncapvia = 0
+    sigb_typ_tp2uncapvia = N/A
+    sigb_min_SMT:tp2uncapvia = 21.000
+    sigb_num_SMT:tp2uncapvia = 1440
+    sigb_typ_SMT:tp2uncapvia = 22.000
+    sigb_min_FS_SMT:tp2uncapvia = 22.000
+    sigb_num_FS_SMT:tp2uncapvia = 32
+    sigb_typ_FS_SMT:tp2uncapvia = 22.000
+    sigb_min_FS:tp2uncapvia = 22.000
+    sigb_num_FS:tp2uncapvia = 41
+    sigb_typ_FS:tp2uncapvia = 22.000
+    sigb_min_tp2thmt = N/A
+    sigb_num_tp2thmt = 0
+    sigb_typ_tp2thmt = N/A
+    sigb_min_FS_SMT:tp2thmt;pihconn_w = 74.000
+    sigb_num_FS_SMT:tp2thmt;pihconn_w = 18
+    sigb_typ_FS_SMT:tp2thmt;pihconn_w = 74.000
+    sigb_min_FS_SMT:tp2thmt;radial_n = 79.057
+    sigb_num_FS_SMT:tp2thmt;radial_n = 2
+    sigb_typ_FS_SMT:tp2thmt;radial_n = 79.100
+    sigb_min_FS_SMT:tp2thmt;pihconn_n = 79.057
+    sigb_num_FS_SMT:tp2thmt;pihconn_n = 3
+    sigb_typ_FS_SMT:tp2thmt;pihconn_n = 79.100
+    sigb_min_SMT:tp2thmt;pihconn_w = 96.047
+    sigb_num_SMT:tp2thmt;pihconn_w = 2
+    sigb_typ_SMT:tp2thmt;pihconn_w = 97.300
+    sigb_min_SMT:tp2thmt;radial_w = 75.000
+    sigb_num_SMT:tp2thmt;radial_w = 2
+    sigb_typ_SMT:tp2thmt;radial_w = 79.100
+    sigb_num_nets_without_tp = 11
+    sigb_num_uncap_non_tp = 0
+    sigb_num_capped_tp = 0
+    sigb_num_capped_both = 0
+    sigb_min_tp2c = N/A
+    sigb_num_tp2c = 0
+    sigb_typ_tp2c = N/A
+    sigb_min_SMT:tp2c = 8.500
+    sigb_num_SMT:tp2c = 13
+    sigb_typ_SMT:tp2c = 93.500
+    sigb_min_tp2uc = 52.183
+    sigb_num_tp2uc = 16
+    sigb_typ_tp2uc = 71.100
+    sigb_min_tp2comp_angle = 5.791
+    sigb_num_tp2comp_angle = 901
+    sigb_typ_tp2comp_angle = 17.900
+    sigb_max_tp2comp_angle = 89.141
+    sigb_num_nets_with_multiple_tp = 15
+    sigb_num_tp_out_keepin_area = 0
+    sigb_num_tp_in_keepout_area = 0
+}

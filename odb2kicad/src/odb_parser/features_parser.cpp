@@ -1,6 +1,7 @@
 #include "odb_parser/features_parser.h"
 #include "odb_parser/symbols.h"
 #include "odb_parser/contour.h"
+#include "util/odb_file.h"
 #include "util/string_utils.h"
 #include <fstream>
 #include <sstream>
@@ -37,8 +38,9 @@ static std::map<int, std::string> parseAttrs(std::string attrStr) {
 }
 
 bool parseFeatures(const std::string& path, OdbFeatures& features) {
-    std::ifstream file(path);
-    if (!file.is_open()) return false;
+    auto opened = openOdbFile(path);  // the file, or its compressed twin <path>.z
+    if (!opened) return false;
+    std::istream& file = *opened;
 
     std::string line;
     int featCount = 0;  // feature ordinal: P/L/A/S/T/B records in file order (eda/data FID index)
@@ -110,8 +112,7 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
         if (line[0] == 'P' && line.size() > 1 && line[1] == ' ') {
             std::istringstream iss(mainPart.substr(2));
             OdbPad pad;
-            int dcode;
-            iss >> pad.x >> pad.y >> pad.symIdx >> pad.polarity >> dcode >> pad.mirror >> pad.angle;
+            iss >> pad.x >> pad.y >> pad.symIdx >> pad.polarity >> pad.dcode >> pad.mirror >> pad.angle;
             pad.attrs = parseAttrs(attrPart);
             pad.featIdx = featCount++;
             features.pads.push_back(pad);
@@ -130,15 +131,24 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
             continue;
         }
 
-        // Arc: A xs ys xe ye xc yc sym_idx polarity dcode clockwise
+        // Arc: A xs ys xe ye xc yc sym_idx [polarity] [dcode] [clockwise Y|N]
+        // The reference reader takes the six coordinates, the symbol and an optional polarity
+        // and no direction: kicad-cli (and others) append one, which is honoured; an arc
+        // without it runs counter-clockwise, its centre on the left of the way from start to end.
         if (line[0] == 'A' && line.size() > 1 && line[1] == ' ') {
             std::istringstream iss(mainPart.substr(2));
             OdbArc arc;
-            int dcode;
-            std::string cw;
-            iss >> arc.xs >> arc.ys >> arc.xe >> arc.ye >> arc.xc >> arc.yc
-                >> arc.symIdx >> arc.polarity >> dcode >> cw;
-            arc.clockwise = (cw == "Y");
+            iss >> arc.xs >> arc.ys >> arc.xe >> arc.ye >> arc.xc >> arc.yc >> arc.symIdx;
+            std::vector<std::string> rest;
+            for (std::string tok; iss >> tok;) rest.push_back(toUpper(tok));
+            size_t i = 0;
+            arc.polarity = "P";
+            if (i < rest.size() && (rest[i] == "P" || rest[i] == "N")) arc.polarity = rest[i++];
+            if (i < rest.size() && rest[i].find_first_not_of("0123456789+-.") == std::string::npos) i++;  // dcode
+            if (i < rest.size() && (rest[i] == "Y" || rest[i] == "N")) {
+                arc.clockwise = rest[i] == "Y";
+                arc.directionGiven = true;
+            }
             arc.attrs = parseAttrs(attrPart);
             arc.featIdx = featCount++;
             features.arcs.push_back(arc);
@@ -155,9 +165,40 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
             continue;
         }
 
-        // Text and barcode records are not converted but still take a feature index
-        if ((line[0] == 'T' || line[0] == 'B') && line.size() > 1 && line[1] == ' ') {
+        // Text: T <x> <y> <font> <pol> <orient> [<angle>] <xsize> <ysize> <width factor> '<text>' <version>
+        // (V: the same, drawn downwards). The string is quoted and may hold blanks and ';', so
+        // the record is cut at its quotes, not at the first ';'.
+        if ((line[0] == 'T' || line[0] == 'V') && line.size() > 1 && line[1] == ' ') {
+            OdbText t;
+            t.featIdx = featCount++;
+            t.vertical = line[0] == 'V';
+            auto q1 = line.find('\''), q2 = line.rfind('\'');
+            std::string head = q1 == std::string::npos ? mainPart.substr(2) : line.substr(2, q1 - 2);
+            std::string tail;
+            if (q1 != std::string::npos && q2 > q1) {
+                t.text = line.substr(q1 + 1, q2 - q1 - 1);
+                tail = line.substr(q2 + 1);
+            }
+            std::istringstream iss(head);
+            int orient = 0;
+            iss >> t.x >> t.y >> t.font >> t.polarity >> orient;
+            if (orient == 8 || orient == 9) iss >> t.angle;
+            else t.angle = 90.0 * (orient % 4);
+            t.mirror = orient == 9 || (orient >= 4 && orient <= 7);
+            iss >> t.xsize >> t.ysize >> t.weight;
+            if (q1 == std::string::npos) iss >> t.text;  // an unquoted single word
+            auto tsemi = tail.find(';');
+            std::istringstream vs(tsemi == std::string::npos ? tail : tail.substr(0, tsemi));
+            vs >> t.version;
+            if (tsemi != std::string::npos) t.attrs = parseAttrs(tail.substr(tsemi + 1));
+            if (!iss.fail() || !t.text.empty()) features.texts.push_back(t);
+            continue;
+        }
+
+        // Barcode records are not converted but still take a feature index
+        if (line[0] == 'B' && line.size() > 1 && line[1] == ' ') {
             featCount++;
+            features.barcodes++;
             continue;
         }
 

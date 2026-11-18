@@ -24,7 +24,8 @@ function loadDir(dir, base = dir) {
     if (st.isDirectory()) {
       files = files.concat(loadDir(full, base));
     } else {
-      files.push({ path: rel, content: readFileSync(full, 'utf-8') });
+      // compressed ODB++ files (<name>.z, UNIX compress) are bytes, everything else text
+      files.push({ path: rel, content: /\.z$/i.test(rel) ? new Uint8Array(readFileSync(full)) : readFileSync(full, 'utf-8') });
     }
   }
   return files;
@@ -237,6 +238,95 @@ console.log('--- Test 13: Failure reasons ---');
   // the module still converts after the failures
   const ok = await convertOdb(loadDir(join(samplesDir, 'odb-output')));
   assert.equal(ok.success, true, 'a good board still converts after failures');
+}
+
+// --- Test 14: a job with two steps ---
+console.log('--- Test 14: Multi-step job ---');
+{
+  const layerRow = (row, type, name) => `LAYER {\n ROW=${row}\n CONTEXT=BOARD\n TYPE=${type}\n NAME=${name}\n POLARITY=POSITIVE\n}\n`;
+  const step = (name, x) => [
+    { path: `steps/${name}/stephdr`, content: 'UNITS=MM\n' },
+    { path: `steps/${name}/profile`, content: 'UNITS=MM\nS P 0\nOB 0 0 I\nOS 0 20\nOS 40 20\nOS 40 0\nOS 0 0\nOE\nSE\n' },
+    { path: `steps/${name}/layers/top/features`, content: `UNITS=MM\n$0 r1000\nP ${x} 5 0 P 0 0\n` },
+    { path: `steps/${name}/layers/bot/features`, content: `UNITS=MM\n$0 r1000\nP ${x} 5 0 P 0 0\n` },
+  ];
+  const files = [
+    { path: 'misc/info', content: 'JOB_NAME=two\nUNITS=MM\n' },
+    { path: 'matrix/matrix', content: 'STEP {\n COL=2\n NAME=FLEX\n}\nSTEP {\n COL=1\n NAME=PCB\n}\n' + layerRow(1, 'SIGNAL', 'TOP') + layerRow(2, 'SIGNAL', 'BOT') },
+    ...step('pcb', 5), ...step('flex', 7),
+  ];
+  const first = await convertOdb(files);
+  assert.equal(first.success, true, first.error);
+  assert.deepEqual(first.steps, ['PCB', 'FLEX'], 'steps in COL order');
+  assert.equal(first.step, 'PCB', 'the first step by COL is converted by default');
+  assert.ok(first.report.some((l) => l.startsWith('info: the job has 2 steps')), 'the report names the steps');
+  const flex = await convertOdb(files, { step: 'flex' });
+  assert.equal(flex.success, true, flex.error);
+  assert.equal(flex.step, 'FLEX');
+  assert.notEqual(flex.kicadPcb, first.kicadPcb, 'the other step is another board');
+  const none = await convertOdb(files, { step: 'nope' });
+  assert.equal(none.success, false);
+  assert.equal(none.code, 'no-step');
+  const one = await convertOdb(loadDir(join(samplesDir, 'odb-output')));
+  assert.equal(one.steps.length, 1, 'a one-step job lists its one step');
+  assert.ok(one.report.some((l) => l.startsWith('info: ODB++ version 8.1')), 'the report gives the ODB++ version');
+  assert.ok(one.report.some((l) => /^info: matrix row \d+ F\.CU \(SIGNAL\) -> F\.Cu$/.test(l)), 'the report lists the matrix rows');
+  assert.ok(/\(generator "odb2kicad\/[\d.]+ odb\+\+:v8\.1"\)/.test(one.kicadPcb), 'the generator names the ODB++ version');
+  assert.equal(one.steps[0].toLowerCase(), 'pcb');
+  console.log(`  PASS: steps ${first.steps.join(', ')}; default ${first.step}; { step: 'flex' } converts ${flex.step}; unknown step: ${none.code}`);
+}
+
+// --- Test 15: demo-design (compressed files, text, drill tools) matches the native CLI ---
+console.log('--- Test 15: demo-design (compressed .z files) vs native ---');
+{
+  const dir = join(samplesDir, 'demo-design');
+  const files = loadDir(dir);
+  const z = files.filter((f) => f.content instanceof Uint8Array).length;
+  assert.ok(z > 10, 'the fixture holds compressed files');
+  const result = await convertOdb(files);
+  assert.equal(result.success, true, result.error);
+  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
+  const nativeOutput = execSync(`"${nativeBin}" "${dir}"`, { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024 });
+  assert.equal(result.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI on demo-design');
+  assert.ok(/\(footprint "[^"]*" \(layer "B\.Cu"\)/.test(result.kicadPcb), 'bottom components (components.z) are read');
+  // the same job as a .tgz: the archive path keeps the compressed files as bytes too
+  execSync(`tar czf "${tmpDir}/demo-design.tgz" -C "${samplesDir}" demo-design`);
+  const fromTgz = await convertOdbArchive(new Uint8Array(readFileSync(join(tmpDir, 'demo-design.tgz'))));
+  assert.equal(fromTgz.success, true, fromTgz.error);
+  assert.equal(fromTgz.kicadPcb === result.kicadPcb, true, 'the archive converts to the same board');
+  console.log(`  PASS: ${files.length} files (${z} compressed), ${result.kicadPcb.length} chars, identical to native and to its .tgz`);
+}
+
+// --- Test 16: a panel step (STEP-REPEAT) places its step, the same as the native CLI ---
+console.log('--- Test 16: Panel step (STEP-REPEAT) vs native ---');
+{
+  const layerRow = (row, type, name) => `LAYER {\n ROW=${row}\n CONTEXT=BOARD\n TYPE=${type}\n NAME=${name}\n POLARITY=POSITIVE\n}\n`;
+  const files = [
+    { path: 'misc/info', content: 'JOB_NAME=panel\nUNITS=MM\n' },
+    { path: 'matrix/matrix', content: 'STEP {\n COL=1\n NAME=PCB\n}\nSTEP {\n COL=2\n NAME=PANEL\n}\n' + layerRow(1, 'COMPONENT', 'COMP_+_TOP') + layerRow(2, 'SIGNAL', 'TOP') },
+    { path: 'steps/pcb/stephdr', content: 'UNITS=MM\nX_DATUM=3\nY_DATUM=4\n' },
+    { path: 'steps/pcb/profile', content: 'UNITS=MM\nS P 0\nOB 0 0 I\nOS 0 20\nOS 40 20\nOS 40 0\nOS 0 0\nOE\nSE\n' },
+    { path: 'steps/pcb/layers/top/features', content: 'UNITS=MM\n$0 r1000\nP 10 5 0 P 0 0\nL 10 5 20 5 0 P 0\n' },
+    { path: 'steps/pcb/layers/comp_+_top/components', content: 'UNITS=MM\nCMP 0 10 5 0 N R1 pkg\nTOP 0 10 5 0 N 0 0 1\n' },
+    { path: 'steps/pcb/netlists/cadnet/netlist', content: 'UNITS=MM\n$0 N1\n0 0.5 10 5 T 1 1 e e s\n' },
+    { path: 'steps/panel/stephdr', content: 'UNITS=MM\nSTEP-REPEAT {\n NAME=PCB\n X=100\n Y=50\n DX=40\n DY=30\n NX=2\n NY=2\n ANGLE=90\n MIRROR=NO\n}\n' },
+  ];
+  const panel = await convertOdb(files, { step: 'panel' });
+  assert.equal(panel.success, true, panel.error);
+  assert.equal(panel.step, 'PANEL');
+  assert.equal((panel.kicadPcb.match(/\(footprint /g) || []).length, 4, 'four copies of R1');
+  assert.ok(panel.kicadPcb.includes('(at 101 -43 -90)'), 'the first copy turned 90 deg about the datum');
+  assert.ok(panel.kicadPcb.includes('"Board_4-N1"'), 'each copy has its own nets');
+  assert.ok(panel.report.some((l) => l.startsWith('info: panel PANEL: step PCB placed 2 x 2')), 'the report says what was placed');
+  const dir = mkdtempSync(join(tmpdir(), 'odb2kicad-panel-'));
+  for (const f of files) {
+    execSync(`mkdir -p "${dirname(join(dir, f.path))}"`);
+    writeFileSync(join(dir, f.path), f.content);
+  }
+  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
+  const nativeOutput = execSync(`"${nativeBin}" --step panel "${dir}"`, { encoding: 'utf-8' });
+  assert.equal(panel.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI on a panel');
+  console.log('  PASS: 2 x 2 copies at 90 deg, nets Board_<n>-, identical to native');
 }
 
 console.log('\nAll tests PASSED');

@@ -17,6 +17,14 @@ struct KicadNet {
     std::string name;
 };
 
+// One copper layer of a pad whose shape differs from layer to layer (a KiCad 9 padstack entry)
+struct KicadPadLayer {
+    std::string layer;          // "In1.Cu" ..., or "Inner" for every inner layer
+    std::string shape;          // "circle", "rect", "roundrect", "oval"
+    double width = 0, height = 0;
+    double roundrectRatio = 0;
+};
+
 struct KicadPad {
     std::string pinNum;
     std::string type;           // "smd" or "thru_hole"
@@ -38,6 +46,11 @@ struct KicadPad {
     // Mask / paste openings the pad cannot make by growing (another shape, size ratio or corner):
     // mask- or paste-only pads of the opening's own shape, added beside this one
     std::vector<KicadPad> apertures;
+    // Per-layer copper (KiCad 9 padstack). Empty: the pad is the same on every copper layer.
+    // The outer layers keep the fields above; padstackMode "front_inner_back" has one "Inner"
+    // entry, "custom" one entry per inner layer.
+    std::string padstackMode;
+    std::vector<KicadPadLayer> padstack;
 };
 
 struct KicadFpLine {
@@ -93,7 +106,11 @@ struct KicadArc {
 
 struct KicadVia {
     double x = 0, y = 0;
-    double size = 0;
+    double size = 0;            // the pad on the via's first layer
+    // Pad diameter per copper layer of the span, in stack order (KiCad 9 padstack). Empty or all
+    // equal: one size. A layer where the job has no copper ring (no flash, or a negative plane
+    // whose flash is a clearance) has the drill's size.
+    std::vector<std::pair<std::string, double>> layerSizes;
     double drill = 0;
     std::string fromLayer;
     std::string toLayer;
@@ -147,6 +164,11 @@ struct KicadZone {
 };
 
 struct KicadPcb {
+    // KiCad file format: 9 writes padstacks (per-layer via and pad sizes, version 20241229);
+    // 8 gives every via and pad one size (version 20240108). 0 = 9 when a via or pad needs it.
+    int fileFormat = 0;
+    // (generator "..."): "odb2kicad/<version>", plus " odb++:v<major>.<minor>" when the job says
+    std::string generator = "odb2kicad";
     double boardThickness = 1.6;
     std::vector<KicadLayer> layers;
     std::vector<KicadNet> nets;

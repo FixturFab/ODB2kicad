@@ -7,7 +7,7 @@ Every component record carries its rotation, its mirror flag, and TOP (toeprint)
 the board position of each pin. eda/data carries the same package's pins in the package frame.
 The right reading of the rotation is the one that maps the package pins onto the toeprints. Per
 part this tries: clockwise (the spec), counter-clockwise, and no rotation at all (0 deg, the
-reading of the converter Studio vendors), each with the mirror flag applied (x -> -x first) and,
+reading of pre-0.2.0 builds), each with the mirror flag applied (x -> -x first) and,
 for mirrored parts, without it (kicad-cli writes bottom packages already flipped). A part fits a
 reading when every pin lands within 10 um.
 

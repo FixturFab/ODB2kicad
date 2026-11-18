@@ -1,13 +1,24 @@
 #include "odb_parser/netlist_parser.h"
+#include "util/odb_file.h"
 #include "util/string_utils.h"
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
 namespace odb2kicad {
 
+// The whole token as a number ("e", "staggered" and "1.2x" are not)
+static bool parseNumber(const std::string& tok, double& out) {
+    if (tok.empty()) return false;
+    char* end = nullptr;
+    out = std::strtod(tok.c_str(), &end);
+    return end == tok.c_str() + tok.size();
+}
+
 bool parseNetlist(const std::string& path, OdbNetlist& netlist) {
-    std::ifstream file(path);
-    if (!file.is_open()) return false;
+    auto opened = openOdbFile(path);  // the file, or its compressed twin <path>.z
+    if (!opened) return false;
+    std::istream& file = *opened;
 
     std::string line;
     bool inPoints = false;
@@ -32,18 +43,37 @@ bool parseNetlist(const std::string& path, OdbNetlist& netlist) {
             continue;
         }
 
-        // Net points (lines starting with a digit)
-        if (inPoints && !line.empty() && (std::isdigit(line[0]) || line[0] == '-')) {
+        // Net point: <net> <radius> <x> <y> <side> [<w> <h>] <epoint> <exp> [staggered sx sy sr] [v] ...
+        // <w> <h> are written only for a pad without a hole (radius 0); <epoint> (e | m) and
+        // <exp> (e | c | p | s) are letters, so the fields after <side> are read as tokens, not
+        // numbers. A trailing "v" marks a via point.
+        if (inPoints && (std::isdigit((unsigned char)line[0]) || line[0] == '-')) {
             std::istringstream iss(line);
+            std::vector<std::string> tok;
+            for (std::string t; iss >> t;) tok.push_back(t);
+            if (tok.size() < 5) continue;
+            double v[4];
+            bool ok = true;
+            for (int i = 0; i < 4 && ok; i++) ok = parseNumber(tok[i], v[i]);
+            if (!ok) continue;
             OdbNetPoint pt;
-            std::string layerStr;
-            iss >> pt.netIdx >> pt.viaFlag >> pt.x >> pt.y >> layerStr >> pt.padW >> pt.padH;
-            pt.layer = layerStr;
-            // Check if "v" flag at end
-            std::string rest;
-            while (iss >> rest) {
-                if (rest == "v") pt.isVia = true;
+            pt.netIdx = (int)v[0];
+            pt.radius = v[1];
+            pt.x = v[2];
+            pt.y = v[3];
+            pt.layer = tok[4];
+            size_t k = 5;
+            double w = 0, h = 0;
+            if (k + 1 < tok.size() && parseNumber(tok[k], w) && parseNumber(tok[k + 1], h)) {
+                pt.hasPadSize = true;
+                pt.padW = w;
+                pt.padH = h;
+                k += 2;
             }
+            if (k < tok.size()) pt.epoint = tok[k++];
+            if (k < tok.size()) pt.exp = tok[k++];
+            for (; k < tok.size(); k++)
+                if (tok[k] == "v") pt.isVia = true;
             netlist.points.push_back(pt);
             continue;
         }

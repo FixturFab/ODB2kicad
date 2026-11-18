@@ -1,0 +1,15 @@
+ROW = 4
+NAME = valor_assembly_solderpaste
+ERF = STD
+PARAMS {
+    pp_side = Top;Bottom
+    pp_tests = SMD;Coverage
+}
+LAST_PARAMS {
+    pp_side = Top;Bottom
+    pp_tests = SMD;Coverage
+}
+ONLINE_PARAMS {
+    pp_side = Top;Bottom
+    pp_tests = SMD;Coverage
+}
