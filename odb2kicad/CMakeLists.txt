@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(odb2kicad LANGUAGES CXX)
 
+# Optimized unless told otherwise: a real job (samples/demo-design) converts in seconds, not minutes
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -8,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(odb2kicad_core STATIC
     src/odb2kicad_lib.cpp
     src/util/string_utils.cpp
+    src/util/odb_file.cpp
     src/odb_parser/odb_parser.cpp
     src/odb_parser/info_parser.cpp
     src/odb_parser/matrix_parser.cpp
@@ -17,10 +23,15 @@ add_library(odb2kicad_core STATIC
     src/odb_parser/components_parser.cpp
     src/odb_parser/eda_parser.cpp
     src/odb_parser/netlist_parser.cpp
+    src/odb_parser/tools_parser.cpp
+    src/odb_parser/attrlist_parser.cpp
+    src/odb_parser/font_parser.cpp
     src/odb_parser/symbols.cpp
     src/odb_parser/contour.cpp
     src/writer/kicad_writer.cpp
     src/writer/polygon.cpp
+    src/writer/keyhole.cpp
+    src/writer/panel.cpp
 )
 target_include_directories(odb2kicad_core PUBLIC src)
 

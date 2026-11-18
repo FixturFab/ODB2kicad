@@ -1,0 +1,6 @@
+pile_begin
+elem (Simple (Foil (0.5 (0.5 0 0) 856700 STD 0)))
+elem (Simple (Prepreg (2113 (3.4 0.3 0.3) 9900 0 0 0 1e+09)))
+elem (Simple (Prepreg (2116 (4.3 0.3 0.3) 9900 0 0 0 1e+09)))
+elem (Compound (Core LAM0100-HH (11.4 0 0) (Foil (0.5 (0.5 0 0) 856700 STD 0)) (Laminate (LAM0100 (10 0 0) 505050 0 0 0 1e+09)) (Foil (0.5 (0.5 0 0) 856700 STD 0))))
+pile_end

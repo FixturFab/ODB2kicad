@@ -1,0 +1,11 @@
+DISPLAY {
+    L0 = pg6
+}
+DISPLAY {
+    L0 = pg6
+    L1 = drill
+}
+DISPLAY {
+    L0 = pg6
+    L1 = rout
+}

@@ -21,8 +21,10 @@ import math
 import re
 from pathlib import Path
 
+import odb_render_text
 import raster
-from valor_oracle import DirectOdbOracle, ci_child, parse_feature_geometry
+from odb_render_text import parse_font  # noqa: F401  (the font reader lives with the text renderer)
+from valor_oracle import DirectOdbOracle, ci_child, odb_file, parse_feature_geometry, read_odb_text
 
 EDGE_W = 0.3  # mm: both sides' outlines are stroked with this width, whatever their own width
 COPPER_TYPES = ("SIGNAL", "POWER_GROUND", "MIXED")
@@ -82,6 +84,29 @@ def map_layers(matrix: list) -> list:
     for m in allrows:  # MISC context too: that is where kicad-cli puts its fab / courtyard / user layers
         if m.get("type", "").upper() == "DOCUMENT" and m.get("name", "").lower() in KICAD_DOC_NAMES:
             out.append({"odb": m["name"], "kicad": KICAD_DOC_NAMES[m["name"].lower()], "type": "DOCUMENT"})
+    return out
+
+
+DOC_FEATURE_LIMIT = 100000  # a document layer holding more features than this is not drawn
+
+
+def map_document_layers(layers: list, matrix: list, feature_count, kicad_made: bool) -> list:
+    """The other DOCUMENT rows (assembly drawings, process maps, notes): drawn on the User.1 ..
+    User.9 layers the job leaves free, in row order, when they hold 1 .. DOC_FEATURE_LIMIT features
+    (``feature_count(name)``). Not for KiCad-made jobs: their other DOCUMENT rows are kicad-cli's
+    tenting / plugging / filling layers."""
+    if kicad_made:
+        return layers
+    have = {L["odb"].lower() for L in layers}
+    taken = {L["kicad"] for L in layers}
+    free = [f"User.{i}" for i in range(1, 10) if f"User.{i}" not in taken]
+    out = list(layers)
+    for m in sorted(matrix, key=lambda m: int(m.get("row", 0) or 0)):
+        if m.get("type", "").upper() != "DOCUMENT" or m.get("name", "").lower() in have or not free:
+            continue
+        n = feature_count(m["name"])
+        if 0 < n <= DOC_FEATURE_LIMIT:
+            out.append({"odb": m["name"], "kicad": free.pop(0), "type": "DOCUMENT"})
     return out
 
 
@@ -606,20 +631,142 @@ class OdbJob:
             raise ValueError("no steps/ in the ODB++ job")
         self.step = step if step in steps else self._pick_step(steps)
         self.step_dir = self.root / "steps" / self.step
-        self.layers = map_layers(self.matrix)
-        self.stats = {"unsupported_symbols": {}, "text": 0, "barcodes": 0, "skipped_lines": 0, "features": 0}
+        self._fonts: dict = {}
+        self.layers = map_document_layers(map_layers(self.matrix), self.matrix, self._feature_count, self._kicad_made())
+        self.origin = self._step_origin()
+        self.draw_text = True  # False: T / V records are counted, not drawn (the caller draws them)
+        self.stats = {"unsupported_symbols": {}, "text": 0, "text_strokes": 0, "barcodes": 0, "skipped_lines": 0, "features": 0}
         self._sym_cache: dict = {}
 
     def _pick_step(self, steps: list) -> str:
-        """The step with the most layer folders (panel steps usually hold few)."""
+        """The job's first step, as odb2kicad picks it: the matrix's STEP records by COL, the first
+        that has a folder with layer data; else the folder with the most layer folders."""
         def n(st):
             d = self.root / "steps" / st / "layers"
             return len(list(d.iterdir())) if d.is_dir() else 0
+        named = []
+        try:
+            text = (self.root / "matrix" / "matrix").read_text(encoding="latin-1")
+            for block in re.findall(r"STEP\s*\{(.*?)\}", text, re.S):
+                kv = dict(re.findall(r"(\w+)\s*=\s*(\S*)", block))
+                if kv.get("NAME"):
+                    named.append((int(kv.get("COL") or 0), kv["NAME"].lower()))
+        except (OSError, ValueError):
+            pass
+        by_lower = {st.lower(): st for st in steps}
+        for _col, name in sorted(named, key=lambda t: t[0]):
+            if name in by_lower and n(by_lower[name]) > 0:
+                return by_lower[name]
         return max(steps, key=n)
+
+    def _kicad_made(self) -> bool:
+        info = self.root / "misc" / "info"
+        if not info.is_file():
+            return False
+        for line in info.read_text(encoding="latin-1").splitlines():
+            k, _eq, v = line.partition("=")
+            if k.strip() in ("ODB_SOURCE", "SAVE_APP") and v.strip().startswith("KiCad"):
+                return True
+        return False
+
+    def _feature_count(self, odb_name: str) -> int:
+        """Features a layer draws: its records, each text counted by its strokes."""
+        d = ci_child(self.step_dir / "layers", odb_name)
+        if d is None or not odb_file(d / "features"):
+            return 0
+        geo = parse_feature_geometry(d / "features")
+        n = 0
+        for rec in geo["records"]:
+            if rec[0] == "T":
+                n += sum(len(part) for part in self._text_strokes(rec, 25.4 if geo["units"] == "INCH" else 1.0))
+            elif rec[0] != "B":
+                n += 1
+        return n
+
+    def _font(self, name: str):
+        key = name.lower()
+        if key not in self._fonts:
+            d = self.root / "fonts"
+            path = (ci_child(d, name) or ci_child(d, name + ".z")) if d.is_dir() else None
+            if path is not None and path.name.lower().endswith(".z"):
+                path = path.with_name(path.name[:-2])
+            self._fonts[key] = parse_font(path) if path else None
+        return self._fonts[key]
+
+    def _text_strokes(self, rec: tuple, s: float) -> tuple:
+        """A T record -> (strokes [(x1, y1, x2, y2, width mm, positive, round)], polygons
+        [(positive, [(x, y)..])]) in mm, drawn from its font by odb_render_text (the reader spec's
+        text renderer): glyphs scaled by xsize / XSIZE and ysize / YSIZE, one xsize apart (V: one
+        ysize up), mirrored in X when the record says so, turned clockwise, moved to (x, y)."""
+        font = self._font(rec[4])
+        if font is None:
+            return [], []
+        return odb_render_text.text_strokes(odb_render_text.text_record(rec), font, s)
+
+    def _step_origin(self) -> tuple:
+        """stephdr X_ORIGIN / Y_ORIGIN in mm (its UNITS line, else misc/info's, else INCH): every
+        coordinate of the step is relative to it, so the step is drawn moved by it."""
+        vals = {}
+        for path in (self.root / "misc" / "info", self.step_dir / "stephdr"):
+            text = read_odb_text(path)
+            if text is None:
+                continue
+            if path.name == "stephdr":
+                vals = {k: v for k, v in vals.items() if k == "UNITS"}  # misc/info gives the default units only
+            for line in text.splitlines():
+                k, eq, v = line.partition("=")
+                if eq and v.strip():
+                    vals[k.strip().upper()] = v.strip()
+        s = 1.0 if vals.get("UNITS", "INCH").upper() == "MM" else 25.4
+
+        def num(key):
+            try:
+                return float(vals.get(key, 0)) * s
+            except ValueError:
+                return 0.0
+        return num("X_ORIGIN"), num("Y_ORIGIN")
+
+    def _out_transform(self, layer_dir: Path):
+        """The layer attrlist's output transform as a point function, or None for the identity:
+        .out_x_scale / .out_y_scale about the step's zero, then .out_mirror (x -> -x), then
+        .out_angle clockwise."""
+        text = read_odb_text(layer_dir / "attrlist")
+        if text is None:
+            return None
+        a = {}
+        for line in text.splitlines():
+            k, eq, v = line.partition("=")
+            if eq:
+                a[k.strip()] = v.strip()
+
+        def num(key, default):
+            try:
+                return float(a.get(key, "") or default)
+            except ValueError:
+                return default
+        sx, sy, ang = num(".out_x_scale", 1.0), num(".out_y_scale", 1.0), num(".out_angle", 0.0)
+        sx, sy = (sx if sx > 0 else 1.0), (sy if sy > 0 else 1.0)
+        mirror = a.get(".out_mirror", "").lower() in ("yes", "y", "true", "1")
+        if abs(sx - 1) < 1e-9 and abs(sy - 1) < 1e-9 and not mirror and abs(ang % 360) < 1e-9:
+            return None
+        ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+
+        def tf(x, y):
+            x, y = x * sx, y * sy
+            if mirror:
+                x = -x
+            return (x * ca + y * sa, -x * sa + y * ca)
+        return tf
+
+    def _moved(self, contours: list) -> list:
+        ox, oy = self.origin
+        if not ox and not oy:
+            return contours
+        return [[(x + ox, y + oy) for x, y in c] for c in contours]
 
     # -- geometry ------------------------------------------------------------------------------
     def profile_contours(self, ppm: float = 50.0) -> list:
-        """Profile surface contours in mm (list of point lists)."""
+        """Profile surface contours in mm (list of point lists), moved by the step origin."""
         geo = parse_feature_geometry(self.step_dir / "profile")
         s = 25.4 if geo["units"] == "INCH" else 1.0
         out = []
@@ -627,7 +774,7 @@ class OdbJob:
             if rec[0] == "S":
                 for _hole, c in rec[2]:
                     out.append(self._contour(c, s, ppm))
-        return out
+        return self._moved(out)
 
     def profile_bbox(self):
         cs = self.profile_contours()
@@ -665,7 +812,7 @@ class OdbJob:
         if name in self._sym_cache:
             return self._sym_cache[name]
         d = ci_child(self.root / "symbols", name) if (self.root / "symbols").is_dir() else None
-        geo = parse_feature_geometry(d / "features") if d and (d / "features").is_file() else None
+        geo = parse_feature_geometry(d / "features") if d and odb_file(d / "features") else None
         self._sym_cache[name] = geo
         return geo
 
@@ -730,6 +877,14 @@ class OdbJob:
                 ops.append((1 if pol else 0, [c for c in cs if len(c) >= 3]))
             elif t == "T":
                 self.stats["text"] += 1
+                if not self.draw_text:
+                    continue
+                strokes, polys = self._text_strokes(rec, s)
+                self.stats["text_strokes"] += len(strokes) + len(polys)
+                for x1, y1, x2, y2, w, positive, rnd in strokes:
+                    ops.append((1 if positive else 0, [raster.stroke(x1, y1, x2, y2, w, ppm, not rnd)]))
+                for positive, pts in polys:
+                    ops.append((1 if positive else 0, [pts]))
             elif t == "B":
                 self.stats["barcodes"] += 1
         return ops
@@ -758,8 +913,11 @@ class OdbJob:
             neg = lay.get("negative", False)
             if neg:  # a NEGATIVE layer: the board is dark, its features clear it
                 bm.fill(view.px([c for c in self.profile_contours(view.ppm) if len(c) >= 3]), 1)
+            out_tf = self._out_transform(d)
             for val, cs in self.record_ops(geo, view.ppm):
                 if cs:
-                    bm.fill(view.px(cs), 1 - val if neg else val)
+                    if out_tf:
+                        cs = raster.xform(cs, out_tf)
+                    bm.fill(view.px(self._moved(cs)), 1 - val if neg else val)
             drawn.append(lay["odb"])
         return bm, drawn

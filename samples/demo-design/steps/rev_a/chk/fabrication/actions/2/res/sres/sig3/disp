@@ -1,0 +1,11 @@
+DISPLAY {
+    L0 = sig3
+}
+DISPLAY {
+    L0 = sig3
+    L1 = drill
+}
+DISPLAY {
+    L0 = sig3
+    L1 = rout
+}

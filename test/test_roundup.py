@@ -10,6 +10,7 @@ import json
 import math
 import os
 import socket
+import subprocess
 import sys
 import tempfile
 import threading
@@ -19,10 +20,12 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+import odb_render_text  # noqa: E402
 import raster  # noqa: E402
 from raster import _popcount  # noqa: E402
 import roundup  # noqa: E402
 import synthetic_odb  # noqa: E402
+from kicad_render import KicadBoard  # noqa: E402
 from odb_render import OdbJob, map_layers, standard_symbol  # noqa: E402
 from valor_oracle import parse_feature_geometry  # noqa: E402
 
@@ -112,6 +115,47 @@ class Symbols(unittest.TestCase):
         # every name the made-up symbols board uses is drawn
         for name in synthetic_odb.SYMBOL_NAMES:
             self.assertTrue(standard_symbol(name, 0.001, 50), name)
+
+
+class KicadPadstacks(unittest.TestCase):
+    """KiCad 9 boards: layer ids 0 / 2 / 4.. are not the stack order; padstacks size per layer"""
+
+    BOARD = """(kicad_pcb (version 20241229) (generator test)
+  (layers (0 "F.Cu" signal) (4 "In1.Cu" signal) (6 "In2.Cu" signal) (2 "B.Cu" signal) (25 "Edge.Cuts" user))
+  (via (at 0 0) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu")
+    (padstack (mode custom) (layer "In1.Cu" (size 0.6)) (layer "In2.Cu" (size 0.4)) (layer "B.Cu" (size 0.6))) (net 0))
+  (via (at 5 0) (size 1.0) (drill 0.4) (layers "F.Cu" "B.Cu")
+    (padstack (mode front_inner_back) (layer "Inner" (size 0.5)) (layer "B.Cu" (size 1.0))) (net 0))
+  (footprint "x" (layer "F.Cu") (at 10 0)
+    (pad "1" thru_hole rect (at 0 0) (size 2 2) (layers "*.Cu") (drill 1)
+      (padstack (mode front_inner_back) (layer "Inner" (shape circle) (size 1.5 1.5)) (layer "B.Cu" (shape rect) (size 2 2))))))
+"""
+
+    def area(self, board, layer, x0, x1, ppm=50.0):
+        view = raster.View(x0, -2, x1 - x0, 4, ppm, False)
+        return board.render(layer, view).count() / ppm ** 2
+
+    def test_copper_order_and_per_layer_sizes(self):
+        b = KicadBoard(self.BOARD)
+        self.assertEqual(b.copper, ["F.Cu", "In1.Cu", "In2.Cu", "B.Cu"])
+        for layer, d in (("F.Cu", 0.8), ("In1.Cu", 0.6), ("In2.Cu", 0.4), ("B.Cu", 0.6)):
+            self.assertAlmostEqual(self.area(b, layer, -2, 2), math.pi * d * d / 4, delta=0.03, msg=layer)
+        for layer, d in (("F.Cu", 1.0), ("In1.Cu", 0.5), ("In2.Cu", 0.5), ("B.Cu", 1.0)):
+            self.assertAlmostEqual(self.area(b, layer, 3, 7), math.pi * d * d / 4, delta=0.03, msg=layer)
+        self.assertAlmostEqual(self.area(b, "F.Cu", 8, 12), 4.0, delta=0.05)
+        self.assertAlmostEqual(self.area(b, "B.Cu", 8, 12), 4.0, delta=0.05)
+        self.assertAlmostEqual(self.area(b, "In1.Cu", 8, 12), math.pi * 1.5 * 1.5 / 4, delta=0.05)
+
+    def test_unused_via_layers_have_no_pad(self):
+        """remove_unused_layers: only the forced layers and the kept ends are flashed"""
+        b = KicadBoard("""(kicad_pcb (version 20241229) (generator test)
+  (layers (0 "F.Cu" signal) (4 "In1.Cu" signal) (6 "In2.Cu" signal) (2 "B.Cu" signal) (25 "Edge.Cuts" user))
+  (via (at 0 0) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu")
+    (padstack (mode custom) (layer "In1.Cu" (size 0.6)) (layer "In2.Cu" (size 0.6)) (layer "B.Cu" (size 0.6)))
+    (remove_unused_layers yes) (keep_end_layers yes) (zone_layer_connections "In1.Cu") (net 0)))
+""")
+        for layer, d in (("F.Cu", 0.8), ("In1.Cu", 0.6), ("In2.Cu", 0.0), ("B.Cu", 0.6)):
+            self.assertAlmostEqual(self.area(b, layer, -2, 2), math.pi * d * d / 4, delta=0.03, msg=layer)
 
 
 class Odb(unittest.TestCase):
@@ -278,6 +322,210 @@ class Odb(unittest.TestCase):
             fcu = [L for L in rep["layers"] if L["kicad"] == "F.Cu"][0]["by"]["odb2kicad"]
             self.assertLess(fcu["xor_ratio"], 0.01)
             self.assertTrue((Path(d) / "index.html").is_file())
+
+    @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
+    def test_step_origin_moves_the_board(self):
+        """stephdr X/Y_ORIGIN: the converter and the reference both draw the step moved by it."""
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "in" / "synthetic-origin", synthetic_odb.BASIC, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, origin=synthetic_odb.ORIGIN_IN)
+            ox, oy = (v * 25.4 for v in synthetic_odb.ORIGIN_IN)
+            pb = OdbJob(job).profile_bbox()
+            self.assertAlmostEqual(pb[0], ox, places=6)
+            self.assertAlmostEqual(pb[1], oy, places=6)
+            rc = roundup.main([str(job), "--out", str(Path(d) / "out"), "--no-siemens", "--no-images"])
+            self.assertEqual(rc, 0)
+            rep = json.loads((Path(d) / "out" / "synthetic-origin" / "report.json").read_text())
+            al = rep["boards"]["odb2kicad"]["align"]
+            self.assertLess(abs(al["dx_mm"]), 0.01)  # the Edge.Cuts bbox is where the moved profile is
+            self.assertLess(abs(al["dy_mm"]), 0.01)
+            for L in rep["layers"]:
+                if L["kicad"] in ("F.Cu", "B.Cu", "In2.Cu", "F.SilkS", "Edge.Cuts"):
+                    self.assertLess(L["by"]["odb2kicad"]["xor_ratio"], 0.02, L["kicad"])
+
+    @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
+    def test_attrlist_thickness_and_output_transform(self):
+        """Layer attrlists: the stackup gives the board thickness, .out_* moves that layer only."""
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "in" / "synthetic-stackup", synthetic_odb.BASIC, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, attrlists=synthetic_odb.STACKUP_ATTRS)
+            rc = roundup.main([str(job), "--out", str(Path(d) / "out"), "--no-siemens", "--no-images"])
+            self.assertEqual(rc, 0)
+            pcb = (Path(d) / "out" / "synthetic-stackup" / "odb2kicad.kicad_pcb")
+            if not pcb.is_file():
+                pcb = next((Path(d) / "out").rglob("*.kicad_pcb"))
+            # (0.008 + 0.04 + 0.008) in + 3 oz of copper + 0.0006 in of mask = 1.4224 + 0.1044 + 0.01524
+            self.assertIn("(thickness 1.542)", pcb.read_text())
+            rep = json.loads((Path(d) / "out" / "synthetic-stackup" / "report.json").read_text())
+            by = {L["kicad"]: L["by"]["odb2kicad"] for L in rep["layers"]}
+            self.assertGreater(by["In2.Cu"]["got_px"], 0)   # SIG3, drawn at half scale
+            for name in ("F.Cu", "In2.Cu", "B.Cu"):
+                self.assertLess(by[name]["xor_ratio"], 0.03, name)
+
+    @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
+    def test_multi_step_job(self):
+        """Two steps: the first (by COL) goes to the output file, the others beside it as
+        <job>__<step>.kicad_pcb; the panel step (no layer data, a STEP-REPEAT of PCB) is one board
+        holding two copies of PCB; --step picks one; the reference compares the same first step."""
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_two_step_job(Path(d) / "in" / "synthetic-steps")
+            single = synthetic_odb.write_job(Path(d) / "in" / "single", synthetic_odb.BASIC, synthetic_odb.PROFILE_IN,
+                                             synthetic_odb.USER_SYMBOL)
+            self.assertEqual(OdbJob(job).step, "pcb")
+            out = Path(d) / "cli"
+            out.mkdir()
+            run = subprocess.run([str(BIN), str(job), str(out / "board.kicad_pcb")], capture_output=True, text=True)
+            self.assertEqual(run.returncode, 0, run.stderr)
+            self.assertEqual(sorted(p.name for p in out.iterdir()),
+                             ["board.kicad_pcb", "two_step_job__FLEX.kicad_pcb", "two_step_job__PANEL.kicad_pcb",
+                              "two_step_job__scrap.kicad_pcb"])
+            self.assertNotIn("was not converted", run.stderr)
+            first = (out / "board.kicad_pcb").read_text()
+            panel = (out / "two_step_job__PANEL.kicad_pcb").read_text()
+            # PCB at (0.5, 0.5) in and (3.0, 0.5) in: every footprint twice, 63.5 mm apart; the
+            # panel's profile is the board edge, the copies' outlines are drawings
+            self.assertEqual(panel.count("(footprint "), 2 * first.count("(footprint "))
+            self.assertEqual(panel.count('(layer "Edge.Cuts")'), 1)
+            self.assertEqual(panel.count('(layer "Dwgs.User")'), 2)
+            self.assertIn('(gr_rect (start 12.7 -43.18) (end 63.5 -12.7)', panel)
+            self.assertIn('(gr_rect (start 76.2 -43.18) (end 127 -12.7)', panel)
+            # the first step is the basic board, byte for byte what it is as a one-step job
+            alone = subprocess.run([str(BIN), str(single)], capture_output=True, text=True)
+            self.assertEqual(first, alone.stdout)
+            flex = subprocess.run([str(BIN), "--step", "flex", str(job)], capture_output=True, text=True)
+            self.assertEqual(flex.returncode, 0, flex.stderr)
+            self.assertEqual(flex.stdout, (out / "two_step_job__FLEX.kicad_pcb").read_text())
+            self.assertNotEqual(flex.stdout, first)
+            to_stdout = subprocess.run([str(BIN), str(job)], capture_output=True, text=True)
+            self.assertEqual(to_stdout.stdout, first)
+            self.assertIn("the job has 4 steps", to_stdout.stderr)
+            missing = subprocess.run([str(BIN), "--step", "nope", str(job)], capture_output=True, text=True)
+            self.assertEqual(missing.returncode, 1)
+            self.assertIn("no-step", missing.stderr)
+            rc = roundup.main([str(job), "--out", str(Path(d) / "out"), "--no-siemens", "--no-images"])
+            self.assertEqual(rc, 0)
+            rep = json.loads((Path(d) / "out" / "synthetic-steps" / "report.json").read_text())
+            self.assertEqual(rep["step"], "pcb")
+            fcu = [L for L in rep["layers"] if L["kicad"] == "F.Cu"][0]["by"]["odb2kicad"]
+            self.assertLess(fcu["xor_ratio"], 0.02)
+
+    def test_text_is_drawn_from_the_font(self):
+        """T records: the reference strokes each character from fonts/<name>."""
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "synthetic-text", synthetic_odb.TEXT, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.TEXT_FONT)
+            geo = parse_feature_geometry(job / "steps" / "pcb" / "layers" / "notes" / "features")
+            t = [r for r in geo["records"] if r[0] == "T"]
+            self.assertEqual(len(t), 2)
+            self.assertEqual(t[0][1:], (0.2, 1.0, True, "standard", False, 0.0, 0.15, 0.15, 2.0, "EXIT", False))
+            self.assertEqual((t[1][5], t[1][6], t[1][10]), (True, 30.0, "LET"))
+            oj = OdbJob(job)
+            self.assertIn(("NOTES", "User.1"), [(L["odb"], L["kicad"]) for L in oj.layers])
+            strokes, polys = oj._text_strokes(t[0], 25.4)
+            self.assertEqual((len(strokes), polys), (4 + 2 + 1 + 2, []))  # E X I T
+            # E's first stroke: its left edge (x = -0.1 in the font), from the foot (-0.1) to the
+            # top (0.2), scaled by 0.15 / 0.302, the glyph's own zero on the text's location
+            k = 0.15 / 0.302
+            x1, y1, x2, y2, w, positive, rnd = strokes[0]
+            self.assertAlmostEqual(x1, (0.2 - 0.1 * k) * 25.4, places=6)
+            self.assertAlmostEqual(y1, (1.0 - 0.1 * k) * 25.4, places=6)
+            self.assertAlmostEqual(y2, (1.0 + 0.2 * k) * 25.4, places=6)
+            self.assertAlmostEqual(w, 2 * 0.012 * 25.4, places=6)
+            self.assertTrue(positive and rnd)
+            # the second glyph is one xsize on: X's first stroke starts at its lower left
+            self.assertAlmostEqual(strokes[4][0], (0.2 + 0.15 - 0.1 * k) * 25.4, places=6)
+            v = raster.View(0, 30.48, 50.8, 30.48, 20.0, True)
+            with_text = oj.render("F.SilkS", v)[0].count()
+            plain = OdbJob(self.basic).render("F.SilkS", v)[0].count()
+            self.assertGreater(with_text, plain + 200)
+            self.assertEqual(oj.stats["text"], 2)
+
+    @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
+    def test_text_converter_agrees_with_the_reference(self):
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "in" / "synthetic-text", synthetic_odb.TEXT, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.TEXT_FONT)
+            rc = roundup.main([str(job), "--out", str(Path(d) / "out"), "--no-siemens", "--no-images"])
+            self.assertEqual(rc, 0)
+            rep = json.loads((Path(d) / "out" / "synthetic-text" / "report.json").read_text())
+            by = {L["kicad"]: L for L in rep["layers"]}
+            for name in ("F.SilkS", "User.1", "In1.Cu"):   # silk text, document-layer text, negative text in a plane
+                self.assertGreater(by[name]["ref_px"], 0, name)
+                self.assertLess(by[name]["by"]["odb2kicad"]["xor_ratio"], 0.03, name)
+            pcb = next((Path(d) / "out").rglob("*.kicad_pcb")).read_text()
+            self.assertIn('(50 "User.1" user "NOTES")', pcb)
+
+    def test_spec_v2_font_and_arcs(self):
+        """Reader spec v2: a font's own UNITS, POLYGON glyphs and square line ends; V text runs
+        up; an arc without its direction token runs counter-clockwise."""
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "synthetic-specv2", synthetic_odb.SPECV2, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_V2, font_name="v2font")
+            font = odb_render_text.parse_font(job / "fonts" / "v2font")
+            self.assertEqual((font["units"], font["scale"], font["xsize"], font["ysize"], font["bad_lines"]), ("MM", 1.0, 4.0, 6.0, []))
+            self.assertEqual(font["chars"]["I"]["lines"][0][5], False)          # S: square ends
+            self.assertEqual([len(p) for p in font["chars"]["O"]["polys"]], [4])
+            self.assertEqual([len(p) for p in font["chars"]["P"]["polys"]], [4])  # two points a line
+            self.assertEqual(len(font["chars"]["P"]["lines"]), 1)
+            geo = parse_feature_geometry(job / "steps" / "pcb" / "layers" / "f.silk" / "features")
+            arcs = [r for r in geo["records"] if r[0] == "A"]
+            self.assertEqual([(r[8], r[9]) for r in arcs], [(True, False), (True, True), (True, False)])
+            oj = OdbJob(job)
+            v = [r for r in geo["records"] if r[0] == "T" and r[11]][0]
+            strokes, polys = oj._text_strokes(v, 25.4)
+            # 'IO' upwards from (1.6, 0.2) in: I's stroke at x + 1/4 box, 2 x 0.3 mm wide; O one ysize up
+            self.assertAlmostEqual(strokes[0][0], (1.6 + 0.1 / 4) * 25.4, places=6)
+            self.assertAlmostEqual(strokes[0][4], 0.6, places=9)
+            self.assertFalse(strokes[0][6])
+            self.assertAlmostEqual(min(y for _x, y in polys[0][1]), (0.2 + 0.15) * 25.4, places=6)
+            self.assertAlmostEqual(max(y for _x, y in polys[0][1]), (0.2 + 0.15 + 0.15 * 5 / 6) * 25.4, places=6)
+            # the arcs: without a token the half circle from (0.5, 0.2) to (0.3, 0.2) goes over the top
+            view = raster.View(0, 30.48, 50.8, 30.48, 20.0, True)
+            bm = oj.render("F.SilkS", view)[0]
+            def ink(x_in, y_in):
+                px, py = int(x_in * 25.4 * 20), int((30.48 - y_in * 25.4) * 20)
+                return bm.buf[py * bm.w + px]
+            self.assertEqual((ink(0.4, 0.3), ink(0.4, 0.1)), (1, 0))   # no token: counter-clockwise
+            self.assertEqual((ink(0.8, 0.3), ink(0.8, 0.1)), (0, 1))   # Y: clockwise
+
+    @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
+    def test_spec_v2_converter_agrees_with_the_reference(self):
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "in" / "synthetic-specv2", synthetic_odb.SPECV2, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_V2, font_name="v2font")
+            rc = roundup.main([str(job), "--out", str(Path(d) / "out"), "--no-siemens", "--no-images"])
+            self.assertEqual(rc, 0)
+            rep = json.loads((Path(d) / "out" / "synthetic-specv2" / "report.json").read_text())
+            by = {L["kicad"]: L for L in rep["layers"]}
+            for name in ("F.SilkS", "User.1", "In1.Cu"):   # arcs + T + V on silk, turned / mirrored text, negative text in a plane
+                self.assertGreater(by[name]["ref_px"], 0, name)
+                self.assertLess(by[name]["by"]["odb2kicad"]["xor_ratio"], 0.03, name)
+
+    @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
+    def test_sheet_tool_compares_a_board_with_the_reference(self):
+        """tools/render_odb_sheet.py (reader spec v2, 5.5): PNGs per layer, and with --kicad the
+        converter's board against them on a view grown to the layer's content."""
+        tool = HERE.parent / "tools" / "render_odb_sheet.py"
+        with tempfile.TemporaryDirectory() as d:
+            job = synthetic_odb.write_job(Path(d) / "synthetic-specv2", synthetic_odb.SPECV2, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_V2, font_name="v2font")
+            pcb = Path(d) / "board.kicad_pcb"
+            subprocess.run([str(BIN), str(job), str(pcb)], check=True, capture_output=True)
+            def run(*extra):
+                out = Path(d) / ("out" + "".join(extra).replace("-", "_"))
+                subprocess.run([sys.executable, "-I", str(tool), str(job), "--layer", "notes", "--layer", "f.silk", "--ppm", "20",
+                                "--out", str(out), "--kicad", str(pcb), *extra], check=True, capture_output=True)
+                rep = json.loads((out / "render_report.json").read_text())
+                return {L["kicad"]: L for L in rep["layers"]}
+            by = run()
+            self.assertEqual(sorted(by), ["F.SilkS", "User.1"])       # NOTES once, under its KiCad layer
+            self.assertEqual((by["User.1"]["text_strokes"], by["F.SilkS"]["text_strokes"]), (8, 6))  # OPIO + PO, POI + IO
+            for name, lay in by.items():
+                self.assertTrue(Path(lay["png"]).is_file() and Path(lay["diff_png"]).is_file())
+                self.assertLess(lay["converter"]["xor_ratio"], 0.03, name)
+            # the tool as shipped reads the version field as a mirror flag: every glyph flipped
+            shipped = run("--shipped-text-grammar")
+            self.assertGreater(shipped["User.1"]["converter"]["xor_ratio"], 0.1)
 
 
 if __name__ == "__main__":

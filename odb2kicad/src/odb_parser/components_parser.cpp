@@ -1,4 +1,5 @@
 #include "odb_parser/components_parser.h"
+#include "util/odb_file.h"
 #include "util/string_utils.h"
 #include <fstream>
 #include <sstream>
@@ -6,8 +7,9 @@
 namespace odb2kicad {
 
 bool parseComponents(const std::string& path, OdbComponents& components) {
-    std::ifstream file(path);
-    if (!file.is_open()) return false;
+    auto opened = openOdbFile(path);  // the file, or its compressed twin <path>.z
+    if (!opened) return false;
+    std::istream& file = *opened;
 
     std::string line;
     OdbComponent* current = nullptr;

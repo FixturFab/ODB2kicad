@@ -1,5 +1,6 @@
 #include "odb_parser/profile_parser.h"
 #include "odb_parser/contour.h"
+#include "util/odb_file.h"
 #include "util/string_utils.h"
 #include <fstream>
 #include <sstream>
@@ -7,8 +8,9 @@
 namespace odb2kicad {
 
 bool parseProfile(const std::string& path, OdbProfile& profile) {
-    std::ifstream file(path);
-    if (!file.is_open()) return false;
+    auto opened = openOdbFile(path);  // the file, or its compressed twin <path>.z
+    if (!opened) return false;
+    std::istream& file = *opened;
 
     std::string line;
     OdbSurface* currentSurface = nullptr;

@@ -5,9 +5,14 @@ Oracle Test Runner for odb2kicad Validation
 Runs automated validation tests using the oracle comparison system.
 Supports both structural comparison and visual comparison (screenshots).
 
+Every run converts the sample first (the converter must be built), so each registered sample
+is compared with a fresh board. A sample that cannot be converted or compared is an ERROR, and
+an ERROR fails the run like a FAIL does.
+
 Usage:
-    python run_oracle_tests.py                    # Run all tests
-    python run_oracle_tests.py --sample simple    # Run specific sample
+    python run_oracle_tests.py                    # Convert and compare every registered sample
+    python run_oracle_tests.py --sample simple    # Convert and compare one sample
+    python run_oracle_tests.py --sample simple --stored   # Compare samples/test.kicad_pcb instead
     python run_oracle_tests.py --visual           # Include visual comparison
 """
 
@@ -59,6 +64,13 @@ class OracleTestRunner:
                 'odb_path': 'odb-kitchen-sink',
                 'description': 'Complex board with vias, TH, zones, arcs',
                 'expected_components': None,  # TBD
+                'expected_nets': None
+            },
+            # The ODB++ Viewer 2510 demo job (INCH, compressed files, text, drill tools)
+            'demo-design': {
+                'odb_path': 'demo-design',
+                'description': 'ODB++ Viewer 2510 demo job (853 parts, 10 copper layers)',
+                'expected_components': 853,
                 'expected_nets': None
             }
         }
@@ -129,8 +141,10 @@ class OracleTestRunner:
         except Exception as e:
             return False, f"Converter error: {e}"
 
-    def run_test(self, sample_name: str, use_existing_kicad: bool = True,
+    def run_test(self, sample_name: str, use_existing_kicad: bool = False,
                   redacted: bool = False) -> TestResult:
+        """use_existing_kicad: compare the stored board (samples/test.kicad_pcb, the 'simple'
+        sample only) instead of converting; any other sample is an ERROR then."""
         """Run oracle test on a sample"""
         result = TestResult(sample_name)
 
@@ -168,22 +182,21 @@ class OracleTestRunner:
         kicad_path = self.output_dir / f"{sample_name}_converted.kicad_pcb"
 
         if use_existing_kicad:
-            # Check for existing converted file
             existing = self.samples_dir / 'test.kicad_pcb'
-            if existing.exists() and sample_name == 'simple':
-                kicad_path = existing
+            if not (existing.exists() and sample_name == 'simple'):
+                result.error = f"No stored board for {sample_name} (only 'simple' has one); run without --stored"
+                return result
+            kicad_path = existing
         else:
-            # Convert ODB++ to KiCad
+            # Convert ODB++ to KiCad; a board left by an earlier run must not stand in for it
+            kicad_path.parent.mkdir(parents=True, exist_ok=True)
+            if kicad_path.exists():
+                kicad_path.unlink()
             success, message = self.convert_odb_to_kicad(odb_path, kicad_path)
             if not success:
                 result.error = message
-                if not redacted:
-                    print(f"  Warning: {message}")
-                else:
-                    print("  Warning: conversion failed")
-                # Continue with existing file if available
-                if not kicad_path.exists():
-                    return result
+                print(f"  Error: {message if not redacted else 'conversion failed'}")
+                return result
 
         if not kicad_path.exists():
             result.error = f"KiCad file not found: {kicad_path}"
@@ -215,12 +228,13 @@ class OracleTestRunner:
 
         return result
 
-    def run_all_tests(self, redacted: bool = False) -> Dict[str, TestResult]:
-        """Run all sample tests"""
+    def run_all_tests(self, redacted: bool = False, use_existing_kicad: bool = False) -> Dict[str, TestResult]:
+        """Convert and compare every registered sample"""
         results = {}
 
         for sample_name in self.samples:
-            results[sample_name] = self.run_test(sample_name, redacted=redacted)
+            results[sample_name] = self.run_test(sample_name, use_existing_kicad=use_existing_kicad,
+                                                 redacted=redacted)
 
         return results
 
@@ -233,7 +247,7 @@ class OracleTestRunner:
         report.append(f"Timestamp: {datetime.now().isoformat()}")
         report.append("")
 
-        passed = sum(1 for r in results.values() if r.passed)
+        passed = sum(1 for r in results.values() if r.passed and not r.error)
         failed = sum(1 for r in results.values() if not r.passed and not r.error)
         errors = sum(1 for r in results.values() if r.error)
 
@@ -273,7 +287,11 @@ def main():
     parser.add_argument('--odb', help='Direct path to ODB++ directory (alternative to --sample)')
     parser.add_argument('--kicad', help='Path to KiCad file to compare against (use with --odb)')
     parser.add_argument('--convert', '-c', action='store_true',
-                       help='Run converter (requires build)')
+                       help='Convert before comparing (the default for samples; with --odb, '
+                            'converts instead of reading an earlier board)')
+    parser.add_argument('--stored', action='store_true',
+                       help="Compare the stored board (samples/test.kicad_pcb, 'simple' only) "
+                            "instead of converting")
     parser.add_argument('--visual', '-v', action='store_true',
                        help='Generate visual comparison (requires viewer)')
     parser.add_argument('--output', '-o', help='Output report file')
@@ -366,11 +384,11 @@ def main():
     if args.sample:
         results = {args.sample: runner.run_test(
             args.sample,
-            use_existing_kicad=not args.convert,
+            use_existing_kicad=args.stored,
             redacted=args.redacted
         )}
     else:
-        results = runner.run_all_tests(redacted=args.redacted)
+        results = runner.run_all_tests(redacted=args.redacted, use_existing_kicad=args.stored)
 
     # Generate report
     report = runner.generate_report(results, redacted=args.redacted)
@@ -401,8 +419,8 @@ def main():
                 f.write(report)
         print(f"\nReport written to: {args.output}")
 
-    # Exit with appropriate code
-    all_passed = all(r.passed or r.error for r in results.values())
+    # Exit with appropriate code: an ERROR (not converted, not compared) fails the run too
+    all_passed = all(r.passed and not r.error for r in results.values())
     sys.exit(0 if all_passed else 1)
 
 

@@ -1,0 +1,16 @@
+DISPLAY {
+    L0 = sst
+}
+DISPLAY {
+    L0 = sst
+    L1 = smt
+}
+DISPLAY {
+    L0 = sst
+    L1 = sigt
+}
+DISPLAY {
+    L0 = sst
+    L1 = drill
+    L2 = smt
+}

@@ -11,6 +11,7 @@ Usage:
     python valor_oracle.py <odb_path> [--host localhost] [--port 56753]
 """
 
+import io
 import socket
 import os
 import sys
@@ -297,6 +298,7 @@ class DirectOdbOracle:
             'job_name': self._parse_job_name(),
             'units': self._parse_units(),
             'matrix': self._parse_matrix(),
+            'step_order': self._parse_matrix_steps(),
             'steps': {}
         }
 
@@ -356,6 +358,24 @@ class DirectOdbOracle:
 
         return layers
 
+    def _parse_matrix_steps(self) -> List[str]:
+        """The matrix's STEP names in COL order: the converter's first step is the first of these
+        that has a folder"""
+        text = read_odb_text(self.odb_path / 'matrix' / 'matrix') or ''
+        steps, cur, inside = [], {}, False
+        for line in text.splitlines():
+            line = line.strip()
+            if line.startswith('STEP') and line.endswith('{'):
+                cur, inside = {}, True
+            elif line == '}' and inside:
+                if cur.get('NAME'):
+                    steps.append((int(cur.get('COL', '0') or 0) if str(cur.get('COL', '0')).isdigit() else 0, cur['NAME']))
+                inside = False
+            elif inside and '=' in line:
+                k, v = line.split('=', 1)
+                cur[k.strip().upper()] = v.strip()
+        return [n for _, n in sorted(steps, key=lambda t: t[0])]
+
     def _parse_step(self, step_dir: Path) -> Dict:
         """Parse a step directory"""
         step_data = {
@@ -374,10 +394,49 @@ class DirectOdbOracle:
 
         # Parse profile (board outline)
         profile_path = step_dir / 'profile'
-        if profile_path.exists():
+        if odb_file(profile_path):
             step_data['profile'] = self._parse_profile(profile_path)
 
+        # The stephdr origin moves the whole step (spec 4.1), as the converter does
+        ox, oy = self._parse_step_origin(step_dir)
+        step_data['origin'] = (ox, oy)
+        if ox or oy:
+            bbox = (step_data['profile'] or {}).get('bbox')
+            if bbox:
+                bbox.update(xmin=bbox['xmin'] + ox, xmax=bbox['xmax'] + ox,
+                            ymin=bbox['ymin'] + oy, ymax=bbox['ymax'] + oy)
+            for layer in step_data['layers'].values():
+                for comp in layer.get('components', []):
+                    comp['x'] += ox
+                    comp['y'] += oy
+                    for term in comp['terminals']:  # TOP records are board coordinates
+                        term['x'] += ox
+                        term['y'] += oy
+
         return step_data
+
+    def _job_units_factor(self, units: Optional[str]) -> float:
+        """mm per file unit: the file's own UNITS, else misc/info's, else INCH (the converter's rule)"""
+        u = (units or self.data.get('units') or 'INCH').upper()
+        return 1.0 if u.startswith('MM') else 25.4
+
+    def _parse_step_origin(self, step_dir: Path) -> tuple:
+        """stephdr X_ORIGIN / Y_ORIGIN in mm (0 when absent or not a number)"""
+        text = read_odb_text(step_dir / 'stephdr') or ''
+        units, ox, oy = None, 0.0, 0.0
+        for line in text.splitlines():
+            key, _, val = line.strip().partition('=')
+            try:
+                if key == 'UNITS':
+                    units = val.strip()
+                elif key == 'X_ORIGIN':
+                    ox = float(val)
+                elif key == 'Y_ORIGIN':
+                    oy = float(val)
+            except ValueError:
+                pass
+        k = self._job_units_factor(units)
+        return ox * k, oy * k
 
     def _parse_layer(self, layer_dir: Path) -> Dict:
         """Parse a layer directory"""
@@ -391,12 +450,12 @@ class DirectOdbOracle:
 
         # Count features
         features_path = layer_dir / 'features'
-        if features_path.exists():
+        if odb_file(features_path):
             layer_data.update(self._parse_features(features_path))
 
         # Parse components (full data including position/rotation)
         components_path = layer_dir / 'components'
-        if components_path.exists():
+        if odb_file(components_path):
             components = self._parse_components(components_path)
             layer_data['component_count'] = len(components)
             layer_data['components'] = components
@@ -418,7 +477,7 @@ class DirectOdbOracle:
 
         symbol_defs = {}  # idx -> symbol_name
 
-        with open(features_path, 'r') as f:
+        with io.StringIO(read_odb_text(features_path) or '') as f:
             for line in f:
                 line = line.strip()
 
@@ -486,7 +545,7 @@ class DirectOdbOracle:
         scale = 25.4  # Convert inches to mm
         current_comp = None
 
-        with open(components_path, 'r', encoding='latin-1') as f:
+        with io.StringIO(read_odb_text(components_path) or '') as f:
             for line in f:
                 line = line.strip()
 
@@ -544,14 +603,85 @@ class DirectOdbOracle:
         return components
 
     def _parse_profile(self, profile_path: Path) -> Dict:
-        """Parse board profile/outline"""
-        # Simplified - just check if it exists and has content
-        with open(profile_path, 'r') as f:
-            content = f.read()
-            return {
-                'exists': True,
-                'has_content': len(content.strip()) > 0
-            }
+        """Parse the board profile (outline): its extent in mm, ODB++ frame (Y up).
+
+        bbox is None when the profile draws nothing. Arcs count with their bulge, not just
+        their end points.
+        """
+        text = read_odb_text(profile_path) or ''
+        geo = parse_feature_geometry(profile_path)
+        has_units = re.search(r'^\s*(UNITS\s*=|U\s)', text, re.M) is not None
+        k = self._job_units_factor(geo['units'] if has_units else None)
+        box = BBox()
+        for r in geo['records']:
+            if r[0] == 'S':
+                for _hole, contour in r[2]:
+                    prev = None
+                    for seg in contour:
+                        if seg[0] == 'S':
+                            prev = (seg[1], seg[2])
+                            box.add(*prev)
+                        elif prev is not None:  # ('C', xe, ye, xc, yc, cw)
+                            box.add_arc(prev, (seg[1], seg[2]), (seg[3], seg[4]), seg[5])
+                            prev = (seg[1], seg[2])
+            elif r[0] == 'L':
+                box.add(r[1], r[2])
+                box.add(r[3], r[4])
+            elif r[0] == 'A':
+                box.add_arc((r[1], r[2]), (r[3], r[4]), (r[5], r[6]), r[9])
+            elif r[0] in ('P', 'T', 'B'):
+                box.add(r[1], r[2])
+        return {
+            'exists': True,
+            'has_content': len(text.strip()) > 0,
+            'bbox': box.scaled(k),
+        }
+
+
+class BBox:
+    """An axis-aligned extent that grows by points and circular arcs (any frame, any units)."""
+
+    def __init__(self):
+        self.xmin = self.ymin = float('inf')
+        self.xmax = self.ymax = float('-inf')
+
+    def add(self, x: float, y: float):
+        self.xmin, self.xmax = min(self.xmin, x), max(self.xmax, x)
+        self.ymin, self.ymax = min(self.ymin, y), max(self.ymax, y)
+
+    def add_arc(self, start, end, center, cw: bool):
+        """An arc from start to end about center; cw: clockwise in a Y-up frame (counter-clockwise
+        on screen in a Y-down one). start == end is a full circle."""
+        import math
+        sx, sy = start
+        ex, ey = end
+        cx, cy = center
+        r = math.hypot(sx - cx, sy - cy)
+        self.add(sx, sy)
+        self.add(ex, ey)
+        a0 = math.atan2(sy - cy, sx - cx)
+        a1 = math.atan2(ey - cy, ex - cx)
+        # sweep counter-clockwise from a0 (for a clockwise arc, from a1 to a0)
+        lo, hi = (a1, a0) if cw else (a0, a1)
+        sweep = (hi - lo) % (2 * math.pi)
+        if abs(sx - ex) < 1e-9 and abs(sy - ey) < 1e-9:
+            sweep = 2 * math.pi
+        for q in range(4):  # the axis extremes the sweep passes through
+            a = q * math.pi / 2
+            if (a - lo) % (2 * math.pi) <= sweep + 1e-12:
+                self.add(cx + r * math.cos(a), cy + r * math.sin(a))
+
+    def add_circle(self, cx: float, cy: float, r: float):
+        self.add(cx - r, cy - r)
+        self.add(cx + r, cy + r)
+
+    def empty(self) -> bool:
+        return self.xmin == float('inf')
+
+    def scaled(self, k: float) -> Optional[Dict[str, float]]:
+        if self.empty():
+            return None
+        return {'xmin': self.xmin * k, 'ymin': self.ymin * k, 'xmax': self.xmax * k, 'ymax': self.ymax * k}
 
 
 # ----------------------------------------------------------------------------------------------
@@ -563,6 +693,100 @@ def _num(tok: str) -> float:
     return float(tok)
 
 
+def unix_decompress(data: bytes) -> Optional[bytes]:
+    """UNIX compress (LZW, magic 1f 9d) -> the original bytes; None when it is not such a stream.
+    ODB++ stores any file of a job this way under <name>.z.
+
+    Codes are packed low bit first, 9 bits wide at first and wider when the table outgrows them;
+    in block mode code 256 clears the table. At either event the stream skips to the next
+    multiple of eight codes of the old width, counted from where that width began."""
+    if len(data) < 3 or data[0] != 0x1F or data[1] != 0x9D:
+        return None
+    max_bits, block = data[2] & 0x1F, bool(data[2] & 0x80)
+    if not 9 <= max_bits <= 16:
+        return None
+    max_max = 1 << max_bits
+    prefix = [0] * max_max
+    suffix = list(range(256)) + [0] * (max_max - 256)
+    out = bytearray()
+    total = len(data) * 8
+    pos = start = 24
+    n_bits = 9
+    max_code = (1 << n_bits) - 1
+    free = 257 if block else 256
+    old = -1
+    fin = 0
+    while pos + n_bits <= total:
+        if free > max_code:  # the table has outgrown the code width
+            rem = (pos - start) % (n_bits * 8)
+            pos += (n_bits * 8 - rem) if rem else 0
+            start = pos
+            n_bits += 1
+            max_code = max_max if n_bits == max_bits else (1 << n_bits) - 1
+            continue
+        b = pos >> 3
+        code = (int.from_bytes(data[b:b + 3], "little") >> (pos & 7)) & ((1 << n_bits) - 1)
+        pos += n_bits
+        if old == -1:
+            if code >= 256:
+                return None
+            fin = old = code
+            out.append(fin)
+            continue
+        if code == 256 and block:
+            free = 256
+            rem = (pos - start) % (n_bits * 8)
+            pos += (n_bits * 8 - rem) if rem else 0
+            start = pos
+            n_bits = 9
+            max_code = (1 << n_bits) - 1
+            continue
+        in_code = code
+        stack = []
+        if code >= free:
+            if code > free:
+                return None
+            stack.append(fin)
+            code = old
+        while code >= 256:
+            stack.append(suffix[code])
+            code = prefix[code]
+        fin = suffix[code]
+        stack.append(fin)
+        out.extend(reversed(stack))
+        if free < max_max:
+            prefix[free] = old
+            suffix[free] = fin
+            free += 1
+        old = in_code
+    return bytes(out)
+
+
+def odb_file(path) -> Optional[Path]:
+    """``path`` when it is a file, else its compressed twin (<path>.z / .Z), else None."""
+    p = Path(path)
+    if p.is_file():
+        return p
+    for ext in (".z", ".Z"):
+        q = p.with_name(p.name + ext)
+        if q.is_file():
+            return q
+    return None
+
+
+def read_odb_text(path) -> Optional[str]:
+    """The text of an ODB++ record file, plain or compressed (<path>.z); None when there is none."""
+    p = odb_file(path)
+    if p is None:
+        return None
+    raw = p.read_bytes()
+    if p.suffix.lower() == ".z" and p != Path(path):
+        raw = unix_decompress(raw)
+        if raw is None:
+            return None
+    return raw.decode("latin-1")
+
+
 def parse_feature_geometry(features_path) -> Dict[str, Any]:
     """Parse an ODB++ ``features`` file (layer, profile or user symbol) into geometry records.
 
@@ -572,7 +796,9 @@ def parse_feature_geometry(features_path) -> Dict[str, Any]:
       ('L', xs, ys, xe, ye, sym, pol)
       ('A', xs, ys, xe, ye, xc, yc, sym, pol, cw)
       ('S', pol, contours)   contours = [(is_hole, [('S', x, y) | ('C', xe, ye, xc, yc, cw), ...])]
-      ('T', x, y, pol)       text (not rasterized; counted)
+      ('T', x, y, pol, font, mirror, angle, xsize, ysize, weight, text, vertical)
+                             text (T, or V drawn downwards): x, y the lower left of the first
+                             character cell, angle clockwise, weight in font line widths
       ('B', x, y, pol)       barcode (not rasterized; counted)
     ``pol`` is True for positive. Unknown lines are counted in 'skipped'.
     """
@@ -582,11 +808,11 @@ def parse_feature_geometry(features_path) -> Dict[str, Any]:
     skipped = 0
     surf = None
     contour = None
-    path = Path(features_path)
-    if not path.is_file():
+    text = read_odb_text(features_path)
+    if text is None:
         return {'units': units, 'symbols': symbols, 'records': records, 'skipped': 0}
-    with open(path, 'r', encoding='latin-1') as f:
-        for raw in f:
+    if True:
+        for raw in text.splitlines():
             line = raw.strip()
             if not line or line.startswith('#'):
                 continue
@@ -627,12 +853,30 @@ def parse_feature_geometry(features_path) -> Dict[str, Any]:
                 elif t == 'L':
                     records.append(('L', _num(tok[1]), _num(tok[2]), _num(tok[3]), _num(tok[4]), int(tok[5]), tok[6] != 'N'))
                 elif t == 'A':
+                    # A xs ys xe ye xc yc sym [pol] [dcode] [cw]: the direction token is optional (the
+                    # reference reader does not read one); without it the arc runs counter-clockwise
+                    rest = [v.upper() for v in tok[8:]]
+                    pol = rest.pop(0) != 'N' if rest and rest[0] in ('P', 'N') else True
+                    if rest and re.fullmatch(r'[-+]?[\d.]+', rest[0]):
+                        rest.pop(0)
                     records.append(('A', _num(tok[1]), _num(tok[2]), _num(tok[3]), _num(tok[4]), _num(tok[5]), _num(tok[6]),
-                                    int(tok[7]), tok[8] != 'N', len(tok) > 10 and tok[10].upper() == 'Y'))
+                                    int(tok[7]), pol, bool(rest) and rest[0] == 'Y'))
                 elif t == 'S':
                     surf = ['S', tok[1] != 'N', []]
-                elif t == 'T':
-                    records.append(('T', _num(tok[1]), _num(tok[2]), tok[4] != 'N' if len(tok) > 4 else True))
+                elif t in ('T', 'V'):
+                    # T x y font pol orient [angle] xsize ysize width 'text' version: cut at the quotes
+                    q1, q2 = line.find("'"), line.rfind("'")
+                    head = (line[:q1] if q1 >= 0 else body).split()
+                    text = line[q1 + 1:q2] if 0 <= q1 < q2 else (head.pop() if len(head) > 9 else '')
+                    orient = int(head[5]) if len(head) > 5 else 0
+                    k = 6
+                    ang = 90.0 * (orient % 4)
+                    if orient in (8, 9):
+                        ang = _num(head[k])
+                        k += 1
+                    records.append(('T', _num(head[1]), _num(head[2]), head[4] != 'N' if len(head) > 4 else True,
+                                    head[3] if len(head) > 3 else 'standard', orient in (4, 5, 6, 7, 9), ang,
+                                    _num(head[k]), _num(head[k + 1]), _num(head[k + 2]), text, t == 'V'))
                 elif t == 'B':
                     records.append(('B', _num(tok[1]), _num(tok[2]), True))
                 elif t == 'F' or t.startswith('@') or t.startswith('&') or t == 'ID=' or '=' in t:

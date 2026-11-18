@@ -15,6 +15,20 @@
            OB, with one rounded inner corner, and an L-shaped plane.
 ``symbols`` (only with --variant symbols) every standard symbol 0.3.0 drew wrong or not at all, on
            TOP (turned / mirrored), negative in a GND plane, and on an inner layer.
+``stackup`` (only with --variant stackup) ``basic`` again with layer attrlists: dielectric
+           thicknesses and copper weights (the board is 1.542 mm thick), and an output transform
+           on SIG3 (.out_x_scale / .out_y_scale 0.5), empty and near-empty attrlists elsewhere.
+``text``   (only with --variant text) ``basic`` again with T text records and a vector font
+           (fonts/standard): plain, turned and mirrored text on the silkscreen and on the NOTES
+           document layer (drawn on User.1), and a negative text cut out of the GND plane.
+``specv2`` (only with --variant specv2) ``basic`` again with a millimetre font holding filled
+           POLYGON glyphs and square-ended lines, T and V text, and arcs without a direction token
+``steps``  (only with --variant steps) a job with two steps (PCB = ``basic`` in INCH, FLEX =
+           ``edge`` in MM), an empty PANEL step that repeats PCB and a step folder the matrix does
+           not name; the matrix lists the steps out of COL order.
+``origin`` (only with --variant origin) ``basic`` again with a stephdr origin (X_ORIGIN=0.5,
+           Y_ORIGIN=-0.25 in): every coordinate of the step is relative to it, so the whole board
+           sits 12.7 mm right and 6.35 mm down of where its numbers say.
 ``edge``   the corner cases a converter is most likely to get wrong, one per layer: a thermal
            relief, a chamfered rect, a full-circle arc, a clockwise surface arc, an `I`/`M` unit
            override on a symbol, a 9-orient (mirrored) flash at 30 deg, an octagon and an ellipse.
@@ -87,6 +101,49 @@ BASIC = {
     "DRILL": ("INCH", ["r12"], ["P 0.3 0.3 0 P 0 0"]),
     "NOTES": ("INCH", ["r5"], ["L 0 0 2 1.2 0 P 0"]),
 }
+# the stackup variant's layer attrlists: a 4-layer stack (INCH) and an output transform on SIG3
+STACKUP_ATTRS = {
+    "TOP": "UNITS=INCH\n.copper_weight=1\n", "GND": "UNITS=INCH\n.copper_weight=0.5\n",
+    "SIG3": "UNITS=INCH\n.copper_weight=0.5\n.out_x_scale = 0.500000\n.out_y_scale = 0.500000\n.out_mirror = no\n.out_angle = 0.0\n",
+    "BOTTOM": "UNITS=INCH\n.copper_weight=1\n",
+    "D1": "UNITS=INCH\n.layer_dielectric=0.008\n", "D2": "UNITS=INCH\n.layer_dielectric=0.04\n",
+    "D3": "UNITS=INCH\n.layer_dielectric=0.008\n",
+    "F.MASK": "UNITS=INCH\n.layer_dielectric=0.0006\n", "B.MASK": "", "F.SILK": "\n", "NOTES": ".comment = \n",
+}
+# the text variant: a font in the standard font's layout (0.302 box, characters 0.2 x 0.3 from
+# (-0.1, -0.1), 12 mil lines) with the letters of "TEXT LIE", and T records on silk and NOTES
+def _glyph(ch, lines):
+    return f"CHAR {ch}\n" + "".join(f"LINE {a:.6f} {b:.6f} {c:.6f} {d:.6f} P R 0.012000\n" for a, b, c, d in lines) + "ECHAR\n\n"
+
+
+TEXT_FONT = "XSIZE  0.302000\nYSIZE  0.302000\nOFFSET 0.000000\n\n" + "".join([
+    _glyph("T", [(-0.1, 0.2, 0.1, 0.2), (0, 0.2, 0, -0.1)]),
+    _glyph("E", [(-0.1, -0.1, -0.1, 0.2), (-0.1, 0.2, 0.1, 0.2), (-0.1, 0.05, 0.05, 0.05), (-0.1, -0.1, 0.1, -0.1)]),
+    _glyph("X", [(-0.1, -0.1, 0.1, 0.2), (-0.1, 0.2, 0.1, -0.1)]),
+    _glyph("L", [(-0.1, 0.2, -0.1, -0.1), (-0.1, -0.1, 0.1, -0.1)]),
+    _glyph("I", [(0, -0.1, 0, 0.2)]),
+    _glyph(".", [(0.025, -0.075, 0.025, -0.075)]),
+])
+TEXT = dict(BASIC)
+TEXT["F.SILK"] = ("INCH", ["r6"], ["L 0.2 0.15 0.6 0.15 0 P 0", "T 0.9 0.6 standard P 0 0.1 0.12 1 'TEXT LIE.' 1",
+                                   "T 1.9 0.2 standard P 8 90 0.06 0.06 0.5 'TILE' 1"])
+TEXT["NOTES"] = ("INCH", ["r5"], ["L 0 0 2 1.2 0 P 0", "T 0.2 1.0 standard P 0 0.15 0.15 2 'EXIT' 1;0",
+                                  "T 1.8 0.5 standard P 9 30 0.1 0.1 1 'LET' 1"])
+TEXT["GND"] = ("INCH", ["r40"], BASIC["GND"][2] + ["T 0.3 0.75 standard N 0 0.12 0.12 2 'TEXT' 1"])
+# the specv2 variant (reader spec v2): a font in millimetres (UNITS=MM, a 4 x 6 box) with a
+# square-ended stroke glyph, a filled POLYGON glyph and one that is both; T and V records drawn
+# with it; arcs written without their direction token (read counter-clockwise), one with it
+FONT_V2 = ("UNITS=MM\nXSIZE 4.000000\nYSIZE 6.000000\nOFFSET 0.000000\n\n"
+           "CHAR I\nLINE 1.000000 0.000000 1.000000 5.000000 P S 0.300000\nECHAR\n\n"
+           "CHAR O\nPOLYGON 4\n0.000000 0.000000\n3.000000 0.000000\n3.000000 5.000000\n0.000000 5.000000\nECHAR\n\n"
+           "CHAR P\nLINE 0.500000 0.000000 0.500000 5.000000 P R 0.300000\n"
+           "POLYGON\n0.500000 2.500000 3.000000 2.500000\n3.000000 5.000000 0.500000 5.000000\nECHAR\n")
+SPECV2 = dict(BASIC)
+SPECV2["F.SILK"] = ("INCH", ["r6"], ["A 0.5 0.2 0.3 0.2 0.4 0.2 0 P 0", "A 0.9 0.2 0.7 0.2 0.8 0.2 0 P 0 Y", "A 1.2 0.3 1.3 0.2 1.2 0.2 0",
+                                     "T 0.2 0.5 v2font P 0 0.1 0.15 1 'POI' 1", "V 1.6 0.2 v2font P 0 0.1 0.15 2 'IO' 1"])
+SPECV2["NOTES"] = ("MM", ["r100"], ["L 0 0 50 30 0 P 0", "T 10 20 v2font P 8 30 3 4.5 1 'OPIO' 1", "T 40 8 v2font P 9 45 2 3 1 'PO' 1"])
+SPECV2["GND"] = ("INCH", ["r40"], BASIC["GND"][2] + ["T 0.3 0.75 v2font N 0 0.12 0.18 2 'OP' 1"])
+ORIGIN_IN = (0.5, -0.25)  # the origin variant's stephdr X_ORIGIN / Y_ORIGIN, inches
 USER_SYMBOL = ("INCH", ["r30"], ["P 0 0 0 P 0 0", "P 0.05 0 0 P 0 0", "L -0.05 -0.05 0.05 -0.05 0 P 0"])
 
 EDGE = {
@@ -185,7 +242,7 @@ PROFILE_SYM = "UNITS=MM\nF 1\nS P 0\nOB 0 0 I\nOS 0 48\nOS 42 48\nOS 42 0\nOS 0 
 
 
 def write_job(root: Path, layers: dict, profile: str, user_symbol=None, units: str = "INCH", units_empty: str = "",
-              negative=()) -> Path:
+              negative=(), origin=(0, 0), attrlists=None, font=None, font_name: str = "standard") -> Path:
     step = root / "steps" / "pcb"
     (root / "matrix").mkdir(parents=True, exist_ok=True)
     (root / "misc").mkdir(parents=True, exist_ok=True)
@@ -193,16 +250,50 @@ def write_job(root: Path, layers: dict, profile: str, user_symbol=None, units: s
     (root / "misc" / "info").write_text(f"JOB_NAME=synthetic\nUNITS={units}\nODB_SOURCE=roundup-synthetic\n")
     step.mkdir(parents=True, exist_ok=True)
     (step / "profile").write_text(profile)
-    (step / "stephdr").write_text(f"UNITS={units}\nX_DATUM=0\nY_DATUM=0\n")
+    org = f"X_ORIGIN={origin[0]}\nY_ORIGIN={origin[1]}\n" if tuple(origin) != (0, 0) else ""
+    (step / "stephdr").write_text(f"UNITS={units}\nX_DATUM=0\nY_DATUM=0\n{org}")
     for name, _t, _c in MATRIX_ROWS:
         d = step / "layers" / name.lower()
         d.mkdir(parents=True, exist_ok=True)
         units, syms, body = layers.get(name, (units_empty or units, [], []))
         (d / "features").write_text(_features(units, syms, body))
+        if attrlists and name in attrlists:
+            (d / "attrlist").write_text(attrlists[name])
+    if font:
+        (root / "fonts").mkdir(parents=True, exist_ok=True)
+        (root / "fonts" / font_name).write_text(font)
     if user_symbol:
         d = root / "symbols" / "logo"
         d.mkdir(parents=True, exist_ok=True)
         (d / "features").write_text(_features(*user_symbol))
+    return root
+
+
+def write_two_step_job(root: Path) -> Path:
+    """A job with two real steps and an empty one. The matrix lists FLEX (COL=2) before PCB
+    (COL=1): the first step is PCB, by COL. FLEX is the ``edge`` board in MM, PCB the ``basic``
+    board in INCH; PANEL has a stephdr that repeats PCB and no layer data; SCRAP is a step folder
+    the matrix does not name."""
+    write_job(root, BASIC, PROFILE_IN, USER_SYMBOL)
+    rows = _matrix().split("\n", 1)[1].split("}\n", 1)[1]  # the LAYER rows of the one-step matrix
+    steps = "".join(f"STEP {{\n    COL={c}\n    NAME={n}\n}}\n\n" for c, n in ((2, "FLEX"), (3, "PANEL"), (1, "PCB")))
+    (root / "matrix" / "matrix").write_text(steps + rows)
+    (root / "misc" / "info").write_text("JOB_NAME=two step/job\nUNITS=INCH\nODB_SOURCE=roundup-synthetic\n")
+    for name, layers, profile, units in (("flex", EDGE, PROFILE_MM, "MM"), ("scrap", OUTLINE, PROFILE_L, "MM")):
+        step = root / "steps" / name
+        step.mkdir(parents=True, exist_ok=True)
+        (step / "profile").write_text(profile)
+        (step / "stephdr").write_text(f"UNITS={units}\nX_DATUM=0\nY_DATUM=0\n")
+        for lname, _t, _c in MATRIX_ROWS:
+            d = step / "layers" / lname.lower()
+            d.mkdir(parents=True, exist_ok=True)
+            u, syms, body = layers.get(lname, (units, [], []))
+            (d / "features").write_text(_features(u, syms, body))
+    panel = root / "steps" / "panel"
+    panel.mkdir(parents=True, exist_ok=True)
+    (panel / "stephdr").write_text("UNITS=INCH\nX_DATUM=0\nY_DATUM=0\n\nSTEP-REPEAT {\n    NAME=PCB\n    X=0.5\n    Y=0.5\n"
+                                   "    DX=2.5\n    DY=0\n    NX=2\n    NY=1\n    ANGLE=0\n    MIRROR=NO\n}\n")
+    (panel / "profile").write_text("UNITS=INCH\nF 1\nS P 0\nOB 0 0 I\nOS 0 2.2\nOS 6 2.2\nOS 6 0\nOS 0 0\nOE\nSE\n")
     return root
 
 
@@ -235,7 +326,7 @@ def kicad_equivalent() -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("out", type=Path)
-    ap.add_argument("--variant", choices=("all", "basic", "edge", "mixed", "outline", "negative", "symbols"), default="all")
+    ap.add_argument("--variant", choices=("all", "basic", "edge", "mixed", "outline", "negative", "symbols", "origin", "stackup", "steps", "text", "specv2"), default="all")
     a = ap.parse_args()
     made = []
     if a.variant in ("all", "basic"):
@@ -250,6 +341,16 @@ def main() -> int:
         made.append(write_job(a.out / "synthetic-negative", NEGATIVE, PROFILE_NEG, units="MM", negative=("SIG3",)))
     if a.variant == "symbols":  # not in "all" either
         made.append(write_job(a.out / "synthetic-symbols", SYMBOLS, PROFILE_SYM, units="MM"))
+    if a.variant == "origin":  # not in "all" either
+        made.append(write_job(a.out / "synthetic-origin", BASIC, PROFILE_IN, USER_SYMBOL, origin=ORIGIN_IN))
+    if a.variant == "stackup":  # not in "all" either
+        made.append(write_job(a.out / "synthetic-stackup", BASIC, PROFILE_IN, USER_SYMBOL, attrlists=STACKUP_ATTRS))
+    if a.variant == "steps":  # not in "all" either
+        made.append(write_two_step_job(a.out / "synthetic-steps"))
+    if a.variant == "text":  # not in "all" either
+        made.append(write_job(a.out / "synthetic-text", TEXT, PROFILE_IN, USER_SYMBOL, font=TEXT_FONT))
+    if a.variant == "specv2":  # not in "all" either
+        made.append(write_job(a.out / "synthetic-specv2", SPECV2, PROFILE_IN, USER_SYMBOL, font=FONT_V2, font_name="v2font"))
     for m in made:
         print(m)
     return 0

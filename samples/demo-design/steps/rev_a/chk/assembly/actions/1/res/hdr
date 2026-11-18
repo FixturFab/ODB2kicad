@@ -1,0 +1,262 @@
+STAT = D
+SEVERITY = 0
+LAST_TIME = 945164655
+DURATION = 4 SECONDS
+CATEGORY {
+    NAME = g_fiducial
+    TITLE = G. Fiducial Summary
+    DESCRIPTION = Diameter;Pad
+    SORT_ORDER = 0
+    RANGE = 0.0400000 0.0400000 99.9990000 
+}
+CATEGORY {
+    NAME = l_fiducial
+    TITLE = L. Fiducial Summary
+    DESCRIPTION = Diameter;Pad
+    SORT_ORDER = 1
+    RANGE = 0.0400000 0.0400000 99.9990000 
+}
+CATEGORY {
+    NAME = f2c
+    TITLE = Fiducial to copper
+    DESCRIPTION = Spacing;Fiducial;Copper
+    SORT_ORDER = 2
+    RANGE = 0.0825000 0.0825000 0.2000000 
+}
+CATEGORY {
+    NAME = f2h
+    TITLE = Fiducial to hole
+    DESCRIPTION = Spacing;Fiducial;Hole
+    SORT_ORDER = 3
+    RANGE = 0.0970000 0.0970000 0.2000000 
+}
+CATEGORY {
+    NAME = f2f_min
+    TITLE = Close fiducials
+    DESCRIPTION = Spacing;Fiducial;Fiducial
+    SORT_ORDER = 5
+    RANGE = 0.2000000 0.2000000 4.0000000 
+}
+CATEGORY {
+    NAME = f2f_max
+    TITLE = Far fiducials
+    DESCRIPTION = Spacing;Fiducial;Fiducial
+    SORT_ORDER = 6
+    RANGE = 4.0000000 4.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = f2r_min
+    TITLE = Fiducial close to rout
+    DESCRIPTION = Spacing;Fiducial;Rout
+    SORT_ORDER = 7
+    RANGE = 0.1000000 0.1000000 0.4000000 
+}
+CATEGORY {
+    NAME = f2r_max
+    TITLE = Fiducial far from rout
+    DESCRIPTION = Spacing;Fiducial;Rout
+    SORT_ORDER = 8
+    RANGE = 99.9990000 4.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = f2sm
+    TITLE = Fiducial to SM
+    DESCRIPTION = Clearance;Fiducial;S.Mask
+    SORT_ORDER = 12
+    RANGE = 0.0150000 0.0200000 99.9990000 
+}
+CATEGORY {
+    NAME = comp_global_f
+    TITLE = Component global fiducial
+    DESCRIPTION = Distance;Component;Fiducial
+    SORT_ORDER = 15
+    RANGE = 4.0000000 4.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = comp_cen_f
+    TITLE = Component cen fiducial
+    DESCRIPTION = Center;Component
+    SORT_ORDER = 18
+    RANGE = 99.9990000 100.0000000 100.0000000 
+}
+CATEGORY {
+    NAME = comp_loc_f
+    TITLE = Component local fiducial
+    DESCRIPTION = Center;Component
+    SORT_ORDER = 19
+    RANGE = 99.9990000 100.0000000 100.0000000 
+}
+CATEGORY {
+    NAME = comp_global_f_fine
+    TITLE = Fine-pitch component global fiducial
+    DESCRIPTION = Distance;Component;Fiducial
+    SORT_ORDER = 16
+    RANGE = 4.0000000 4.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = comp_global_f_coarse
+    TITLE = Coarse-pitch component global fiducial
+    DESCRIPTION = Distance;Component;Fiducial
+    SORT_ORDER = 17
+    RANGE = 4.0000000 4.0000000 0.0000000 
+}
+CATEGORY {
+    NAME = comp_covers_f
+    TITLE = Component covers fiducial
+    DESCRIPTION = Component;Fiducial
+    SORT_ORDER = 11
+    RANGE = 99.9990000 100.0000000 100.0000000 
+}
+CATEGORY {
+    NAME = f2ss
+    TITLE = Fiducial to SS
+    DESCRIPTION = Clearance;Fiducial;Silkscreen
+    SORT_ORDER = 13
+    RANGE = 0.0400000 0.0400000 99.9990000 
+}
+CATEGORY {
+    NAME = f2sp
+    TITLE = Fiducial to SP
+    DESCRIPTION = Clearance;Fiducial;S.Paste
+    SORT_ORDER = 14
+    RANGE = 99.9990000 100.0000000 100.0000000 
+}
+CATEGORY {
+    NAME = f2like
+    TITLE = Fiducial to like pad
+    DESCRIPTION = Fiducial
+    SORT_ORDER = 10
+    RANGE = 0.2000000 0.2000000 4.0000000 
+}
+CATEGORY {
+    NAME = f2ce
+    TITLE = Fiducial to conveyed edge
+    DESCRIPTION = Spacing;Fiducial;Rout
+    SORT_ORDER = 9
+    RANGE = 0.2500000 0.2500000 4.0000000 
+}
+CATEGORY {
+    NAME = f2bg
+    TITLE = Fiducial to background
+    DESCRIPTION = Spacing;Fiducial
+    SORT_ORDER = 4
+    RANGE = 0.0825000 0.0825000 0.2000000 
+}
+CATEGORY {
+    NAME = comp_covers_f;printed
+    TITLE = Component covers fiducial;printed
+    DESCRIPTION = Component;Fiducial
+    SORT_ORDER = 11
+}
+ATTRIBUTE {
+    sigt_num_g_fiducial = 3
+    sigt_num_l_fiducial = 0
+    sigt_min_f2c = 104.189
+    sigt_num_f2c = 21
+    sigt_typ_f2c = 165.300
+    sigt_min_f2h = N/A
+    sigt_num_f2h = 0
+    sigt_typ_f2h = N/A
+    sigt_min_f2bg = N/A
+    sigt_num_f2bg = 0
+    sigt_typ_f2bg = N/A
+    sigt_min_f2f_min = N/A
+    sigt_num_f2f_min = 0
+    sigt_typ_f2f_min = N/A
+    sigt_min_f2f_max = 2790.714
+    sigt_num_f2f_max = 2
+    sigt_typ_f2f_max = 5689.400
+    sigt_max_f2f_max = 5689.366
+    sigt_min_f2r_min = 107.631
+    sigt_num_f2r_min = 2
+    sigt_typ_f2r_min = 185.000
+    sigt_max_f2r_min = 184.950
+    sigt_min_f2r_max = 107.631
+    sigt_num_f2r_max = 3
+    sigt_typ_f2r_max = 387.600
+    sigt_min_f2sm = 0.000
+    sigt_num_f2sm = 3
+    sigt_typ_f2sm = 0.000
+    sigt_min_comp_global_f = 0.000
+    sigt_num_comp_global_f = 478
+    sigt_typ_comp_global_f = 0.000
+    sigt_max_comp_global_f = 5642.968
+    sigt_num_comp_cen_f = 0
+    sigt_num_comp_loc_f = 0
+    sigt_min_comp_global_f_fine = N/A
+    sigt_num_comp_global_f_fine = 0
+    sigt_typ_comp_global_f_fine = N/A
+    sigt_max_comp_global_f_fine = N/A
+    sigt_min_comp_global_f_coarse = N/A
+    sigt_num_comp_global_f_coarse = 0
+    sigt_typ_comp_global_f_coarse = N/A
+    sigt_max_comp_global_f_coarse = N/A
+    sigt_num_comp_covers_f = 0
+    sigt_num_comp_covers_f;printed = 3
+    sigt_min_f2ss = 53.500
+    sigt_num_f2ss = 1
+    sigt_typ_f2ss = 53.500
+    sigt_num_f2sp = 3
+    sigt_min_f2like = 53.500
+    sigt_num_f2like = 1
+    sigt_typ_f2like = 53.500
+    sigt_min_f2ce = N/A
+    sigt_num_f2ce = 0
+    sigt_typ_f2ce = N/A
+    sigt_max_f2ce = N/A
+    sigb_num_g_fiducial = 3
+    sigb_num_l_fiducial = 0
+    sigb_min_f2c = 113.500
+    sigb_num_f2c = 22
+    sigb_typ_f2c = 141.600
+    sigb_min_f2h = N/A
+    sigb_num_f2h = 0
+    sigb_typ_f2h = N/A
+    sigb_min_f2bg = N/A
+    sigb_num_f2bg = 0
+    sigb_typ_f2bg = N/A
+    sigb_min_f2f_min = N/A
+    sigb_num_f2f_min = 0
+    sigb_typ_f2f_min = N/A
+    sigb_min_f2f_max = 2325.538
+    sigb_num_f2f_max = 2
+    sigb_typ_f2f_max = 6946.200
+    sigb_max_f2f_max = 6946.222
+    sigb_min_f2r_min = N/A
+    sigb_num_f2r_min = 0
+    sigb_typ_f2r_min = N/A
+    sigb_max_f2r_min = N/A
+    sigb_min_f2r_max = 290.950
+    sigb_num_f2r_max = 3
+    sigb_typ_f2r_max = 684.000
+    sigb_min_f2sm = 0.000
+    sigb_num_f2sm = 3
+    sigb_typ_f2sm = 0.000
+    sigb_min_comp_global_f = 0.000
+    sigb_num_comp_global_f = 375
+    sigb_typ_comp_global_f = 0.000
+    sigb_max_comp_global_f = 4405.111
+    sigb_num_comp_cen_f = 7
+    sigb_num_comp_loc_f = 0
+    sigb_min_comp_global_f_fine = N/A
+    sigb_num_comp_global_f_fine = 0
+    sigb_typ_comp_global_f_fine = N/A
+    sigb_max_comp_global_f_fine = N/A
+    sigb_min_comp_global_f_coarse = N/A
+    sigb_num_comp_global_f_coarse = 0
+    sigb_typ_comp_global_f_coarse = N/A
+    sigb_max_comp_global_f_coarse = N/A
+    sigb_num_comp_covers_f = 0
+    sigb_num_comp_covers_f;printed = 3
+    sigb_min_f2ss = 66.030
+    sigb_num_f2ss = 15
+    sigb_typ_f2ss = 97.300
+    sigb_num_f2sp = 3
+    sigb_min_f2like = 66.030
+    sigb_num_f2like = 15
+    sigb_typ_f2like = 97.300
+    sigb_min_f2ce = N/A
+    sigb_num_f2ce = 0
+    sigb_typ_f2ce = N/A
+    sigb_max_f2ce = N/A
+}

@@ -23,9 +23,9 @@ polarity and units). Converter side: kicad_render.py. Both through raster.py at 
 two frames are aligned by the outline (ODB++ profile bbox <-> KiCad Edge.Cuts bbox), and the
 offset / size mismatch of that alignment is reported, not hidden.
 
-``compare_job`` and ``metrics_only`` are the library entry points the PC-lane recipe
-(dev-cloud/pc-recipes/odb-shootout, ``roundup: true``) calls: there the boards come from its own
-converters and only ``metrics_only``'s numbers leave the PC.
+``compare_job`` and ``metrics_only`` are the library entry points for running the same
+comparison in an external batch harness: there the boards come from its own converters and
+only ``metrics_only``'s numbers should leave that machine.
 
 Untrusted input: archives are unpacked with no absolute paths, no "..", no links, into a scratch
 folder under --out (or --scratch); run with ``python3 -I``.
@@ -56,7 +56,7 @@ from kicad_render import KicadBoard  # noqa: E402
 from odb_render import OdbJob, layer_class  # noqa: E402
 from valor_oracle import DirectOdbOracle, ValorClient, find_odb_root, parse_info_file  # noqa: E402
 
-HARNESS_VERSION = "0.1.0"
+HARNESS_VERSION = "0.2.0"  # 0.2.0: step origin, layer output transforms, T text from fonts, document layers, .z files, first step by COL
 CLASSES = ("cu_outer", "cu_inner", "mask", "paste", "silk", "edge", "drill", "doc")
 ARCHIVE_EXT = (".tgz", ".tar.gz", ".zip", ".tar")
 

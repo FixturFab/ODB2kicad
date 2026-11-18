@@ -1,4 +1,5 @@
 #include "odb_parser/eda_parser.h"
+#include "util/odb_file.h"
 #include "util/string_utils.h"
 #include <cmath>
 #include <fstream>
@@ -51,8 +52,9 @@ static bool simpleOutline(const std::string& line, std::vector<std::pair<double,
 }
 
 bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
-    std::ifstream file(path);
-    if (!file.is_open()) return false;
+    auto opened = openOdbFile(path);  // the file, or its compressed twin <path>.z
+    if (!opened) return false;
+    std::istream& file = *opened;
 
     std::string line;
     OdbEdaPackage* currentPkg = nullptr;
@@ -137,13 +139,17 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
             iss >> pin.id >> pin.side >> pin.x >> pin.y >> pin.rotation
                 >> pin.electrical >> pin.shape;
             currentPkg->pins.push_back(pin);
+            inContour = false;
+            contour.clear();
             continue;
         }
 
-        // Package outline: only before the package's first PIN (later ones are pin outlines)
-        if (currentPkg && currentPkg->pins.empty()) {
+        // Outline records (RC / CR / SQ, or CT ... CE contours): the package's own before its
+        // first PIN, then each pin's after its PIN record. Both are in the package frame.
+        if (currentPkg) {
+            auto& outlines = currentPkg->pins.empty() ? currentPkg->outlines : currentPkg->pins.back().outlines;
             std::vector<std::pair<double,double>> ring;
-            if (simpleOutline(line, ring)) { currentPkg->outlines.push_back(ring); continue; }
+            if (simpleOutline(line, ring)) { outlines.push_back(ring); continue; }
             if (line == "CT") { inContour = true; continue; }
             if (line == "CE") { inContour = false; continue; }
             if (inContour) {
@@ -167,14 +173,13 @@ bool parseEdaData(const std::string& path, OdbEdaData& edaData) {
                     if (contour.size() > 1 && std::hypot(contour.front().first - contour.back().first,
                                                          contour.front().second - contour.back().second) < 1e-9)
                         contour.pop_back();
-                    if (contourIsland && contour.size() >= 3) currentPkg->outlines.push_back(contour);
+                    if (contourIsland && contour.size() >= 3) outlines.push_back(contour);
                     contour.clear();
                 }
                 continue;
             }
         }
 
-        // Pin outlines (CT, OB, OS, OE, CE after a PIN) are not read
     }
     return true;
 }

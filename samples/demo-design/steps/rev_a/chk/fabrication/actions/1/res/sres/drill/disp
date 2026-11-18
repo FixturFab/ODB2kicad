@@ -1,0 +1,13 @@
+DISPLAY {
+    L0 = drill
+}
+DISPLAY {
+    L0 = sigt
+    L1 = sigb
+    L2 = drill
+}
+DISPLAY {
+    L0 = drill
+    L1 = sigt
+    L2 = sigb
+}

@@ -1,0 +1,7 @@
+DISPLAY {
+    L0 = sigb
+}
+DISPLAY {
+    L0 = sigb
+    L1 = spb
+}

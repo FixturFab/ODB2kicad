@@ -1,0 +1,16 @@
+DISPLAY {
+    L0 = ssb
+}
+DISPLAY {
+    L0 = ssb
+    L1 = smb
+}
+DISPLAY {
+    L0 = ssb
+    L1 = sigb
+}
+DISPLAY {
+    L0 = ssb
+    L1 = drill
+    L2 = smb
+}

@@ -15,7 +15,8 @@ import re
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, List, Any, Optional, Tuple
-from valor_oracle import DirectOdbOracle
+import math
+from valor_oracle import DirectOdbOracle, BBox
 
 
 @dataclass
@@ -50,7 +51,8 @@ class KiCadPcbParser:
             'gr_arcs': self._parse_gr_arcs(),
             'layers': self._parse_layers(),
             'nets': self._parse_nets(),
-            'general': self._parse_general()
+            'general': self._parse_general(),
+            'edge_cuts_bbox': self._parse_edge_cuts_bbox()
         }
 
         return self.data
@@ -301,6 +303,30 @@ class KiCadPcbParser:
 
         return arcs
 
+    def _parse_edge_cuts_bbox(self) -> Optional[Dict[str, float]]:
+        """The extent of everything on Edge.Cuts (board gr_* items and footprints' fp_* items, the
+        latter placed by their footprint's position and angle), KiCad frame (Y down), mm.
+        Arcs count with their bulge, circles with their radius. None when Edge.Cuts is empty."""
+        box = BBox()
+        text = self.content
+        for m in re.finditer(r'\((gr_line|gr_arc|gr_circle|gr_rect|gr_poly)\b', text):
+            item = _sexpr_block(text, m.start())
+            if '(layer "Edge.Cuts")' in item:
+                _add_edge_item(box, m.group(1)[3:], item, lambda x, y: (x, y))
+        for m in re.finditer(r'\(footprint\s+"', text):
+            fp = _sexpr_block(text, m.start())
+            if '"Edge.Cuts"' not in fp:
+                continue
+            at = re.search(r'\(at\s+([-\d.]+)\s+([-\d.]+)(?:\s+([-\d.]+))?\)', fp)
+            fx, fy = float(at.group(1)), float(at.group(2))
+            ang = float(at.group(3)) if at.group(3) else 0.0
+            place = lambda x, y, fx=fx, fy=fy, ang=ang: _footprint_to_board(fx, fy, ang, x, y)
+            for g in re.finditer(r'\((fp_line|fp_arc|fp_circle|fp_rect|fp_poly)\b', fp):
+                item = _sexpr_block(fp, g.start())
+                if '(layer "Edge.Cuts")' in item:
+                    _add_edge_item(box, g.group(1)[3:], item, place)
+        return box.scaled(1.0)
+
     def _parse_layers(self) -> List[str]:
         """Extract layer names used"""
         layers = set()
@@ -338,6 +364,105 @@ class KiCadPcbParser:
             info['thickness'] = float(match.group(1))
 
         return info
+
+
+def _converted_step(oracle: Dict):
+    """(name, data) of the step the converter writes first: the matrix's first STEP with a folder,
+    else the first folder by name."""
+    steps = oracle.get('steps', {})
+    if not steps:
+        return None, None
+    by_lower = {n.lower(): n for n in steps}
+    for name in oracle.get('step_order', []):
+        if name.lower() in by_lower:
+            n = by_lower[name.lower()]
+            return n, steps[n]
+    n = sorted(steps)[0]
+    return n, steps[n]
+
+
+def _sexpr_block(text: str, start: int) -> str:
+    """The balanced s-expression that opens at text[start] ('('), quoted strings respected."""
+    depth, i, n, quoted = 0, start, len(text), False
+    while i < n:
+        c = text[i]
+        if quoted:
+            if c == '\\':
+                i += 1
+            elif c == '"':
+                quoted = False
+        elif c == '"':
+            quoted = True
+        elif c == '(':
+            depth += 1
+        elif c == ')':
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+        i += 1
+    return text[start:]
+
+
+def _footprint_to_board(fx: float, fy: float, angle: float, lx: float, ly: float) -> Tuple[float, float]:
+    """A footprint-local point (KiCad frame, Y down) on the board: turned by the footprint's angle
+    (counter-clockwise on screen, degrees), then moved to its position. Local pad / item positions
+    of a back-side footprint are stored already flipped, so no mirror is needed here."""
+    a = math.radians(angle)
+    c, s = math.cos(a), math.sin(a)
+    return fx + lx * c + ly * s, fy - lx * s + ly * c
+
+
+def _xy(item: str, key: str) -> Optional[Tuple[float, float]]:
+    m = re.search(r'\(' + key + r'\s+([-\d.eE+]+)\s+([-\d.eE+]+)\)', item)
+    return (float(m.group(1)), float(m.group(2))) if m else None
+
+
+def _add_arc3(box: BBox, s: Tuple[float, float], m: Tuple[float, float], e: Tuple[float, float]):
+    """A KiCad arc by start / mid / end."""
+    ax, ay = s
+    bx, by = m
+    cx, cy = e
+    d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+    if abs(d) < 1e-12:  # collinear: a straight segment
+        for p in (s, m, e):
+            box.add(*p)
+        return
+    ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d
+    uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d
+    cross = (bx - ax) * (cy - by) - (by - ay) * (cx - bx)
+    box.add_arc(s, e, (ux, uy), cross < 0)  # cw in the angle-increasing sense of atan2
+
+
+def _add_edge_item(box: BBox, kind: str, item: str, place):
+    """One Edge.Cuts item (line, arc, circle, rect, poly) into box, its points through place()."""
+    P = lambda p: place(*p)
+    if kind == 'line':
+        for k in ('start', 'end'):
+            p = _xy(item, k)
+            if p:
+                box.add(*P(p))
+    elif kind == 'rect':
+        s, e = _xy(item, 'start'), _xy(item, 'end')
+        if s and e:
+            for p in ((s[0], s[1]), (e[0], s[1]), (e[0], e[1]), (s[0], e[1])):
+                box.add(*P(p))
+    elif kind == 'circle':
+        c, e = _xy(item, 'center'), _xy(item, 'end')
+        if c and e:
+            cx, cy = P(c)
+            box.add_circle(cx, cy, math.hypot(e[0] - c[0], e[1] - c[1]))
+    elif kind == 'arc':
+        s, m, e = _xy(item, 'start'), _xy(item, 'mid'), _xy(item, 'end')
+        if s and m and e:
+            _add_arc3(box, P(s), P(m), P(e))
+    elif kind == 'poly':
+        for a in re.finditer(r'\(arc\s', item):
+            arc = _sexpr_block(item, a.start())
+            s, m, e = _xy(arc, 'start'), _xy(arc, 'mid'), _xy(arc, 'end')
+            if s and m and e:
+                _add_arc3(box, P(s), P(m), P(e))
+        for x, y in re.findall(r'\(xy\s+([-\d.eE+]+)\s+([-\d.eE+]+)\)', item):
+            box.add(*P((float(x), float(y))))
 
 
 class OracleComparator:
@@ -382,7 +507,10 @@ class OracleComparator:
             for layer_name, layer_data in step_data.get('layers', {}).items():
                 oracle_count += layer_data.get('component_count', 0)
 
-        kicad_count = len(kicad.get('footprints', []))
+        # board-only footprints the converter makes for copper that is no component's (free pads,
+        # outline holes: library "odb2kicad:...") are not components
+        kicad_count = sum(1 for fp in kicad.get('footprints', [])
+                          if not str(fp.get('package', fp.get('name', ''))).startswith('odb2kicad:'))
 
         passed = oracle_count == kicad_count
         self.results.append(ComparisonResult(
@@ -440,12 +568,12 @@ class OracleComparator:
                     'delta': (dx, dy)
                 })
 
-            # Compare rotation
-            # Note: Converter uses 0° rotation for all components with direct pad offsets
-            # So we just verify KiCad rotation is 0
+            # Compare rotation: the CMP rotation is clockwise, KiCad's footprint angle
+            # counter-clockwise, so the two add up to a full turn (docs/rotation.md)
+            orot = oracle_comp.get('rotation', 0.0)
             krot = kicad_comp.get('rotation', 0.0)
-            krot_norm = krot % 360
-            rot_diff = krot_norm  # Should be 0
+            rot_diff = (krot + orot) % 360
+            rot_diff = min(rot_diff, 360 - rot_diff)
 
             if rot_diff > rotation_tolerance:
                 rotation_errors.append({
@@ -531,86 +659,43 @@ class OracleComparator:
         ))
 
     def _compare_bounding_boxes(self, oracle: Dict, kicad: Dict):
-        """Compare overall bounding boxes"""
-        # Layers to exclude from bbox calculation (mechanical/documentation layers)
-        exclude_patterns = ['title', 'fab_notes', '3d_', 'asy', 'mechanical',
-                           'keep-out', 'placeoutline', 'comp_+']
-
-        # Compute oracle bounding box
-        oracle_bbox = {'xmin': float('inf'), 'ymin': float('inf'),
-                      'xmax': float('-inf'), 'ymax': float('-inf')}
-
-        for step_name, step_data in oracle.get('steps', {}).items():
-            for layer_name, layer_data in step_data.get('layers', {}).items():
-                # Skip mechanical/documentation layers
-                layer_lower = layer_name.lower()
-                if any(pat in layer_lower for pat in exclude_patterns):
-                    continue
-                limits = layer_data.get('limits')
-                if limits:
-                    oracle_bbox['xmin'] = min(oracle_bbox['xmin'], limits['xmin'])
-                    oracle_bbox['ymin'] = min(oracle_bbox['ymin'], limits['ymin'])
-                    oracle_bbox['xmax'] = max(oracle_bbox['xmax'], limits['xmax'])
-                    oracle_bbox['ymax'] = max(oracle_bbox['ymax'], limits['ymax'])
-
-        # Compute KiCad bounding box from all geometry
-        kicad_bbox = {'xmin': float('inf'), 'ymin': float('inf'),
-                     'xmax': float('-inf'), 'ymax': float('-inf')}
-
-        for fp in kicad.get('footprints', []):
-            x, y = fp.get('x', 0), fp.get('y', 0)
-            kicad_bbox['xmin'] = min(kicad_bbox['xmin'], x)
-            kicad_bbox['ymin'] = min(kicad_bbox['ymin'], y)
-            kicad_bbox['xmax'] = max(kicad_bbox['xmax'], x)
-            kicad_bbox['ymax'] = max(kicad_bbox['ymax'], y)
-
-        for seg in kicad.get('segments', []):
-            for point in [seg.get('start', (0, 0)), seg.get('end', (0, 0))]:
-                kicad_bbox['xmin'] = min(kicad_bbox['xmin'], point[0])
-                kicad_bbox['ymin'] = min(kicad_bbox['ymin'], point[1])
-                kicad_bbox['xmax'] = max(kicad_bbox['xmax'], point[0])
-                kicad_bbox['ymax'] = max(kicad_bbox['ymax'], point[1])
-
-        # ODB++ units can be MM or INCH
-        # KiCad always uses mm
-        units = oracle.get('units', 'INCH').upper()
-        if units == 'MM':
-            scale = 1.0  # Already in mm
-        else:
-            scale = 25.4  # Convert inches to mm
-
-        if oracle_bbox['xmin'] != float('inf') and kicad_bbox['xmin'] != float('inf'):
-            # Convert oracle to mm if needed
-            oracle_bbox_mm = {
-                'xmin': oracle_bbox['xmin'] * scale,
-                'ymin': oracle_bbox['ymin'] * scale,
-                'xmax': oracle_bbox['xmax'] * scale,
-                'ymax': oracle_bbox['ymax'] * scale
-            }
-
-            # Check if bounding boxes are within tolerance
-            width_oracle = oracle_bbox_mm['xmax'] - oracle_bbox_mm['xmin']
-            height_oracle = oracle_bbox_mm['ymax'] - oracle_bbox_mm['ymin']
-            width_kicad = kicad_bbox['xmax'] - kicad_bbox['xmin']
-            height_kicad = kicad_bbox['ymax'] - kicad_bbox['ymin']
-
-            width_diff = abs(width_oracle - width_kicad)
-            height_diff = abs(height_oracle - height_kicad)
-
-            # Use larger tolerance for bbox (5mm) since oracle may include annotations/overlays
-            bbox_tolerance = 5.0
-            passed = width_diff < bbox_tolerance and height_diff < bbox_tolerance
-
+        """The board outline: the profile's extent (the converted step's, stephdr origin applied)
+        against the extent of Edge.Cuts, edge by edge (KiCad Y is ODB++ Y negated)."""
+        step_name, step = _converted_step(oracle)
+        prof = ((step or {}).get('profile') or {}).get('bbox')
+        edge = kicad.get('edge_cuts_bbox')
+        tol = max(self.tolerance, 0.01)
+        if not prof:
             self.results.append(ComparisonResult(
-                passed=passed,
+                passed=True,  # nothing to compare against: informational
                 category='bounding_box',
-                message=f"BBox size: oracle={width_oracle:.3f}x{height_oracle:.3f}mm, "
-                       f"kicad={width_kicad:.3f}x{height_kicad:.3f}mm, "
-                       f"diff={width_diff:.4f}x{height_diff:.4f}mm",
-                expected={'width': width_oracle, 'height': height_oracle},
-                actual={'width': width_kicad, 'height': height_kicad},
-                tolerance_used=self.tolerance
-            ))
+                message=f"Step {step_name or '?'} has no profile; Edge.Cuts "
+                        + ("is empty" if edge is None else
+                           f"spans {edge['xmax'] - edge['xmin']:.3f}x{edge['ymax'] - edge['ymin']:.3f}mm")))
+            return
+        if edge is None:
+            self.results.append(ComparisonResult(
+                passed=False, category='bounding_box',
+                message=f"Profile of step {step_name} spans {prof['xmax'] - prof['xmin']:.3f}x"
+                        f"{prof['ymax'] - prof['ymin']:.3f}mm but Edge.Cuts is empty",
+                expected=prof, actual=None, tolerance_used=tol))
+            return
+        # Edge.Cuts in the ODB++ frame (Y up)
+        k = {'xmin': edge['xmin'], 'xmax': edge['xmax'], 'ymin': -edge['ymax'], 'ymax': -edge['ymin']}
+        diffs = {side: k[side] - prof[side] for side in ('xmin', 'ymin', 'xmax', 'ymax')}
+        worst = max(abs(v) for v in diffs.values())
+        passed = worst <= tol
+        w_o, h_o = prof['xmax'] - prof['xmin'], prof['ymax'] - prof['ymin']
+        w_k, h_k = k['xmax'] - k['xmin'], k['ymax'] - k['ymin']
+        msg = (f"Profile vs Edge.Cuts: profile={w_o:.3f}x{h_o:.3f}mm at ({prof['xmin']:.3f}, {prof['ymin']:.3f}), "
+               f"edge={w_k:.3f}x{h_k:.3f}mm at ({k['xmin']:.3f}, {k['ymin']:.3f}), worst edge off by {worst:.4f}mm")
+        if not passed:
+            msg += " (" + ", ".join(f"{side} {v:+.4f}" for side, v in diffs.items() if abs(v) > tol) + ")"
+        self.results.append(ComparisonResult(
+            passed=passed, category='bounding_box', message=msg,
+            expected={'width': w_o, 'height': h_o, **prof},
+            actual={'width': w_k, 'height': h_k, **k},
+            tolerance_used=tol))
 
     def _compare_trace_counts(self, oracle: Dict, kicad: Dict):
         """Compare trace/segment counts"""
@@ -697,160 +782,67 @@ class OracleComparator:
         ))
 
     def _compare_pin_positions(self, oracle: Dict, kicad: Dict):
-        """Compare pin 1 positions to detect component rotation errors.
-
-        For each component, compare the relative position of pin 1 from the
-        component center. If pin 1 is in a different quadrant or significantly
-        different position, it indicates a rotation error.
+        """Pin 1 of every component where it lands on the board: the KiCad pad's local position
+        turned by the footprint's angle and moved to the footprint's position, against the ODB++
+        TOP record of pin 1 (board coordinates). A pin 1 that lands elsewhere means the footprint
+        is turned, mirrored or placed wrongly; the angle between the two, seen from the part's
+        centre, says by how much.
         """
-        import math
-
-        # Build oracle component map with terminal data
         oracle_comps = {}
         for step_name, step_data in oracle.get('steps', {}).items():
             for layer_name, layer_data in step_data.get('layers', {}).items():
                 for comp in layer_data.get('components', []):
-                    if 'terminals' in comp and comp['terminals']:
+                    if comp.get('terminals'):
                         oracle_comps[comp['refdes']] = comp
-
         if not oracle_comps:
             return  # No terminal data available
 
-        # Build KiCad footprint map with pad positions
-        kicad_fps = {}
-        for fp in kicad.get('footprints', []):
-            if 'refdes' in fp and fp.get('pads'):
-                kicad_fps[fp['refdes']] = fp
-
-        # Compare pin 1 positions
-        rotation_errors = []
-        pin1_mismatches = []
-        tolerance_mm = 0.5  # Position tolerance
-
-        for refdes, oracle_comp in oracle_comps.items():
-            if refdes not in kicad_fps:
+        kicad_fps = {fp['refdes']: fp for fp in kicad.get('footprints', []) if 'refdes' in fp and fp.get('pads')}
+        tol = max(self.tolerance, 0.01)
+        compared = 0
+        misplaced = []
+        for refdes, comp in oracle_comps.items():
+            fp = kicad_fps.get(refdes)
+            if not fp:
                 continue
+            # pin 1: the terminal named "1", else the part's first TOP record (some jobs name
+            # pins <refdes>-<n>); the KiCad pad of the same name
+            o1 = next((t for t in comp['terminals'] if t.get('pin_num') == '1'),
+                      min(comp['terminals'], key=lambda t: t.get('term_idx', 0)))
+            k1 = next((p for p in fp['pads'] if p.get('pin') == o1.get('pin_num')), None)
+            if not o1 or not k1:
+                continue
+            compared += 1
+            # ODB++ pin 1 in the KiCad frame
+            ox, oy = o1['x'], -o1['y']
+            kx, ky = _footprint_to_board(fp['x'], fp['y'], fp.get('rotation', 0.0), k1['x'], k1['y'])
+            off = math.hypot(kx - ox, ky - oy)
+            if off <= tol:
+                continue
+            cx, cy = fp['x'], fp['y']
+            turn = None
+            if math.hypot(ox - cx, oy - cy) > tol and math.hypot(kx - cx, ky - cy) > tol:
+                turn = (math.degrees(math.atan2(-(ky - cy), kx - cx) - math.atan2(-(oy - cy), ox - cx))) % 360
+            misplaced.append({'refdes': refdes, 'off': off, 'turn': turn,
+                              'oracle': (ox, oy), 'kicad': (kx, ky)})
 
-            kicad_fp = kicad_fps[refdes]
-
-            # Find pin 1 in oracle (terminal with pin_num = "1")
-            oracle_pin1 = None
-            for term in oracle_comp.get('terminals', []):
-                if term.get('pin_num') == '1':
-                    oracle_pin1 = term
-                    break
-
-            # Find pin 1 in KiCad (pad with pin = "1")
-            kicad_pin1 = None
-            for pad in kicad_fp.get('pads', []):
-                if pad.get('pin') == '1':
-                    kicad_pin1 = pad
-                    break
-
-            if not oracle_pin1 or not kicad_pin1:
-                continue  # Can't compare without pin 1
-
-            # Calculate relative position of pin 1 from component center
-            # Oracle: terminal positions are absolute, need to subtract component center
-            oracle_dx = oracle_pin1['x'] - oracle_comp['x']
-            oracle_dy = oracle_pin1['y'] - oracle_comp['y']
-
-            # KiCad pad positions are in footprint-local space (inverse-rotated)
-            # Converter uses 0° rotation with direct Y-flipped deltas
-            # So expected local position is just (dx, -dy)
-            oracle_local_x = oracle_dx
-            oracle_local_y = -oracle_dy  # Negate for KiCad Y-down
-
-            # KiCad pad position in local footprint space
-            kicad_pad_x = kicad_pin1.get('x', 0)
-            kicad_pad_y = kicad_pin1.get('y', 0)
-
-            # Compare local positions
-            dx_diff = abs(oracle_local_x - kicad_pad_x)
-            dy_diff = abs(oracle_local_y - kicad_pad_y)
-
-            if dx_diff > tolerance_mm or dy_diff > tolerance_mm:
-                # Calculate quadrant for each (both now in footprint-local space)
-                oracle_quadrant = self._get_quadrant(oracle_local_x, oracle_local_y)
-                kicad_quadrant = self._get_quadrant(kicad_pad_x, kicad_pad_y)
-
-                # Estimate rotation difference in local space
-                oracle_angle = math.degrees(math.atan2(oracle_local_y, oracle_local_x))
-                kicad_angle = math.degrees(math.atan2(kicad_pad_y, kicad_pad_x))
-                angle_diff = abs(oracle_angle - kicad_angle)
-                if angle_diff > 180:
-                    angle_diff = 360 - angle_diff
-
-                pin1_mismatches.append({
-                    'refdes': refdes,
-                    'oracle_local': (oracle_local_x, oracle_local_y),
-                    'kicad_local': (kicad_pad_x, kicad_pad_y),
-                    'quadrant_oracle': oracle_quadrant,
-                    'quadrant_kicad': kicad_quadrant,
-                    'angle_diff': angle_diff
-                })
-
-                # If quadrants differ significantly, it's likely a rotation error
-                if oracle_quadrant != kicad_quadrant or angle_diff > 45:
-                    rotation_errors.append({
-                        'refdes': refdes,
-                        'estimated_rotation_error': angle_diff
-                    })
-
-        # Report results
-        if rotation_errors:
-            # Group by approximate rotation error
-            error_90 = [e for e in rotation_errors if 80 < e['estimated_rotation_error'] < 100]
-            error_180 = [e for e in rotation_errors if 170 < e['estimated_rotation_error'] < 190]
-            error_270 = [e for e in rotation_errors if 260 < e['estimated_rotation_error'] < 280]
-            error_other = [e for e in rotation_errors if e not in error_90 + error_180 + error_270]
-
-            details = []
-            if error_90:
-                details.append(f"90deg: {len(error_90)} ({', '.join([e['refdes'] for e in error_90[:3]])}{'...' if len(error_90) > 3 else ''})")
-            if error_180:
-                details.append(f"180deg: {len(error_180)} ({', '.join([e['refdes'] for e in error_180[:3]])}{'...' if len(error_180) > 3 else ''})")
-            if error_270:
-                details.append(f"270deg: {len(error_270)} ({', '.join([e['refdes'] for e in error_270[:3]])}{'...' if len(error_270) > 3 else ''})")
-            if error_other:
-                details.append(f"other: {len(error_other)}")
-
+        if misplaced:
+            def what(e):
+                t = f", turned {e['turn']:.0f} deg" if e['turn'] is not None and min(e['turn'], 360 - e['turn']) > 1 else ""
+                return f"{e['refdes']} off by {e['off']:.3f}mm{t}"
+            sample = '; '.join(what(e) for e in misplaced[:5])
+            if len(misplaced) > 5:
+                sample += f"; ... and {len(misplaced) - 5} more"
             self.results.append(ComparisonResult(
-                passed=False,
-                category='pin1_positions',
-                message=f"Pin 1 rotation errors detected in {len(rotation_errors)} components: {'; '.join(details)}",
-                expected=f"{len(oracle_comps)} components with correct pin 1 orientation",
-                actual=f"{len(rotation_errors)} have rotation errors"
-            ))
-        elif pin1_mismatches:
-            # Minor mismatches but no clear rotation errors
-            self.results.append(ComparisonResult(
-                passed=True,
-                category='pin1_positions',
-                message=f"Pin 1 positions: {len(pin1_mismatches)} minor mismatches (within tolerance for rotation)",
-                expected=len(oracle_comps),
-                actual=len(oracle_comps) - len(pin1_mismatches)
-            ))
+                passed=False, category='pin1_positions',
+                message=f"Pin 1 lands elsewhere for {len(misplaced)} of {compared} components compared ({len(oracle_comps)} with terminals): {sample}",
+                expected=f"{compared} components with pin 1 within {tol}mm",
+                actual=f"{len(misplaced)} misplaced", tolerance_used=tol))
         else:
             self.results.append(ComparisonResult(
-                passed=True,
-                category='pin1_positions',
-                message=f"Pin 1 positions match for all {len(oracle_comps)} components with terminal data",
-                expected=len(oracle_comps),
-                actual=len(oracle_comps)
-            ))
-
-    def _get_quadrant(self, x: float, y: float) -> int:
-        """Get quadrant (1-4) for a point, or 0 if at origin"""
-        if abs(x) < 0.01 and abs(y) < 0.01:
-            return 0
-        if x >= 0 and y >= 0:
-            return 1
-        if x < 0 and y >= 0:
-            return 2
-        if x < 0 and y < 0:
-            return 3
-        return 4
+                passed=True, category='pin1_positions',
+                message=f"Pin 1 on the board matches within {tol}mm for all {compared} of {len(oracle_comps)} components with terminals",
+                expected=compared, actual=compared, tolerance_used=tol))
 
 
 def redact_message(message: str) -> str:
