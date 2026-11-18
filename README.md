@@ -60,6 +60,8 @@ if (result.success) {
 
 A failed result carries a `code` (`bad-input`, `archive`, `not-odb`, `no-input`, `bad-matrix`, `no-step`, `no-layers`, `crash`, `internal`) and an `error` that says what to do about it. After a `crash` the WASM module is reset, so the next conversion starts clean.
 
+The WASM build uses WebAssembly exception handling, so a file the reader cannot handle comes back as an error (as it does from the native CLI) instead of stopping the module. That needs Node 18+ or a browser from 2022 on: Chrome / Edge 95+, Firefox 100+, Safari 15.2+.
+
 The API also exposes `convertOdb(files)` for pre-extracted file arrays — see the [type definitions](wasm/dist/index.d.ts) for details.
 
 ## Features

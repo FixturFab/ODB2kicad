@@ -26,8 +26,8 @@ bool parseComponents(const std::string& path, OdbComponents& components) {
         // Attribute definition
         if (line[0] == '@') {
             auto sp = line.find(' ');
-            if (sp != std::string::npos) {
-                int idx = std::stoi(line.substr(1, sp - 1));
+            int idx;
+            if (sp != std::string::npos && parseInt(line.substr(1, sp - 1), idx)) {
                 components.attrDefs[idx] = trim(line.substr(sp + 1));
             }
             continue;
@@ -36,8 +36,8 @@ bool parseComponents(const std::string& path, OdbComponents& components) {
         // String definition
         if (line[0] == '&') {
             auto sp = line.find(' ');
-            if (sp != std::string::npos) {
-                int idx = std::stoi(line.substr(1, sp - 1));
+            int idx;
+            if (sp != std::string::npos && parseInt(line.substr(1, sp - 1), idx)) {
                 components.strings[idx] = trim(line.substr(sp + 1));
             }
             continue;
@@ -69,23 +69,21 @@ bool parseComponents(const std::string& path, OdbComponents& components) {
                     auto eq = part.find('=');
                     if (eq == std::string::npos) {
                         // Boolean attribute: present means set
-                        try {
-                            auto it = components.attrDefs.find(std::stoi(part));
+                        int idx;
+                        if (parseInt(part, idx)) {
+                            auto it = components.attrDefs.find(idx);
                             if (it != components.attrDefs.end() && it->second == ".no_pop") comp.noPop = true;
-                        } catch (const std::exception&) {}
+                        }
                     } else {
-                        std::string key = part.substr(0, eq);
-                        // Only parse numeric attribute keys; skip named attrs
-                        try {
-                            int idx = std::stoi(key);
-                            std::string val = part.substr(eq + 1);
+                        // Only numeric attribute keys; a named one ("ID=...") is skipped
+                        int idx;
+                        if (parseInt(part.substr(0, eq), idx)) {
                             // Check if this attr is .comp_mount_type
                             auto it = components.attrDefs.find(idx);
-                            if (it != components.attrDefs.end() && it->second == ".comp_mount_type") {
-                                try { comp.mountType = std::stoi(val); } catch (...) {}
-                            }
-                        } catch (const std::invalid_argument&) {
-                            // Named attribute from non-KiCad ODB++ — skip
+                            int mount;
+                            if (it != components.attrDefs.end() && it->second == ".comp_mount_type" &&
+                                parseInt(part.substr(eq + 1), mount))
+                                comp.mountType = mount;
                         }
                     }
                 }

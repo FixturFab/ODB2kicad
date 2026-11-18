@@ -334,6 +334,13 @@ body {
 .status-bar.info { background: var(--accent-light); color: var(--accent); }
 .status-bar.success { background: var(--success-bg); color: var(--success); }
 .status-bar.error { background: var(--error-bg); color: var(--error); }
+.report-box { display: none; margin-top: 10px; font-size: 13px; color: var(--text-secondary); }
+.report-box.visible { display: block; }
+.report-box summary { cursor: pointer; color: var(--text); }
+.report-box ul { margin: 6px 0 0; padding-left: 18px; max-height: 220px; overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.report-box li { margin: 2px 0; overflow-wrap: anywhere; }
+.report-box li.warning { color: var(--error); }
 
 .spinner {
   width: 16px; height: 16px;
@@ -542,6 +549,11 @@ body {
         <span class="errormark" id="statusError" aria-hidden="true" style="display:none"></span>
         <span id="statusText"></span>
       </div>
+      <!-- What the converter reported: warnings (what it could not read) and info lines -->
+      <details class="report-box" id="reportBox">
+        <summary id="reportSummary">Converter report</summary>
+        <ul id="reportList"></ul>
+      </details>
     </div>
 
     <!-- ── Output Panel ──────────────────────────────────── -->
@@ -563,7 +575,7 @@ body {
         <span id="showAllText"></span>
       </div>
       <div class="stats-bar" id="statsBar">
-        <span class="stat"><strong id="statFiles">0</strong>&nbsp;files</span>
+        <span class="stat"><strong id="statWarnings">0</strong>&nbsp;warnings</span>
         <span class="stat"><strong id="statTime">0</strong>&nbsp;ms</span>
         <span class="stat"><strong id="statSize">0</strong>&nbsp;chars</span>
         <span class="stat"><strong id="statLines">0</strong>&nbsp;lines</span>
@@ -579,13 +591,17 @@ body {
   All processing happens locally in your browser — no data leaves your machine.
 </footer>
 
+<script type="importmap">
+{ "imports": { "fflate": "https://cdn.jsdelivr.net/npm/fflate@0.8/esm/browser.js" } }
+</script>
 <script type="module">
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  Imports
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-import { gunzipSync, unzipSync } from 'https://cdn.jsdelivr.net/npm/fflate@0.8/esm/browser.js';
-
-const wasmUrl = new URL('./odb2kicad_wasm.mjs', import.meta.url).href;
+// The npm package's wrapper (dist/index.mjs, served beside this page with odb2kicad_wasm.*): it
+// unpacks the archive, finds the job in it, runs the converter, and turns any failure into a
+// result with a code and a reason (and starts a fresh converter after a crash).
+import { convertOdb, convertOdbArchive } from './index.mjs';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  Theme
@@ -642,7 +658,6 @@ const downloadBtn = document.getElementById('downloadBtn');
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  State
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let Module = null;
 let rawOutput = '';
 let allOutputLines = [];
 let truncated = false;
@@ -665,105 +680,64 @@ function clearStatus() {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  Tar parser
+//  Report and failure messages
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function parseTar(data) {
-  const files = [];
-  const decoder = new TextDecoder();
-  let offset = 0;
-  while (offset + 512 <= data.length) {
-    const header = data.subarray(offset, offset + 512);
-    if (header.every(b => b === 0)) break;
-    let name = decoder.decode(header.subarray(0, 100)).replace(/\0.*/s, '');
-    const magic = decoder.decode(header.subarray(257, 263)).replace(/\0.*/s, '');
-    if (magic === 'ustar') {
-      const prefix = decoder.decode(header.subarray(345, 500)).replace(/\0.*/s, '');
-      if (prefix) name = prefix + '/' + name;
-    }
-    const sizeStr = decoder.decode(header.subarray(124, 136)).replace(/\0.*/s, '').trim();
-    const size = parseInt(sizeStr, 8) || 0;
-    const type = header[156];
-    offset += 512;
-    if ((type === 0x30 || type === 0) && size > 0 && name) {
-      // compressed ODB++ files (<name>.z) are bytes, not text
-      files.push({ path: name, content: /\.z$/i.test(name) ? data.slice(offset, offset + size) : decoder.decode(data.subarray(offset, offset + size)) });
-    }
-    offset += Math.ceil(size / 512) * 512;
+const reportBox = document.getElementById('reportBox');
+const reportSummary = document.getElementById('reportSummary');
+const reportList = document.getElementById('reportList');
+const ISSUES_URL = 'https://github.com/FixturFab/ODB2kicad/issues';
+
+function showReport(lines) {
+  reportList.innerHTML = '';
+  if (!lines || lines.length === 0) { reportBox.classList.remove('visible'); return; }
+  const warnings = lines.filter(l => l.startsWith('warning:')).length;
+  reportSummary.textContent = `Converter report: ${warnings} warning${warnings === 1 ? '' : 's'}, ` +
+    `${lines.length - warnings} note${lines.length - warnings === 1 ? '' : 's'}`;
+  for (const line of lines) {
+    const li = document.createElement('li');
+    if (line.startsWith('warning:')) li.className = 'warning';
+    li.textContent = line;
+    reportList.appendChild(li);
   }
-  return files;
+  reportBox.open = warnings > 0;
+  reportBox.classList.add('visible');
 }
 
-function extractArchive(data) {
-  if (data[0] === 0x1f && data[1] === 0x8b) {
-    return parseTar(gunzipSync(data));
-  }
-  if (data[0] === 0x50 && data[1] === 0x4b && data[2] === 0x03 && data[3] === 0x04) {
-    const entries = unzipSync(data);
-    const files = [];
-    const decoder = new TextDecoder();
-    for (const [name, content] of Object.entries(entries)) {
-      if (name.endsWith('/')) continue;
-      files.push({ path: name, content: /\.z$/i.test(name) ? content : decoder.decode(content) });
-    }
-    return files;
-  }
-  if (data.length > 262) {
-    const magic = new TextDecoder().decode(data.subarray(257, 263)).replace(/\0.*/s, '');
-    if (magic === 'ustar') return parseTar(data);
-  }
-  throw new Error('Unrecognized archive format. Expected .tgz, .tar.gz, .zip, or .tar');
-}
-
-function stripCommonPrefix(files) {
-  if (files.length === 0) return files;
-  const paths = files.map(f => f.path);
-  const firstParts = paths[0].split('/');
-  let commonDepth = 0;
-  for (let i = 0; i < firstParts.length - 1; i++) {
-    const prefix = firstParts.slice(0, i + 1).join('/') + '/';
-    if (paths.every(p => p.startsWith(prefix))) commonDepth = i + 1;
-    else break;
-  }
-  if (commonDepth === 0) return files;
-  const prefixLen = firstParts.slice(0, commonDepth).join('/').length + 1;
-  return files.map(f => ({ path: f.path.substring(prefixLen), content: f.content })).filter(f => f.path.length > 0);
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  WASM init
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-async function getModule() {
-  if (!Module) {
-    setStatus('Loading WASM module\u2026', 'info');
-    const { default: initModule } = await import(wasmUrl);
-    Module = await initModule();
-  }
-  return Module;
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  MEMFS helpers
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function mkdirp(FS, path) {
-  const parts = path.split('/').filter(Boolean);
-  let current = '';
-  for (const part of parts) {
-    current += '/' + part;
-    try { FS.mkdir(current); } catch (_) {}
+// What to tell the user for each failure code of the wrapper (see wasm/src/index.mjs)
+function failureMessage(result) {
+  const reason = result.error || 'no reason given';
+  switch (result.code) {
+    case 'archive':
+      return `Could not read the archive: ${reason}`;
+    case 'not-odb': case 'no-input': case 'bad-matrix': case 'no-step': case 'no-layers':
+      return `This does not look like a complete ODB++ job: ${reason}`;
+    case 'crash':
+      if (/could not start/.test(reason))
+        return `The converter could not start in this browser (${reason}). It needs WebAssembly ` +
+          'exception handling: Chrome or Edge 95+, Firefox 100+, Safari 15.2+.';
+      return `The converter stopped on this file: ${reason}. Please report it at ${ISSUES_URL} ` +
+        'with the name and version of the tool that exported it.';
+    default:
+      return `Conversion failed: ${reason}. If the file came from an EDA tool, please report it at ` +
+        `${ISSUES_URL} with the tool's name and version.`;
   }
 }
 
-function rmrf(FS, path) {
-  try {
-    const entries = FS.readdir(path).filter(e => e !== '.' && e !== '..');
-    for (const entry of entries) {
-      const full = path + '/' + entry;
-      const stat = FS.stat(full);
-      if (FS.isDir(stat.mode)) rmrf(FS, full);
-      else FS.unlink(full);
-    }
-    FS.rmdir(path);
-  } catch (_) {}
+// A chosen folder may hold the job one level down, or files beside it: anchor on matrix/matrix
+function jobFiles(files) {
+  const anchor = files.find(f => /(^|\/)matrix\/matrix$/.test(f.path));
+  if (!anchor) return files;
+  const root = anchor.path.slice(0, anchor.path.length - 'matrix/matrix'.length);
+  return files.filter(f => f.path.startsWith(root))
+    .map(f => ({ path: f.path.slice(root.length), content: f.content }))
+    .filter(f => f.path.length > 0);
+}
+
+// Compressed ODB++ files (<name>.z) are bytes; every other job file is text
+function readJobFile(file, path) {
+  return /\.z$/i.test(path)
+    ? file.arrayBuffer().then(b => ({ path, content: new Uint8Array(b) }))
+    : file.text().then(content => ({ path, content }));
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -870,6 +844,18 @@ function renderOutput(text) {
   }
 
   statsBar.classList.add('visible');
+}
+
+// Back to the empty panel: a failed conversion must not leave the previous board on show
+function clearOutput() {
+  rawOutput = '';
+  allOutputLines = [];
+  truncated = false;
+  codeLines.innerHTML = '';
+  codePlaceholder.style.display = '';
+  outputToolbar.style.display = 'none';
+  showAllBar.classList.remove('visible');
+  statsBar.classList.remove('visible');
 }
 
 function renderLines(lines) {
@@ -989,7 +975,7 @@ function handleFileList(fileList) {
     const relPath = file.webkitRelativePath || file.name;
     const parts = relPath.split('/');
     const path = parts.length > 1 ? parts.slice(1).join('/') : parts[0];
-    promises.push(file.text().then(content => { pendingFiles.push({ path, content }); }));
+    promises.push(readJobFile(file, path).then(f => { pendingFiles.push(f); }));
   }
   Promise.all(promises).then(async () => {
     inputLabel.textContent = `${pendingFiles.length} files loaded`;
@@ -1009,9 +995,8 @@ function readEntry(entry, basePath) {
   return new Promise(resolve => {
     if (entry.isFile) {
       entry.file(file => {
-        file.text().then(content => {
-          const path = basePath ? basePath + '/' + entry.name : entry.name;
-          pendingFiles.push({ path, content });
+        readJobFile(file, basePath ? basePath + '/' + entry.name : entry.name).then(f => {
+          pendingFiles.push(f);
           resolve();
         });
       });
@@ -1066,68 +1051,45 @@ async function runConversion() {
   if (converting) return;
   converting = true;
   tryBtn.disabled = true;
+  showReport([]);
+  clearOutput();
 
   try {
-    let filesToConvert;
-
+    let convert;
     if (pendingArchive) {
-      setStatus('Extracting archive\u2026', 'info');
-      // yield to UI
-      await new Promise(r => setTimeout(r, 0));
-      filesToConvert = stripCommonPrefix(extractArchive(pendingArchive));
-      if (filesToConvert.length === 0) {
-        setStatus('Archive contains no files.', 'error');
-        converting = false;
-        tryBtn.disabled = false;
-        return;
-      }
+      const archive = pendingArchive;
+      convert = () => convertOdbArchive(archive);
     } else if (pendingFiles && pendingFiles.length > 0) {
-      filesToConvert = pendingFiles;
+      const files = jobFiles(pendingFiles);
+      convert = () => convertOdb(files);
     } else {
       clearStatus();
-      converting = false;
-      tryBtn.disabled = false;
       return;
     }
 
-    const fileCount = filesToConvert.length;
-    setStatus(`Loading converter (${fileCount} files ready)\u2026`, 'info');
-    const mod = await getModule();
-    const FS = mod.FS;
-    const mountPoint = '/odb';
-
-    setStatus(`Writing ${fileCount} files to virtual filesystem\u2026`, 'info');
-    rmrf(FS, mountPoint);
-    mkdirp(FS, mountPoint);
-
-    for (const file of filesToConvert) {
-      const fullPath = mountPoint + '/' + file.path;
-      const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
-      mkdirp(FS, dir);
-      FS.writeFile(fullPath, file.content);
-    }
-
-    setStatus('Converting ODB++ to .kicad_pcb\u2026', 'info');
-    await new Promise(r => setTimeout(r, 0));
+    setStatus('Converting ODB++ to .kicad_pcb\u2026 (a large board takes a few seconds)', 'info');
+    await new Promise(r => setTimeout(r, 0));  // let the status paint
 
     const t0 = performance.now();
-    const raw = mod.convertOdb(mountPoint);
+    const result = await convert();
     const elapsed = (performance.now() - t0).toFixed(0);
 
-    rmrf(FS, mountPoint);
-
-    if (raw.startsWith('ERROR: ')) {
-      const msg = raw.substring(7);
-      setStatus('Conversion failed: ' + msg, 'error');
-      converting = false;
-      tryBtn.disabled = false;
+    if (!result.success) {
+      setStatus(failureMessage(result), 'error');
+      showReport(result.report);
       return;
     }
 
+    const raw = result.kicadPcb;
     const lines = raw.split('\n').length;
-    setStatus(`Converted in ${elapsed} ms`, 'success');
+    const warnings = (result.report || []).filter(l => l.startsWith('warning:')).length;
+    const steps = result.steps && result.steps.length > 1
+      ? ` (step ${result.step} of ${result.steps.length}: ${result.steps.join(', ')})` : '';
+    setStatus(`Converted in ${elapsed} ms${steps}` +
+      (warnings ? ` with ${warnings} warning${warnings === 1 ? '' : 's'}: see the report below` : ''), 'success');
+    showReport(result.report);
 
-    document.getElementById('statFiles').textContent = fileCount;
+    document.getElementById('statWarnings').textContent = warnings;
     document.getElementById('statTime').textContent = elapsed;
     document.getElementById('statSize').textContent = raw.length.toLocaleString();
     document.getElementById('statLines').textContent = lines.toLocaleString();
@@ -1135,12 +1097,13 @@ async function runConversion() {
     renderOutput(raw);
 
   } catch (err) {
-    setStatus('Error: ' + err.message + '. Try a different file or reload the page.', 'error');
+    // the wrapper reports failures as results; this is the page itself failing
+    setStatus('Error: ' + (err && err.message ? err.message : String(err)) + '. Reload the page and try again.', 'error');
     console.error(err);
+  } finally {
+    converting = false;
+    tryBtn.disabled = false;
   }
-
-  converting = false;
-  tryBtn.disabled = false;
 }
 </script>
 </body>

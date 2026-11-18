@@ -3,6 +3,7 @@ pages:
   script:
     - mkdir -p public
     - cp wasm/demo/index.html public/
+    - cp wasm/dist/index.mjs public/
     - cp wasm/dist/odb2kicad_wasm.mjs public/
     - cp wasm/dist/odb2kicad_wasm.wasm public/
     - cp samples/test-odb.tgz public/

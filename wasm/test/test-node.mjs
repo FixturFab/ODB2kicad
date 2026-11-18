@@ -329,4 +329,76 @@ console.log('--- Test 16: Panel step (STEP-REPEAT) vs native ---');
   console.log('  PASS: 2 x 2 copies at 90 deg, nets Board_<n>-, identical to native');
 }
 
+// --- Test 17: Mentor-style named attribute keys (",ID=7" among the numbered ones) convert ---
+// The 0.4.0 WASM aborted here ("Aborted()"): the reader threw on the key and a build without
+// exception support turns any throw into an abort. The native CLI skipped the key.
+console.log('--- Test 17: named attribute keys and a remaining throw do not abort ---');
+{
+  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
+  const base = loadDir(join(samplesDir, 'odb-output'));
+  const feat = 'steps/pcb/layers/f.cu/features';
+  const edit = (fn) => base.map((f) => (f.path === feat ? { path: f.path, content: fn(f.content) } : f));
+  const writeJob = (files) => {
+    const dir = mkdtempSync(join(tmpdir(), 'odb2kicad-job-'));
+    for (const f of files) {
+      execSync(`mkdir -p "${dirname(join(dir, f.path))}"`);
+      writeFileSync(join(dir, f.path), f.content);
+    }
+    return dir;
+  };
+
+  const named = edit((c) => c.replace(/;0=0,1\n/, ';0=0,1,ID=7,UID=8\n'));
+  assert.ok(named.find((f) => f.path === feat).content.includes(',ID=7'), 'the fixture carries a named key');
+  const ok = await convertOdb(named);
+  assert.equal(ok.success, true, ok.error);
+  const nativeNamed = execSync(`"${nativeBin}" "${writeJob(named)}"`, { encoding: 'utf-8' });
+  assert.equal(ok.kicadPcb === nativeNamed, true, 'WASM output should be byte-identical to native CLI');
+
+  // a number too large for a double still throws inside the reader: the WASM reports it like the
+  // native CLI does, and the same module keeps working (no reset, no reload)
+  const huge = edit((c) => c.replace(/^\$0 \S+/m, '$0 r' + '9'.repeat(400)));
+  const bad = await convertOdb(huge);
+  assert.equal(bad.success, false);
+  assert.equal(bad.code, 'internal', `not a crash: ${bad.code}: ${bad.error}`);
+  assert.match(bad.error, /converter failed: stod/);
+  const after = await convertOdb(base);
+  assert.equal(after.success, true, 'the next conversion works on the same module');
+  console.log(`  PASS: named keys read, identical to native; "${bad.error}" reported, module still usable`);
+}
+
+// --- Test 18: the raw module (what the browser demo calls) returns errors instead of aborting ---
+console.log('--- Test 18: raw module: an error string, not an abort ---');
+{
+  const initModule = (await import(join(__dirname, '..', 'dist', 'odb2kicad_wasm.mjs'))).default;
+  const M = await initModule();
+  const files = loadDir(join(samplesDir, 'odb-output'));
+  const write = (fn) => {
+    for (const f of files) {
+      const full = '/odb/' + f.path;
+      const parts = full.split('/').slice(1, -1);
+      for (let i = 1; i <= parts.length; i++) try { M.FS.mkdir('/' + parts.slice(0, i).join('/')); } catch (_) {}
+      M.FS.writeFile(full, fn(f));
+    }
+  };
+  write((f) => (f.path.endsWith('f.cu/features') ? f.content.replace(/^\$0 \S+/m, '$0 r' + '9'.repeat(400)) : f.content));
+  const raw = M.convertOdb('/odb');
+  assert.match(raw, /^ERROR: internal: the converter failed: stod/);
+  write((f) => f.content);
+  assert.ok(M.convertOdb('/odb').startsWith('(kicad_pcb'), 'the same instance converts the next job');
+  console.log(`  PASS: "${raw.slice(0, 60)}", then a clean conversion on the same instance`);
+}
+
+// --- Test 19: Xpedition job (designodb_rigidflex.tgz, INCH, ;ID= attributes) matches native ---
+console.log('--- Test 19: designodb_rigidflex.tgz (Mentor Xpedition export) ---');
+{
+  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
+  const nativeOutput = execSync(`"${nativeBin}" "${join(samplesDir, 'rigidflex-odb', 'designodb_rigidflex')}" 2>/dev/null`,
+    { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024 });
+  const result = await convertOdbArchive(readFileSync(join(samplesDir, 'designodb_rigidflex.tgz')));
+  assert.equal(result.success, true, result.error);
+  assert.equal(result.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI');
+  assert.ok(result.report.some((l) => l.includes('ASSEMT')), 'the report names the document layer left out');
+  console.log(`  PASS: ${result.kicadPcb.length} chars, identical to native, ${result.report.length} report lines`);
+}
+
 console.log('\nAll tests PASSED');

@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <sstream>
 #include <cctype>
+#include <cerrno>
+#include <climits>
+#include <cstdlib>
 
 namespace odb2kicad {
 
@@ -38,6 +41,16 @@ std::string toLower(const std::string& s) {
 
 bool startsWith(const std::string& s, const std::string& prefix) {
     return s.size() >= prefix.size() && s.compare(0, prefix.size(), prefix) == 0;
+}
+
+bool parseInt(const std::string& s, int& out) {
+    const char* begin = s.c_str();
+    char* end = nullptr;
+    errno = 0;
+    long v = std::strtol(begin, &end, 10);
+    if (end == begin || errno == ERANGE || v < INT_MIN || v > INT_MAX) return false;
+    out = (int)v;
+    return true;
 }
 
 } // namespace odb2kicad

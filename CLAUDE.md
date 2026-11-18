@@ -32,8 +32,8 @@ wasm/                       # JS/npm wrapper around the WASM build
   bin/odb2kicad.mjs          # CLI entry point for `npx odb2kicad`
   scripts/build.mjs         # Copies WASM artifacts into dist/
   dist/                     # Built artifacts (committed)
-  demo/index.html           # Browser demo page (deployed to GitLab Pages)
-  test/test-node.mjs        # Node.js integration tests (16 tests)
+  demo/index.html           # Browser demo page (deployed to GitLab Pages); runs dist/index.mjs, served beside it
+  test/test-node.mjs        # Node.js integration tests (19 tests)
 
 samples/
   odb-output/               # Simple 2-resistor test board
@@ -136,7 +136,7 @@ The `wasm/dist/` directory is committed to the repo so the npm package can be in
 
 ## Testing
 
-### Unit tests (82 cases)
+### Unit tests (85 cases)
 
 ```bash
 bash odb2kicad/test/run_unit_tests.sh [name-filter]   # plain g++, no cmake needed
@@ -150,7 +150,7 @@ cd odb2kicad && bash test/test_simple.sh
 
 Requires the native CLI to be built first (the CMake build defaults to Release; demo-design takes about 4 s). Tests the five sample boards.
 
-### WASM integration tests (16 tests)
+### WASM integration tests (19 tests)
 
 ```bash
 cd /root/odb2kicad/wasm && node test/test-node.mjs
@@ -162,6 +162,7 @@ Requires both native CLI and WASM to be built. Tests include:
 - Multi-step jobs (`{ step }`), the `report` and `steps` fields
 - Error handling (empty input, invalid archives)
 - Sequential conversion cleanup (MEMFS isolation)
+- A file the reader throws on comes back as an error, never an abort, and the module keeps working (tests 17-18); the Xpedition rigid-flex job matches native (test 19)
 
 ### Oracle Validation Tests (Python)
 
@@ -274,11 +275,12 @@ WASM bindings use Emscripten embind. The JS wrapper (`wasm/src/index.mjs`) handl
 - **Report**: what the reader assumes or drops goes to `OdbDesign::report` as `warning: ...` / `info: ...` lines (`ConvertResult::report`, CLI `--report`, WASM `result.report`), not to stderr.
 - Native and WASM outputs must be byte-identical (enforced by tests 3 and 15)
 - `wasm/dist/` is committed — rebuild and commit after any C++ changes
+- The WASM build has C++ exceptions on (`-fwasm-exceptions`): a throw reaches `convert()`'s catch and is reported, as natively. Without it every throw is an `abort()` ("Aborted()" in the demo). Still, do not use exceptions for ordinary control flow: read numbers with `parseInt()` (util/string_utils.h), not `std::stoi` in a try block
 
 ## CI/CD
 
 GitLab CI (`.gitlab-ci.yml`) deploys to GitLab Pages:
-- Copies `wasm/demo/index.html`, WASM artifacts, and npm `.tgz` to `public/`
+- Copies `wasm/demo/index.html`, `wasm/dist/index.mjs` (the demo runs it), WASM artifacts, and npm `.tgz` to `public/`
 - Demo: https://henrybtroutman.gitlab.io/odb2kicad/
 - npm install: `npm install -g https://henrybtroutman.gitlab.io/odb2kicad/odb2kicad-wasm.tgz`
 
