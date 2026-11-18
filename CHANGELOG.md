@@ -7,6 +7,9 @@
 
 ### Tests
 - `test/fuzz_odb.py`: a mutation fuzzer (named attribute keys, bad index lines, odd numbers, truncated or reordered lines) that runs a sanitizer build of the CLI, or writes the cases to run through a WASM build. 1800 cases from the samples and synthetic jobs: 0.3.0's WASM aborts on 37 (`Aborted()`, every one a named attribute key or a bad index line), 0.4.1 aborts on none, and the sanitizer finds no memory errors.
+- The WASM parity helper (`odb2kicad/test/test-wasm-parity.mjs`) and `test-wasm.mjs` read every job file as bytes. Reading them as text corrupted compressed `.z` files, so the helper reported a false mismatch on jobs that have them.
+- `test-wasm-smoke.sh` also compares the synthetic multilayer job (compressed `.z` files) between the native CLI and WASM.
+- The WASM Node tests run on Windows: modules load through `file://` URLs (no more `ERR_UNSUPPORTED_ESM_URL_SCHEME`), job paths use `/`, and the tests no longer call `mkdir -p` or redirect to `/dev/null`. The native CLI is `odb2kicad.exe` there, and `PYTHON` picks the interpreter.
 
 ## 0.4.1 (2026-11-18)
 

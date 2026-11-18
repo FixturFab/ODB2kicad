@@ -1,25 +1,33 @@
 // Integration test for the odb2kicad-wasm JS wrapper
 // Tests both convertOdb() and convertOdbArchive() APIs.
 
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdtempSync } from 'fs';
-import { join, relative, dirname } from 'path';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdtempSync, mkdirSync } from 'fs';
+import { join, relative, dirname, sep } from 'path';
 import { tmpdir } from 'os';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
 import { zipSync } from 'fflate';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// import() needs a file:// URL; a bare path such as C:\... is rejected on Windows
+const importDist = (name) => import(pathToFileURL(join(__dirname, '..', 'dist', name)).href);
+
 // Import from dist/ (the built package)
-const { convertOdb, convertOdbArchive } = await import(join(__dirname, '..', 'dist', 'index.mjs'));
+const { convertOdb, convertOdbArchive } = await importDist('index.mjs');
+
+// The native CLI, built in odb2kicad/build (odb2kicad.exe on Windows)
+const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', process.platform === 'win32' ? 'odb2kicad.exe' : 'odb2kicad');
+const python = process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
 
 // Recursively load all files from a directory
 function loadDir(dir, base = dir) {
   let files = [];
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
-    const rel = relative(base, full);
+    // job paths always use '/', whatever the host separator is
+    const rel = relative(base, full).split(sep).join('/');
     const st = statSync(full);
     if (st.isDirectory()) {
       files = files.concat(loadDir(full, base));
@@ -79,7 +87,6 @@ console.log('--- Test 3: WASM vs native parity ---');
   const result = await convertOdb(files);
 
   // Run native CLI for comparison (no output arg = writes to stdout)
-  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
   const nativeOutput = execSync(
     `"${nativeBin}" "${join(samplesDir, 'odb-output')}"`,
     { encoding: 'utf-8' }
@@ -126,8 +133,8 @@ function zipDir(name) {
 
 // Create test archives (tgz and zip) from sample directories
 const tmpDir = mkdtempSync(join(tmpdir(), 'odb2kicad-wasm-test-'));
-execSync(`tar czf "${tmpDir}/odb-output.tgz" -C "${samplesDir}" odb-output`);
-execSync(`tar czf "${tmpDir}/odb-kitchen-sink.tgz" -C "${samplesDir}" odb-kitchen-sink`);
+execSync(`tar czf "${join(tmpDir, 'odb-output.tgz')}" -C "${samplesDir}" odb-output`);
+execSync(`tar czf "${join(tmpDir, 'odb-kitchen-sink.tgz')}" -C "${samplesDir}" odb-kitchen-sink`);
 writeFileSync(join(tmpDir, 'odb-output.zip'), zipDir('odb-output'));
 writeFileSync(join(tmpDir, 'odb-kitchen-sink.zip'), zipDir('odb-kitchen-sink'));
 
@@ -280,20 +287,19 @@ console.log('--- Test 14: Multi-step job ---');
 console.log('--- Test 15: synthetic multilayer job (compressed .z files) vs native ---');
 {
   const synth = join(__dirname, '..', '..', 'test', 'synthetic_odb.py');
-  execSync(`python3 -I "${synth}" "${tmpDir}/ml" --variant multilayer`);
+  execSync(`"${python}" -I "${synth}" "${join(tmpDir, 'ml')}" --variant multilayer`);
   const dir = join(tmpDir, 'ml', 'synthetic-multilayer');
   const files = loadDir(dir);
   const z = files.filter((f) => f.content instanceof Uint8Array).length;
   assert.equal(z, 5, 'the fixture holds compressed files');
   const result = await convertOdb(files);
   assert.equal(result.success, true, result.error);
-  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
   const nativeOutput = execSync(`"${nativeBin}" "${dir}"`, { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024 });
   assert.equal(result.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI on the multilayer job');
   assert.ok(/\(footprint "[^"]*" \(layer "B\.Cu"\)/.test(result.kicadPcb), 'bottom components (components.z) are read');
   assert.ok(/\(\d+ "In8\.Cu" signal\)/.test(result.kicadPcb), 'ten copper layers');
   // the same job as a .tgz: the archive path keeps the compressed files as bytes too
-  execSync(`tar czf "${tmpDir}/multilayer.tgz" -C "${tmpDir}/ml" synthetic-multilayer`);
+  execSync(`tar czf "${join(tmpDir, 'multilayer.tgz')}" -C "${join(tmpDir, 'ml')}" synthetic-multilayer`);
   const fromTgz = await convertOdbArchive(new Uint8Array(readFileSync(join(tmpDir, 'multilayer.tgz'))));
   assert.equal(fromTgz.success, true, fromTgz.error);
   assert.equal(fromTgz.kicadPcb === result.kicadPcb, true, 'the archive converts to the same board');
@@ -323,10 +329,9 @@ console.log('--- Test 16: Panel step (STEP-REPEAT) vs native ---');
   assert.ok(panel.report.some((l) => l.startsWith('info: panel PANEL: step PCB placed 2 x 2')), 'the report says what was placed');
   const dir = mkdtempSync(join(tmpdir(), 'odb2kicad-panel-'));
   for (const f of files) {
-    execSync(`mkdir -p "${dirname(join(dir, f.path))}"`);
+    mkdirSync(dirname(join(dir, f.path)), { recursive: true });
     writeFileSync(join(dir, f.path), f.content);
   }
-  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
   const nativeOutput = execSync(`"${nativeBin}" --step panel "${dir}"`, { encoding: 'utf-8' });
   assert.equal(panel.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI on a panel');
   console.log('  PASS: 2 x 2 copies at 90 deg, nets Board_<n>-, identical to native');
@@ -337,14 +342,13 @@ console.log('--- Test 16: Panel step (STEP-REPEAT) vs native ---');
 // exception support turns any throw into an abort. The native CLI skipped the key.
 console.log('--- Test 17: named attribute keys and a remaining throw do not abort ---');
 {
-  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
   const base = loadDir(join(samplesDir, 'odb-output'));
   const feat = 'steps/pcb/layers/f.cu/features';
   const edit = (fn) => base.map((f) => (f.path === feat ? { path: f.path, content: fn(f.content) } : f));
   const writeJob = (files) => {
     const dir = mkdtempSync(join(tmpdir(), 'odb2kicad-job-'));
     for (const f of files) {
-      execSync(`mkdir -p "${dirname(join(dir, f.path))}"`);
+      mkdirSync(dirname(join(dir, f.path)), { recursive: true });
       writeFileSync(join(dir, f.path), f.content);
     }
     return dir;
@@ -372,7 +376,7 @@ console.log('--- Test 17: named attribute keys and a remaining throw do not abor
 // --- Test 18: the raw module (what the browser demo calls) returns errors instead of aborting ---
 console.log('--- Test 18: raw module: an error string, not an abort ---');
 {
-  const initModule = (await import(join(__dirname, '..', 'dist', 'odb2kicad_wasm.mjs'))).default;
+  const initModule = (await importDist('odb2kicad_wasm.mjs')).default;
   const M = await initModule();
   const files = loadDir(join(samplesDir, 'odb-output'));
   const write = (fn) => {
@@ -394,9 +398,8 @@ console.log('--- Test 18: raw module: an error string, not an abort ---');
 // --- Test 19: Xpedition job (designodb_rigidflex.tgz, INCH, ;ID= attributes) matches native ---
 console.log('--- Test 19: designodb_rigidflex.tgz (Mentor Xpedition export) ---');
 {
-  const nativeBin = join(__dirname, '..', '..', 'odb2kicad', 'build', 'odb2kicad');
-  const nativeOutput = execSync(`"${nativeBin}" "${join(samplesDir, 'rigidflex-odb', 'designodb_rigidflex')}" 2>/dev/null`,
-    { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024 });
+  const nativeOutput = execSync(`"${nativeBin}" "${join(samplesDir, 'rigidflex-odb', 'designodb_rigidflex')}"`,
+    { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
   const result = await convertOdbArchive(readFileSync(join(samplesDir, 'designodb_rigidflex.tgz')));
   assert.equal(result.success, true, result.error);
   assert.equal(result.kicadPcb === nativeOutput, true, 'WASM output should be byte-identical to native CLI');
