@@ -2,35 +2,26 @@
 
 ## Unreleased
 
-Fixes the web demo stopping with "Error: Aborted(). Build with -sASSERTIONS for more info." on jobs from some exporters (GitHub issue #7).
+## 0.4.1 (2026-11-18)
 
-### Cause
-- The WASM build had C++ exception catching off, Emscripten's default, so every `throw` in the converter became an `abort()` that stopped the WebAssembly module. The reader skipped some unusual lines by catching an exception: a named key among the numbered feature attributes (`;0=1,ID=7`, as Mentor-family tools such as Xpedition and PADS write), a symbol, attribute or string index that is not a number, or a number too large to read. The native CLI caught these and went on, or reported an error. The WASM build aborted.
-- The page served at the demo URL is the February 2026 build, older than 0.2.0, which had no handling for these attributes at all: the public Xpedition job `designodb_rigidflex` aborts there. 0.4.0 reads that job, but the throw paths were still in place.
+Fixes the web demo stopping with "Error: Aborted()" on jobs from some exporters (GitHub issue #7).
 
 ### Converter
-- The WASM build compiles with WebAssembly exception handling (`-fwasm-exceptions`). Anything that still throws now comes back as the converter's error, `internal: the converter failed: <what>`, the same as the native CLI, and the module keeps working. Running out of memory is reported as such. This needs Node 18+ or Chrome / Edge 95+, Firefox 100+, Safari 15.2+. The `.wasm` grows from 478 KB to 550 KB.
-- The WASM memory may grow to 4 GB, the most a 32-bit WebAssembly module can address (was Emscripten's default of 2 GB). The 11 MB `designodb_rigidflex` archive peaks near 200 MB. Running out of memory was also an abort; it is now reported as `internal: out of memory: ...`.
-- Numbers in records are read without exceptions (`parseInt()`). Named attribute keys (`ID=`, `UID=`) are skipped wherever they sit in the list, in features and in components. A symbol, attribute or string definition whose index is not a number, is negative, or is absurdly large is skipped, where the reader used to stop. A negative symbol index used to write outside the symbol table.
+- The WASM build now catches C++ exceptions (`-fwasm-exceptions`) instead of aborting. A failure comes back as the converter's error (`internal: the converter failed: <what>`), the same as the native CLI, and the module keeps working. Needs Node 18+ or Chrome / Edge 95+, Firefox 100+, Safari 15.2+. The `.wasm` grows from 478 KB to 550 KB.
+- WASM memory may grow to 4 GB (was 2 GB). Running out of memory is reported as `internal: out of memory: ...` instead of aborting.
+- Named attribute keys among numbered feature and component attributes (`;0=1,ID=7`, as Xpedition and PADS write) are skipped instead of stopping the reader.
+- Numbers are read without exceptions. A symbol, attribute or string definition with a non-numeric, negative or absurdly large index is skipped; a negative symbol index no longer writes outside the symbol table.
 
 ### Web demo
-- The page runs the npm package's wrapper (`dist/index.mjs`, now deployed beside it), the same code the Node tests cover. It finds the job inside an archive by its `matrix/matrix`, skips macOS `__MACOSX` files, reads long tar names, and starts a fresh converter after a crash, so no reload is needed.
-- A failed conversion says why, with the converter's reason (not an ODB++ job, archive unreadable, the reader's error, a browser without WebAssembly exception handling) and where to report it. It no longer leaves the previous board in the output panel.
-- The converter's report is shown under the status: its warnings (what it left out or could not read) and notes. The stats bar counts warnings.
-- Folder upload keeps compressed `.z` files as bytes (they were decoded as text, and the board lost most of its contents) and finds the job inside the chosen folder.
+- Runs the npm package's wrapper (`dist/index.mjs`), the same code the Node tests cover: finds the job inside an archive by its `matrix/matrix`, skips `__MACOSX` files, reads long tar names, and recovers from a crash without a reload.
+- A failed conversion says why and where to report it, and clears the previous board.
+- Shows the converter's warnings and notes under the status; the stats bar counts warnings.
+- Folder upload keeps compressed `.z` files as bytes and finds the job inside the chosen folder.
+- Moves to GitHub Pages: https://fixturfab.github.io/ODB2kicad/, built and deployed by `.github/workflows/pages.yml` (emsdk 3.1.50) on pushes to `main`, `v*` tags and on demand. The site also serves the npm package of its build (`odb2kicad-wasm.tgz`).
 
-### Demo hosting
-- The demo moves to GitHub Pages: https://fixturfab.github.io/ODB2kicad/. `.github/workflows/pages.yml` builds the WASM (emsdk 3.1.50) and the site from every push to `main`, from `v*` tags, and on demand, and deploys it with `actions/deploy-pages`. The build warns if it differs from the committed `wasm/dist`. `wasm/scripts/build-site.sh` assembles the site, in CI and for a local preview. The site also serves the npm package of its build (`odb2kicad-wasm.tgz`).
-- The README's Live Demo link and the page's source links point to GitHub.
-
-### Tests
-- Unit tests 85/85: `parse_int_does_not_throw`, `named_attribute_keys_and_bad_indices_are_skipped`.
-- WASM node tests 19/19. Test 17: named attribute keys convert, byte-identical to native, and a remaining throw is reported without a crash, after which the module still converts. Test 18: the same through the raw module, which the old demo called. Test 19: `designodb_rigidflex.tgz` (Xpedition) is byte-identical to native. Tests 17 and 18 fail on the 0.4.0 WASM with the reported `Aborted()`.
-
-### Docs and test fixtures
-- The bundled 12-layer INCH sample job with compressed files is removed; its coverage (compressed `.z` files, INCH by default with no `UNITS` lines, ten copper layers with negative planes, parts on both sides, process-map text, a drill tools table, a matrix row gap, no `misc/info`) moves to a made-up job, `test/synthetic_odb.py --variant multilayer`, used by `test_simple.sh`, the oracle suite (`--sample multilayer`), the oracle self-tests and the WASM node test. The compressed-file unit test uses bytes made from our own content.
-- The made-up job with a millimeter font, filled glyphs, V text and arcs without a direction is now `test/synthetic_odb.py --variant glyphs` (same board; its font is `fonts/mmfont`).
-- Comments and docs describe the reader's behavior directly.
+### Tests and fixtures
+- New unit tests for exception-free number parsing and skipped attribute keys and indices; new WASM node tests for named attribute keys, the raw module, and native parity on `designodb_rigidflex.tgz`.
+- The bundled 12-layer INCH sample job is replaced by a generated one, `test/synthetic_odb.py --variant multilayer`, with the same coverage; the millimeter-font job is now `--variant glyphs`.
 
 ## 0.4.0 (2026-11-16)
 
@@ -113,7 +104,7 @@ These rules refine the items below.
 - The oracle's rotation check compares angles instead of crashing on a turned part, its component count leaves out the converter's board-only footprints, and a 12-layer job with compressed files is a registered sample (all 8 checks pass since the outline and pin 1 checks were rewritten, above).
 - The round-up harness is 0.2.0: its reference applies the step origin and layer output transforms, strokes text from the font, maps document layers, reads `.z` files and picks the first step by COL.
 - `wasm/dist` rebuilt (emsdk 3.1.50) with every C++ change; WASM output is byte-identical to native on every public and made-up board. `wasm/odb2kicad-wasm.tgz` is repacked at 0.4.0.
-- A sample: a 12-layer INCH job with compressed files (removed again after 0.4.0, see Unreleased).
+- A sample: a 12-layer INCH job with compressed files (removed again in 0.4.1).
 - `test/synthetic_odb.py --variant origin`, `--variant stackup` and a third variant (now `--variant glyphs`: a millimetre font with filled glyphs, V text, arcs without a direction); the round-up's reference applies the step origin and the layer output transforms, strokes text from the font and maps document layers the same way.
 
 ## 0.3.1 (2026-11-06)
