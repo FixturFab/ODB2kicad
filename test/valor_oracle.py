@@ -397,7 +397,7 @@ class DirectOdbOracle:
         if odb_file(profile_path):
             step_data['profile'] = self._parse_profile(profile_path)
 
-        # The stephdr origin moves the whole step (spec 4.1), as the converter does
+        # The stephdr origin moves the whole step, as the converter does
         ox, oy = self._parse_step_origin(step_dir)
         step_data['origin'] = (ox, oy)
         if ox or oy:
@@ -853,8 +853,8 @@ def parse_feature_geometry(features_path) -> Dict[str, Any]:
                 elif t == 'L':
                     records.append(('L', _num(tok[1]), _num(tok[2]), _num(tok[3]), _num(tok[4]), int(tok[5]), tok[6] != 'N'))
                 elif t == 'A':
-                    # A xs ys xe ye xc yc sym [pol] [dcode] [cw]: the direction token is optional (the
-                    # reference reader does not read one); without it the arc runs counter-clockwise
+                    # A xs ys xe ye xc yc sym [pol] [dcode] [cw]: the direction token is optional (some
+                    # producers do not write it); without it the arc runs counter-clockwise
                     rest = [v.upper() for v in tok[8:]]
                     pol = rest.pop(0) != 'N' if rest and rest[0] in ('P', 'N') else True
                     if rest and re.fullmatch(r'[-+]?[\d.]+', rest[0]):

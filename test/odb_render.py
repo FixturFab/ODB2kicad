@@ -695,7 +695,7 @@ class OdbJob:
 
     def _text_strokes(self, rec: tuple, s: float) -> tuple:
         """A T record -> (strokes [(x1, y1, x2, y2, width mm, positive, round)], polygons
-        [(positive, [(x, y)..])]) in mm, drawn from its font by odb_render_text (the reader spec's
+        [(positive, [(x, y)..])]) in mm, drawn from its font by odb_render_text (our reference
         text renderer): glyphs scaled by xsize / XSIZE and ysize / YSIZE, one xsize apart (V: one
         ysize up), mirrored in X when the record says so, turned clockwise, moved to (x, y)."""
         font = self._font(rec[4])

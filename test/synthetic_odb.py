@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Made-up ODB++ boards for the round-up: no customer data, every feature known.
 
-    python3 test/synthetic_odb.py <out_dir> [--variant all|basic|edge]
+    python3 test/synthetic_odb.py <out_dir> [--variant all|basic|edge|...]
 
 ``basic``  a 4-layer board in INCH units: pads (r, rect with rounded corners, oval, donut, rotated
            and mirrored), traces and arcs on every copper layer (In1/In2 included), a surface with a
@@ -21,8 +21,11 @@
 ``text``   (only with --variant text) ``basic`` again with T text records and a vector font
            (fonts/standard): plain, turned and mirrored text on the silkscreen and on the NOTES
            document layer (drawn on User.1), and a negative text cut out of the GND plane.
-``specv2`` (only with --variant specv2) ``basic`` again with a millimetre font holding filled
+``glyphs`` (only with --variant glyphs) ``basic`` again with a millimetre font holding filled
            POLYGON glyphs and square-ended lines, T and V text, and arcs without a direction token
+``multilayer`` (only with --variant multilayer) a 10-copper-layer job with no UNITS lines and no
+           misc/info (all INCH by default), negative power planes, process-map text, a drill tools
+           file, parts on both sides, and compressed (``.z``) copper, components and eda/data files.
 ``steps``  (only with --variant steps) a job with two steps (PCB = ``basic`` in INCH, FLEX =
            ``edge`` in MM), an empty PANEL step that repeats PCB and a step folder the matrix does
            not name; the matrix lists the steps out of COL order.
@@ -130,19 +133,19 @@ TEXT["F.SILK"] = ("INCH", ["r6"], ["L 0.2 0.15 0.6 0.15 0 P 0", "T 0.9 0.6 stand
 TEXT["NOTES"] = ("INCH", ["r5"], ["L 0 0 2 1.2 0 P 0", "T 0.2 1.0 standard P 0 0.15 0.15 2 'EXIT' 1;0",
                                   "T 1.8 0.5 standard P 9 30 0.1 0.1 1 'LET' 1"])
 TEXT["GND"] = ("INCH", ["r40"], BASIC["GND"][2] + ["T 0.3 0.75 standard N 0 0.12 0.12 2 'TEXT' 1"])
-# the specv2 variant (reader spec v2): a font in millimetres (UNITS=MM, a 4 x 6 box) with a
+# the glyphs variant: a font in millimetres (UNITS=MM, a 4 x 6 box) with a
 # square-ended stroke glyph, a filled POLYGON glyph and one that is both; T and V records drawn
 # with it; arcs written without their direction token (read counter-clockwise), one with it
-FONT_V2 = ("UNITS=MM\nXSIZE 4.000000\nYSIZE 6.000000\nOFFSET 0.000000\n\n"
+FONT_MM = ("UNITS=MM\nXSIZE 4.000000\nYSIZE 6.000000\nOFFSET 0.000000\n\n"
            "CHAR I\nLINE 1.000000 0.000000 1.000000 5.000000 P S 0.300000\nECHAR\n\n"
            "CHAR O\nPOLYGON 4\n0.000000 0.000000\n3.000000 0.000000\n3.000000 5.000000\n0.000000 5.000000\nECHAR\n\n"
            "CHAR P\nLINE 0.500000 0.000000 0.500000 5.000000 P R 0.300000\n"
            "POLYGON\n0.500000 2.500000 3.000000 2.500000\n3.000000 5.000000 0.500000 5.000000\nECHAR\n")
-SPECV2 = dict(BASIC)
-SPECV2["F.SILK"] = ("INCH", ["r6"], ["A 0.5 0.2 0.3 0.2 0.4 0.2 0 P 0", "A 0.9 0.2 0.7 0.2 0.8 0.2 0 P 0 Y", "A 1.2 0.3 1.3 0.2 1.2 0.2 0",
-                                     "T 0.2 0.5 v2font P 0 0.1 0.15 1 'POI' 1", "V 1.6 0.2 v2font P 0 0.1 0.15 2 'IO' 1"])
-SPECV2["NOTES"] = ("MM", ["r100"], ["L 0 0 50 30 0 P 0", "T 10 20 v2font P 8 30 3 4.5 1 'OPIO' 1", "T 40 8 v2font P 9 45 2 3 1 'PO' 1"])
-SPECV2["GND"] = ("INCH", ["r40"], BASIC["GND"][2] + ["T 0.3 0.75 v2font N 0 0.12 0.18 2 'OP' 1"])
+GLYPHS = dict(BASIC)
+GLYPHS["F.SILK"] = ("INCH", ["r6"], ["A 0.5 0.2 0.3 0.2 0.4 0.2 0 P 0", "A 0.9 0.2 0.7 0.2 0.8 0.2 0 P 0 Y", "A 1.2 0.3 1.3 0.2 1.2 0.2 0",
+                                     "T 0.2 0.5 mmfont P 0 0.1 0.15 1 'POI' 1", "V 1.6 0.2 mmfont P 0 0.1 0.15 2 'IO' 1"])
+GLYPHS["NOTES"] = ("MM", ["r100"], ["L 0 0 50 30 0 P 0", "T 10 20 mmfont P 8 30 3 4.5 1 'OPIO' 1", "T 40 8 mmfont P 9 45 2 3 1 'PO' 1"])
+GLYPHS["GND"] = ("INCH", ["r40"], BASIC["GND"][2] + ["T 0.3 0.75 mmfont N 0 0.12 0.18 2 'OP' 1"])
 ORIGIN_IN = (0.5, -0.25)  # the origin variant's stephdr X_ORIGIN / Y_ORIGIN, inches
 USER_SYMBOL = ("INCH", ["r30"], ["P 0 0 0 P 0 0", "P 0.05 0 0 P 0 0", "L -0.05 -0.05 0.05 -0.05 0 P 0"])
 
@@ -297,6 +300,192 @@ def write_two_step_job(root: Path) -> Path:
     return root
 
 
+def unix_compress(data: bytes, max_bits: int = 16) -> bytes:
+    """UNIX ``compress`` (LZW, block mode) as ODB++ stores ``<name>.z`` files: 9-bit codes to start,
+    one bit wider each time the table fills, codes packed LSB first in groups of eight codes (a
+    group is padded out when the width changes, as compress(1) and every decoder expect)."""
+    out = bytearray([0x1F, 0x9D, 0x80 | max_bits])
+    table = {bytes([i]): i for i in range(256)}
+    free, n_bits, max_code = 257, 9, 511
+    acc = nacc = in_group = 0
+
+    def put(code):
+        nonlocal acc, nacc, in_group
+        acc |= code << nacc
+        nacc += n_bits
+        while nacc >= 8:
+            out.append(acc & 0xFF)
+            acc >>= 8
+            nacc -= 8
+        in_group = (in_group + 1) % 8
+
+    def widen():
+        nonlocal n_bits, max_code, in_group
+        while in_group:          # pad the group of eight codes at the old width
+            put(0)
+        n_bits += 1
+        max_code = (1 << max_bits) if n_bits == max_bits else (1 << n_bits) - 1
+
+    w = b""
+    for b in data:
+        wc = w + bytes([b])
+        if wc in table:
+            w = wc
+            continue
+        put(table[w])
+        if free > max_code and n_bits < max_bits:
+            widen()
+        if free < (1 << max_bits):
+            table[wc] = free
+            free += 1
+        w = bytes([b])
+    if w:
+        put(table[w])
+    if nacc:
+        out.append(acc & 0xFF)
+    return bytes(out)
+
+
+# multilayer job: what a non-KiCad CAM job looks like. No misc/info and no UNITS line anywhere
+# (every file is in the format's default INCH), a step named REV_A, a matrix with a missing row
+# (13), ten copper rows (two of them NEGATIVE power planes), DOCUMENT process-map layers with T
+# text in the job's font, a drill layer whose tools file sets the hole sizes (not the symbols),
+# parts on both sides, and the bottom copper, the components files and eda/data stored compressed
+# as <name>.z.
+ML_ROWS = [
+    (1, "COMP_+_TOP", "COMPONENT", "BOARD", "POSITIVE"), (2, "SST", "SILK_SCREEN", "BOARD", "POSITIVE"),
+    (3, "SMT", "SOLDER_MASK", "BOARD", "POSITIVE"), (4, "SIGT", "SIGNAL", "BOARD", "POSITIVE"),
+    (5, "PG2", "POWER_GROUND", "BOARD", "NEGATIVE"), (6, "SIG3", "SIGNAL", "BOARD", "POSITIVE"),
+    (7, "SIG4", "SIGNAL", "BOARD", "POSITIVE"), (8, "PG5", "POWER_GROUND", "BOARD", "NEGATIVE"),
+    (9, "SIG6", "SIGNAL", "BOARD", "POSITIVE"), (10, "SIG7", "SIGNAL", "BOARD", "POSITIVE"),
+    (11, "PG8", "POWER_GROUND", "BOARD", "POSITIVE"), (12, "SIG9", "SIGNAL", "BOARD", "POSITIVE"),
+    (14, "SIGB", "SIGNAL", "BOARD", "POSITIVE"), (15, "SMB", "SOLDER_MASK", "BOARD", "POSITIVE"),
+    (16, "COMP_+_BOT", "COMPONENT", "BOARD", "POSITIVE"), (17, "DRILL", "DRILL", "BOARD", "POSITIVE"),
+    (18, "PROCMAP_BOT", "DOCUMENT", "MISC", "POSITIVE"), (19, "PROCMAP_TOP", "DOCUMENT", "MISC", "POSITIVE"),
+]
+ML_COMPRESSED = ("sigb/features", "sig6/features", "comp_+_top/components", "comp_+_bot/components", "eda/data")
+ML_PROFILE = "F 1\nS P 0\nOB 0 0 I\nOS 0 2.0\nOS 3.0 2.0\nOS 3.0 0\nOS 0 0\nOE\nSE\n"
+ML_VIAS = [(0.25 + 0.25 * i, 1.75) for i in range(10)] + [(0.25 + 0.25 * i, 0.25) for i in range(10)]
+ML_THT = [(2.5, 1.0), (2.6, 1.0)]  # J1's two pins, drilled by tool 2
+# parts: (side, refdes, x, y, rotation, package); package 0 is a two-pin SMD chip, 1 a two-pin header
+ML_PARTS = [("T", "R1", 0.6, 1.0, 0, 0), ("T", "R2", 1.0, 1.0, 90, 0), ("T", "J1", 2.55, 1.0, 0, 1),
+            ("B", "C1", 0.6, 0.6, 0, 0), ("B", "C2", 1.4, 0.6, 270, 0), ("B", "C3", 1.8, 1.2, 45, 0)]
+ML_CHIP = 0.05  # package 0's pins sit 50 mil either side of its centre
+
+
+def _ml_pins(x, y, rot, pkg, bottom):
+    """Board positions of a part's two pins (ODB++ rotation is clockwise; a bottom part is mirrored in X)."""
+    import math
+    if pkg == 1:
+        return [ML_THT[0], ML_THT[1]]
+    a = math.radians(rot)
+    out = []
+    for px in (-ML_CHIP, ML_CHIP):
+        px = -px if bottom else px
+        out.append((round(x + px * math.cos(a), 6), round(y - px * math.sin(a), 6)))
+    return out
+
+
+def _ml_features(syms, body) -> str:
+    return "\n".join([f"F {len(body)}"] + [f"${i} {s}" for i, s in enumerate(syms)] + [""] + body) + "\n"
+
+
+def _ml_layers() -> dict:
+    via = [f"P {x} {y} 0 P 0 0" for x, y in ML_VIAS]
+    tht = [f"P {x} {y} 1 P 0 0" for x, y in ML_THT]
+    top_pads, bot_pads = [], []
+    for side, _ref, x, y, rot, pkg in ML_PARTS:
+        if pkg == 1:
+            continue
+        pads = [f"P {px} {py} 2 P 0 8 {float(rot)}" for px, py in _ml_pins(x, y, rot, pkg, side == "B")]
+        (top_pads if side == "T" else bot_pads).extend(pads)
+    syms = ["r30", "r60", "rect40x30"]
+    out = {}
+    copper = [r for r in ML_ROWS if r[2] in ("SIGNAL", "POWER_GROUND")]
+    for k, (_row, name, typ, _ctx, pol) in enumerate(copper):
+        body = via + tht
+        if name == "SIGT":
+            body = body + top_pads + ["L 0.25 1.75 0.55 1.0 3 P 0", "L 0.65 1.0 1.0 0.95 3 P 0", "L 2.5 1.0 1.05 1.0 3 P 0"]
+        elif name == "SIGB":
+            body = body + bot_pads + [f"L {0.25 + 0.25 * i} 0.25 {0.25 + 0.25 * i} 0.55 3 P 0" for i in range(10)] + \
+                ["A 1.4 0.65 1.8 1.15 1.6 0.9 3 P 0 N"]
+        elif pol == "NEGATIVE":
+            body = [f"P {x} {y} 4 P 0 0" for x, y in ML_VIAS + ML_THT]   # anti-pads: clearances in the plane
+        elif name == "PG8":
+            body = ["S P 0", "OB 0.1 0.1 I", "OS 0.1 1.9", "OS 2.9 1.9", "OS 2.9 0.1", "OS 0.1 0.1", "OE", "SE"] + body
+        else:
+            body = body + [f"L 0.1 {0.4 + 0.12 * k} 2.9 {0.4 + 0.12 * k} 3 P 0"]
+        out[name.lower()] = _ml_features(syms + ["r8", "r50"], body)
+    out["smt"] = _ml_features(["r36", "r66", "rect46x36"], [f"P {x} {y} 1 P 0 0" for x, y in ML_THT] +
+                              top_pads)
+    out["smb"] = _ml_features(["r36", "r66", "rect46x36"], [f"P {x} {y} 1 P 0 0" for x, y in ML_THT] + bot_pads)
+    out["sst"] = _ml_features(["r6"], ["L 0.5 1.1 0.7 1.1 0 P 0", "T 2.3 1.2 standard P 0 0.06 0.06 0.5 'TILE' 1"])
+    out["drill"] = _ml_features(["r19", "r40"], [f"P {x} {y} 0 P 1 0" for x, y in ML_VIAS] +
+                                [f"P {x} {y} 1 P 2 0" for x, y in ML_THT])
+    out["procmap_bot"] = _ml_features(["r36"], ["T 0.2 -0.6 standard P 0 0.2 0.2 3 'TEXT' 1",
+                                                "T 1.4 -0.6 standard P 0 0.2 0.2 3 'LIE' 1",
+                                                "T 2.2 -0.6 standard P 0 0.2 0.2 3 'EXIT' 1"])
+    out["procmap_top"] = _ml_features(["r10"], ["L 0 2.2 3.0 2.2 0 P 0"])
+    return out
+
+
+ML_TOOLS = ("THICKNESS=62.0\nUSER_PARAMS=\n"
+            "TOOLS {\n    NUM=1\n    TYPE=VIA\n    TYPE2=STANDARD\n    MIN_TOL=0\n    MAX_TOL=0\n    BIT=\n"
+            "    FINISH_SIZE=16.0\n    DRILL_SIZE=18.0\n}\n\n"
+            "TOOLS {\n    NUM=2\n    TYPE=PLATED\n    TYPE2=STANDARD\n    MIN_TOL=0\n    MAX_TOL=0\n    BIT=\n"
+            "    FINISH_SIZE=40.0\n    DRILL_SIZE=42.0\n}\n")
+
+
+def _ml_eda() -> str:
+    pkgs = ("PKG CHIP 0.1 -0.08 -0.03 0.08 0.03;\nRC -0.08 -0.03 0.16 0.06\n"
+            f"PIN 1 S {-ML_CHIP} 0 0 E S\nRC -0.07 -0.015 0.04 0.03\nPIN 2 S {ML_CHIP} 0 0 E S\nRC 0.03 -0.015 0.04 0.03\n"
+            "PKG HDR2 0.1 -0.1 -0.05 0.2 0.05;\nRC -0.1 -0.05 0.3 0.1\n"
+            "PIN 1 T 0 0 0 E T\nCR 0 0 0.03\nPIN 2 T 0.1 0 0 E T\nCR 0.1 0 0.03\n")
+    nets = ["NET $NONE$"]
+    top = [i for i, p in enumerate(ML_PARTS) if p[0] == "T"]
+    bot = [i for i, p in enumerate(ML_PARTS) if p[0] == "B"]
+    for side, ids in (("T", top), ("B", bot)):
+        for k, _i in enumerate(ids):
+            nets.append(f"NET N{side}{k}\nSNT TOP {side} {k} 0\nSNT TOP {side} {k} 1")
+    return "HDR synthetic CAM\nLYR sigt sigb\n\n" + "\n".join(nets) + "\n\n" + pkgs
+
+
+def _ml_components(side: str) -> str:
+    out, k = [], 0
+    for s, ref, x, y, rot, pkg in ML_PARTS:
+        if s != side:
+            continue
+        mirror = "M" if side == "B" else "N"
+        out.append(f"# CMP {k}\nCMP {pkg} {x} {y} {rot} {mirror} {ref} {('CHIP', 'HDR2')[pkg]}")
+        for n, (px, py) in enumerate(_ml_pins(x, y, rot, pkg, side == "B")):
+            out.append(f"TOP {n} {px} {py} {float(rot)} {mirror} 0 0 {n + 1}")
+        k += 1
+    return "\n".join(out) + "\n#\n"
+
+
+def write_multilayer_job(root: Path) -> Path:
+    step = root / "steps" / "rev_a"
+    files = {"matrix/matrix": "STEP {\n    COL=1\n    NAME=REV_A\n}\n\n" + "\n".join(
+        f"LAYER {{\n    ROW={r}\n    CONTEXT={c}\n    TYPE={t}\n    NAME={n}\n    POLARITY={p}\n    START_NAME=\n"
+        f"    END_NAME=\n    OLD_NAME=\n}}\n" for r, n, t, c, p in ML_ROWS),
+        "fonts/standard": TEXT_FONT}
+    st = {"stephdr": "X_DATUM=0\nY_DATUM=0\n", "profile": ML_PROFILE, "eda/data": _ml_eda(),
+          "layers/comp_+_top/components": _ml_components("T"), "layers/comp_+_bot/components": _ml_components("B"),
+          "layers/drill/tools": ML_TOOLS}
+    st.update({f"layers/{k}/features": v for k, v in _ml_layers().items()})
+    for rel, text in files.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text)
+    for rel, text in st.items():
+        f = step / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        if any(rel.endswith(c) for c in ML_COMPRESSED):
+            (f.parent / (f.name + ".z")).write_bytes(unix_compress(text.encode()))
+        else:
+            f.write_text(text)
+    return root
+
+
 def kicad_equivalent() -> str:
     """BASIC's positive TOP / F.SILK / profile features, as KiCad would hold them (mm, y down)."""
     I = 25.4  # noqa: E741
@@ -326,7 +515,7 @@ def kicad_equivalent() -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("out", type=Path)
-    ap.add_argument("--variant", choices=("all", "basic", "edge", "mixed", "outline", "negative", "symbols", "origin", "stackup", "steps", "text", "specv2"), default="all")
+    ap.add_argument("--variant", choices=("all", "basic", "edge", "mixed", "outline", "negative", "symbols", "origin", "stackup", "steps", "text", "glyphs", "multilayer"), default="all")
     a = ap.parse_args()
     made = []
     if a.variant in ("all", "basic"):
@@ -349,8 +538,10 @@ def main() -> int:
         made.append(write_two_step_job(a.out / "synthetic-steps"))
     if a.variant == "text":  # not in "all" either
         made.append(write_job(a.out / "synthetic-text", TEXT, PROFILE_IN, USER_SYMBOL, font=TEXT_FONT))
-    if a.variant == "specv2":  # not in "all" either
-        made.append(write_job(a.out / "synthetic-specv2", SPECV2, PROFILE_IN, USER_SYMBOL, font=FONT_V2, font_name="v2font"))
+    if a.variant == "glyphs":  # not in "all" either
+        made.append(write_job(a.out / "synthetic-glyphs", GLYPHS, PROFILE_IN, USER_SYMBOL, font=FONT_MM, font_name="mmfont"))
+    if a.variant == "multilayer":  # not in "all" either
+        made.append(write_multilayer_job(a.out / "synthetic-multilayer"))
     for m in made:
         print(m)
     return 0

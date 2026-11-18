@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(odb2kicad LANGUAGES CXX)
 
-# Optimized unless told otherwise: a real job (samples/demo-design) converts in seconds, not minutes
+# Optimized unless told otherwise: a large real-world job converts in seconds, not minutes
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()

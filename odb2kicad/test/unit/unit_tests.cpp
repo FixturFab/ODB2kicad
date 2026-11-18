@@ -1135,7 +1135,7 @@ TEST(bottom_package_outline_claims_a_donut_rc_courtyard) {
     }
 }
 
-// The same part from a producer that follows the spec (package written unflipped, M mirrors it):
+// The same part from a producer that follows the ODB++ spec (package written unflipped, M mirrors it):
 // the pin lands on the terminal only when mirrored, so the mirrored outline claims the strokes.
 TEST(spec_mirrored_bottom_package_is_placed_mirrored) {
     OdbDesign d = bottomCourtyardDesign(false);
@@ -1450,7 +1450,7 @@ TEST(equal_inner_layers_make_a_front_inner_back_via_and_uniform_boards_stay_kica
     CHECK(out.find("padstack") == std::string::npos);
 }
 
-// Class 6: a mirrored flash (orient 9) is read clockwise, as the spec says, unless misc/info
+// Class 6: a mirrored flash (orient 9) is read clockwise, as the ODB++ spec says, unless misc/info
 // names KiCad, whose exporter writes that angle counter-clockwise.
 TEST(mirrored_flash_angle_follows_the_producer) {
     for (const char* src : {"KiCad EDA", "Xpedition xPCB Layout", ""}) {
@@ -1893,7 +1893,7 @@ TEST(joined_custom_pads_are_net_ties) {
     CHECK(writeString(pcb).find("(net_tie_pad_groups \"1, 2\")") != std::string::npos);
 }
 
-// ---------------------------------------------------------------- gap closure (spec section 4)
+// ---------------------------------------------------------------- steps, netlists, tools, attrlists, fonts, matrix
 
 // Twice the signed area of a ring
 static double signedArea2(const std::vector<std::pair<double,double>>& r) {
@@ -1923,7 +1923,7 @@ static std::string tinyJob(const std::string& name, const std::string& stephdr,
     return dir;
 }
 
-// 4.1: every coordinate of a step is relative to the stephdr origin (x' = x + X_ORIGIN,
+// every coordinate of a step is relative to the stephdr origin (x' = x + X_ORIGIN,
 // y' = y + Y_ORIGIN), in the stephdr's own units; the datum is not a transform.
 TEST(stephdr_origin_moves_the_step) {
     const std::string comps = "UNITS=MM\nCMP 0 10 5 0 N R1 pkg\nTOP 0 10 5 0 N 0 0 1\n";
@@ -1979,7 +1979,7 @@ TEST(stephdr_origin_moves_the_step) {
     CHECK_NEAR(moved.layerFeatures.at("top").pads[0].x, before, 1e-12);
 }
 
-// 4.2: a netlist point is <net> <radius> <x> <y> <side> [<w> <h>] <epoint> <exp> ... [v]. The
+// a netlist point is <net> <radius> <x> <y> <side> [<w> <h>] <epoint> <exp> ... [v]. The
 // letters after <side> used to be read as numbers, which lost the rest of the line and with it
 // the trailing "v" that marks a via point.
 TEST(netlist_points_are_read_as_tokens) {
@@ -1990,7 +1990,7 @@ TEST(netlist_points_are_read_as_tokens) {
               "0 0.30 118.0 -102.0 B e e staggered 0 0 0 v\n"
               "1 0 124.38 -90.90 T 0.80 0.95 e s\n"             // an SMD pad: w and h, no hole
               "1 1.0 55.0 -20.0 B e e staggered 0 0 0\n"        // odb-rotation: a pin hole, not a via
-              "1 0.009 0.6 0.475 B e e staggered 0 0 0 v \n"    // demo-design: trailing blank
+              "1 0.009 0.6 0.475 B e e staggered 0 0 0 v \n"    // a CAM netlist: trailing blank
               "0 0.002 4.825 3.965 T e e \n"
               "-1 0 1 2 T 0.5 0.5 m e\n"
               "0 x 1 2 T e e v\n");                             // not a point: skipped
@@ -2019,7 +2019,7 @@ TEST(netlist_points_are_read_as_tokens) {
     CHECK_EQ(p[6].epoint, std::string("m"));
 }
 
-// 4.2: a via with no FID record takes the net of the netlist point marked "v" at its place, not
+// a via with no FID record takes the net of the netlist point marked "v" at its place, not
 // of whatever other point happens to sit there
 TEST(via_net_comes_from_the_via_netlist_point) {
     OdbDesign d = kicadDesign();
@@ -2040,7 +2040,7 @@ TEST(via_net_comes_from_the_via_netlist_point) {
     CHECK_EQ(name, std::string("SIG"));
 }
 
-// 4.3: the tools file grammar: THICKNESS, USER_PARAMS, TOOLS { NUM TYPE [TYPE2] MIN_TOL MAX_TOL
+// the tools file grammar: THICKNESS, USER_PARAMS, TOOLS { NUM TYPE [TYPE2] MIN_TOL MAX_TOL
 // BIT FINISH_SIZE DRILL_SIZE }; lenient about empty values, unknown keys and an empty file
 TEST(drill_tools_file_is_parsed) {
     std::string dir = tempDir("tools_grammar");
@@ -2102,7 +2102,7 @@ static double viaDrillAt(const KicadPcb& pcb, double xIn) {
     return -1;
 }
 
-// 4.3: the drill size is the tools table's DRILL_SIZE (thousandths of the file's unit: mils for
+// the drill size is the tools table's DRILL_SIZE (thousandths of the file's unit: mils for
 // INCH), found by the hit's dcode (= tool NUM), its .bit string, a TOOL<n> string or its symbol's
 // size; the flash symbol only when the table names no tool for the hit.
 TEST(drill_sizes_come_from_the_tools_table) {
@@ -2143,7 +2143,7 @@ TEST(drill_sizes_come_from_the_tools_table) {
     }
 }
 
-// 4.3: a hit without .drill / .pad_usage takes plated / non-plated / via from its tool's TYPE; a
+// a hit without .drill / .pad_usage takes plated / non-plated / via from its tool's TYPE; a
 // size shared by tools of two types gives the size only (KiCad writes one tool per hit, dcode 0)
 TEST(drill_kind_comes_from_the_tool_type) {
     const std::string feats =
@@ -2173,7 +2173,7 @@ TEST(drill_kind_comes_from_the_tool_type) {
     CHECK_EQ(plated, 1);
 }
 
-// 4.4: attrlist files are "key = value" lines; empty and missing files are legal, unknown keys kept
+// attrlist files are "key = value" lines; empty and missing files are legal, unknown keys kept
 TEST(attrlist_is_lenient) {
     std::string dir = tempDir("attrlist");
     writeFile(dir + "/a", "UNITS=INCH\n.layer_dielectric=0.00255906\n.out_x_scale = 1.000000\n.out_mirror = no\n"
@@ -2225,7 +2225,7 @@ static std::string stackJob(const std::string& name, const std::vector<std::pair
     return dir;
 }
 
-// 4.4: board thickness is the stackup the attrlists describe (dielectric rows, plus copper and
+// board thickness is the stackup the attrlists describe (dielectric rows, plus copper and
 // mask), else a drill table's THICKNESS, else the 1.6 mm default; the report says which
 TEST(board_thickness_comes_from_the_job) {
     auto reportHas = [](const OdbDesign& d, const std::string& what) {
@@ -2267,7 +2267,7 @@ TEST(board_thickness_comes_from_the_job) {
         CHECK_NEAR(in.boardThickness, 1.5748, 1e-9);
         CHECK(reportHas(in, "from THICKNESS of layers/drl/tools"));
     }
-    {   // spec v2 3.9: an explicit .board_thickness is the authority, over the stackup rows and
+    {   // an explicit .board_thickness is the authority, over the stackup rows and
         // the drill table; the step's attrlist first, then the job's (each in its own units)
         std::string dir = stackJob("thick_explicit", {{"d1", ".layer_dielectric=0.5\n"}}, "UNITS=MM\nTHICKNESS=1234\n");
         writeFile(dir + "/misc/attrlist", "UNITS=INCH\n.comment=x\n.board_thickness=0.0547402\n");
@@ -2298,7 +2298,7 @@ TEST(board_thickness_comes_from_the_job) {
     }
 }
 
-// 4.4: a layer's .out_x_scale / .out_y_scale / .out_mirror / .out_angle move that layer's
+// a layer's .out_x_scale / .out_y_scale / .out_mirror / .out_angle move that layer's
 // features (scale about zero, mirror in X, turn clockwise) and no other layer; identity values
 // (what every sample carries) change nothing
 TEST(layer_output_transform_is_applied) {
@@ -2389,7 +2389,7 @@ static std::string twoStepJob(const std::string& name) {
     return dir;
 }
 
-// 4.5: every steps/* folder is a design of its own: the matrix's STEP records by COL first, then
+// every steps/* folder is a design of its own: the matrix's STEP records by COL first, then
 // folders it does not name; a step without layer data is skipped with a warning
 TEST(every_step_of_a_job_is_read) {
     std::string dir = twoStepJob("two_steps");
@@ -2610,7 +2610,7 @@ TEST(panel_steps_place_their_steps) {
     CHECK(has(bareRep, "nested steps are not drawn"));
 }
 
-// 4.5: components come from every COMPONENT row of the matrix, not only comp_+_top / comp_+_bot:
+// components come from every COMPONENT row of the matrix, not only comp_+_top / comp_+_bot:
 // a row above the first copper row mounts on the top, one below it on the bottom
 TEST(components_come_from_every_component_row) {
     OdbDesign d;
@@ -2638,7 +2638,7 @@ TEST(components_come_from_every_component_row) {
     CHECK(l1 && l1->shape == "rect");
 }
 
-// 4.6: the CT ... CE / RC / CR / SQ records after a PIN are that pin's outline (they used to be
+// the CT ... CE / RC / CR / SQ records after a PIN are that pin's outline (they used to be
 // skipped); the ones before the first PIN stay the package's
 TEST(pin_outlines_are_parsed) {
     std::string dir = tempDir("pin_outlines");
@@ -2679,7 +2679,7 @@ TEST(pin_outlines_are_parsed) {
     CHECK(eda.packages[1].pins[0].outlines.empty());
 }
 
-// 4.6: a pin with no copper flash and no surface of its own takes its pad shape from its pin
+// a pin with no copper flash and no surface of its own takes its pad shape from its pin
 // outline (a centred rectangle is a rect pad, anything else a custom pad); a pin that has a flash
 // keeps the flash, whatever its outline says
 TEST(pin_outline_is_the_pad_shape_without_a_flash) {
@@ -2830,7 +2830,7 @@ static const char* kTinyFont =
     "CHAR -\nLINE -0.100000 0.050000 0.100000 0.050000 N S 0.024000\nECHAR\n\n"
     "CHAR x\nECHAR\n";
 
-// 4.7: fonts/<name>: XSIZE / YSIZE / OFFSET, then CHAR <c> LINE ... ECHAR per character
+// fonts/<name>: XSIZE / YSIZE / OFFSET, then CHAR <c> LINE ... ECHAR per character
 TEST(font_file_is_parsed) {
     std::string dir = tempDir("font");
     writeFile(dir + "/standard", kTinyFont);
@@ -2856,7 +2856,7 @@ TEST(font_file_is_parsed) {
     CHECK(!parseFont(dir + "/empty", none));         // no cell size: not a font
 }
 
-// 4.7: T x y font pol orient [angle] xsize ysize width 'text' version;attrs (they used to be
+// T x y font pol orient [angle] xsize ysize width 'text' version;attrs (they used to be
 // counted and dropped); V is the same record drawn downwards
 TEST(text_records_are_parsed) {
     std::string dir = tempDir("text_records");
@@ -2907,7 +2907,7 @@ TEST(text_records_are_parsed) {
     CHECK_EQ(f.pads[0].featIdx, 6);         // line, 4 texts, barcode, then the pad
 }
 
-// Spec v2 3.8: a font may carry its own UNITS line, square-ended lines and filled POLYGON
+// a font may carry its own UNITS line, square-ended lines and filled POLYGON
 // glyphs; a line that cannot be read is skipped and named
 TEST(font_units_polygons_and_bad_lines) {
     std::string dir = tempDir("font_v2");
@@ -2958,7 +2958,7 @@ TEST(font_units_polygons_and_bad_lines) {
     CHECK_NEAR(polys[1].points[2].second, 20 + 3, 1e-12);
 }
 
-// 4.7 / spec v2 3.8: a text is its characters' font strokes, scaled by xsize / XSIZE and
+// a text is its characters' font strokes, scaled by xsize / XSIZE and
 // ysize / YSIZE, each glyph's own zero one xsize on from the text's location; mirrored, turned
 // clockwise; `weight` font line widths wide
 TEST(text_strokes_are_scaled_and_placed) {
@@ -3020,7 +3020,7 @@ TEST(text_strokes_are_scaled_and_placed) {
     CHECK_NEAR(s[1].y1, s[0].y1 + 0.906, 1e-9);
 }
 
-// Spec v2 3.6: an arc's direction token is optional (the reference reader does not read one):
+// an arc's direction token is optional (some producers do not write it):
 // honoured when written, counter-clockwise (centre on the left of travel) when not; polarity
 // and dcode may be missing too
 TEST(arc_direction_token_is_optional) {
@@ -3087,7 +3087,7 @@ static int linesOn(const KicadPcb& pcb, const std::string& layer) {
     return n;
 }
 
-// 4.7: texts reach the board as gr_line strokes on their layer; a DOCUMENT layer without a KiCad
+// texts reach the board as gr_line strokes on their layer; a DOCUMENT layer without a KiCad
 // layer of its name is drawn on the next free User.N layer under its own name
 TEST(texts_are_drawn_as_strokes_on_their_layer) {
     const std::string notes = "$0 r10\nL 0 0 1 0 0 P 0\nT 2.5 1 standard P 0 0.4 0.4 3.00000 'LI.' 1;0\n"
@@ -3166,7 +3166,7 @@ TEST(texts_are_drawn_as_strokes_on_their_layer) {
     CHECK(noFont);
 }
 
-// 4.7: a negative text clears the copper drawn before it, like any negative line
+// a negative text clears the copper drawn before it, like any negative line
 TEST(negative_text_cuts_the_plane_under_it) {
     std::string dir = textJob("text_negative", "made-up", "$0 r10\n");
     writeFile(dir + "/steps/pcb/layers/top/features",
@@ -3200,7 +3200,7 @@ TEST(negative_text_cuts_the_plane_under_it) {
     for (auto& s : pcb.segments) CHECK(std::abs(s.width - 3 * 0.012 * 25.4) > 1e-6);  // not drawn as a track
 }
 
-// 4.8: the matrix keeps COL, OLD_NAME, COLOR and ID, and its rows their numbers (a gap is legal)
+// the matrix keeps COL, OLD_NAME, COLOR and ID, and its rows their numbers (a gap is legal)
 TEST(matrix_is_captured_in_full) {
     std::string dir = tempDir("matrix_full");
     writeFile(dir + "/matrix",
@@ -3241,7 +3241,7 @@ TEST(matrix_is_captured_in_full) {
     CHECK_EQ(first, std::string("PANEL"));  // the first STEP record of the file
 }
 
-// 4.8: misc/info: the ODB++ version and the dates are kept, with every other key
+// misc/info: the ODB++ version and the dates are kept, with every other key
 TEST(info_captures_version_and_dates) {
     std::string dir = tempDir("info_full");
     writeFile(dir + "/info", "JOB_NAME=designodb_rigidflex\nODB_VERSION_MAJOR=8\nODB_VERSION_MINOR=1\n"
@@ -3289,7 +3289,7 @@ static bool reportHas(const std::vector<std::string>& report, const std::string&
     return false;
 }
 
-// 4.8 / 3.2 / 3.11: the version goes into the board's generator and the report; an old job, an
+// the version goes into the board's generator and the report; an old job, an
 // unknown layer TYPE and a drill span that names no copper row are read with a warning; an ODX
 // (XML) matrix is refused
 TEST(version_and_matrix_checks_are_reported) {
@@ -3305,13 +3305,13 @@ TEST(version_and_matrix_checks_are_reported) {
         CHECK(!reportHas(r.report, "warning:"));
         CHECK_EQ(r.jobName, std::string("named_by_file"));    // misc/job_name when misc/info has no JOB_NAME
     }
-    {   // version 7: read, with the reference reader's warning
+    {   // version 7: read, with a warning
         ConvertResult r = convert(matrixJob("ver_7", "UNITS=MM\nODB_VERSION_MAJOR=7\nODB_VERSION_MINOR=0\n", ""));
         CHECK(r.success);
         CHECK(r.kicad_pcb.find("odb++:v7.0") != std::string::npos);
         CHECK(reportHas(r.report, "warning: the job is ODB++ version 7.0; it is read as version 8, which may lose data"));
     }
-    {   // no misc/info at all (demo-design): no version in the generator, said in the report
+    {   // no misc/info at all (some CAM jobs): no version in the generator, said in the report
         ConvertResult r = convert(matrixJob("ver_none", "", ""));
         CHECK(r.success);
         CHECK(r.kicad_pcb.find("(generator \"odb2kicad/" ODB2KICAD_VERSION "\")") != std::string::npos);
@@ -3350,12 +3350,13 @@ TEST(version_and_matrix_checks_are_reported) {
     }
 }
 
-// Beyond the spec's list: ODB++ stores any file compressed with UNIX compress as <name>.z.
-// demo-design ships eda/data, both components files and seven layers' features that way.
+// ODB++ lets any file of a job be stored compressed with UNIX compress, as <name>.z; CAM tools
+// commonly ship eda/data, the components files and the larger layers' features that way.
 TEST(compressed_files_are_read) {
-    // steps/rev_a/chk/assembly/actions/1/res/sres/sig9/meas.z of demo-design, as shipped
-    static const unsigned char z[] = {0x1f, 0x9d, 0x90, 0x30, 0x40, 0xc4, 0xc8, 0x21, 0x10, 0x84, 0x13, 0x10, 0x50, 0x40, 0xcc, 0x89, 0x21, 0xa3, 0x86, 0x82, 0x29, 0x20, 0xa6, 0x1c, 0x11, 0xe8, 0x22, 0x06, 0x8e, 0x1b, 0x35, 0x40, 0xdc, 0x70, 0x01, 0x03, 0x46, 0x43, 0x8a, 0x16, 0x31, 0x6a, 0xe4, 0xe8, 0xd1, 0x61, 0x0c, 0x81, 0x04, 0x4f, 0x1e, 0x4c, 0xb8, 0xb0, 0xe1, 0xc3, 0x88, 0x13, 0x61, 0xb8, 0xa8, 0xc1, 0x30, 0xa3, 0xcc, 0x18, 0x35, 0x41, 0xc8, 0xac, 0x41, 0x83, 0x06, 0x0c, 0x1c, 0x33, 0x66, 0xe8, 0xac, 0x68, 0x83, 0xe6, 0x0c, 0x1c, 0x39, 0x14, 0xc8, 0x40, 0x59, 0x70, 0xa5, 0xc2, 0x9a, 0x2f, 0x25, 0x82, 0x90, 0xe1, 0xe2, 0x46, 0x4e, 0x99, 0x30, 0x6c, 0x7c, 0xa4, 0x6a, 0xf5, 0xe3, 0x4d, 0x19, 0x2e, 0x01};
-    const std::string want = "0 19 1 N P s125\nS SG 1.1875 7.0025 1.1875 7.0025\n1 19 1 N P s125\nS SG 0.5125 0.1125 0.5440833 0.1651389\n2 19 1 N P s125\nS SG 2.7125 0.0625 2.7125 0.1225\n";
+    // a small features file and a components file, each run through UNIX compress (LZW, block mode)
+    static const unsigned char z[] = {0x1f, 0x9d, 0x90, 0x55, 0x9c, 0x24, 0xa1, 0x32, 0xa5, 0x47, 0x12, 0x27, 0x43, 0x90, 0x28, 0x20, 0x01, 0x03, 0x84, 0x9c, 0x18, 0x30, 0x16, 0xc6, 0x70, 0x58, 0x66, 0x0c, 0x1d, 0x1a, 0x30, 0xf0, 0xcc, 0x88, 0x08, 0x05, 0x04, 0x0c, 0x17, 0x35, 0x3c, 0xba, 0x90, 0x11, 0xb2, 0x61, 0xc7, 0x86, 0x1c, 0x45, 0xde, 0x28, 0x39, 0x32, 0xe4, 0xc4, 0x93, 0x20, 0x70, 0x80, 0xc8, 0xf1, 0x31, 0x22, 0x13, 0x91, 0x2c, 0x49, 0xaa, 0xcc, 0x59, 0x12, 0xc4, 0x49, 0x05, 0x37, 0x3f, 0xae, 0x14, 0xa9, 0x53, 0x28, 0xcb, 0x9e, 0x3f, 0x01};
+    const std::string want = "UNITS=INCH\n$0 r10\n$1 rect40x30\nP 0.5 0.25 0 P 0 0\nP 0.75 0.25 1 P 0 8 90.0\nL 0.5 0.25 0.75 0.25 0 P 0\nL 0.75 0.25 0.75 0.5 0 P 0\n";
+    static const unsigned char zc[] = {0x1f, 0x9d, 0x90, 0x55, 0x9c, 0x24, 0xa1, 0x32, 0xa5, 0x47, 0x12, 0x27, 0x43, 0x90, 0x28, 0x18, 0x01, 0x62, 0x48, 0x13, 0x28, 0x20, 0x60, 0x28, 0x70, 0x08, 0x11, 0x46, 0x44, 0x17, 0x36, 0x40, 0xc4, 0x70, 0x61, 0xd1, 0xa2, 0x13, 0x10, 0x52, 0x62, 0x34, 0x44, 0x92, 0x04, 0x8a, 0x02, 0x2a, 0x4f, 0x2a, 0x5e, 0xac, 0x51, 0x43, 0x23, 0xc7, 0x8b, 0x1e, 0x23, 0xca, 0x8c, 0x71, 0x32, 0xa5, 0xc6, 0x8b, 0x36, 0x5a, 0x6e, 0xec, 0xf8, 0xf2, 0x63, 0x47, 0x10, 0x32, 0x16, 0x2a, 0x00};
     std::string got;
     CHECK(unixDecompress(std::string((const char*)z, sizeof(z)), got));
     CHECK_EQ(got, want);
@@ -3368,6 +3369,8 @@ TEST(compressed_files_are_read) {
     {
         std::ofstream f(dir + "/features.z", std::ios::binary);
         f.write((const char*)z, sizeof(z));
+        std::ofstream c(dir + "/components.z", std::ios::binary);
+        c.write((const char*)zc, sizeof(zc));
     }
     CHECK(odbFileExists(dir + "/features"));
     CHECK(!odbFileExists(dir + "/nothing"));
@@ -3378,25 +3381,18 @@ TEST(compressed_files_are_read) {
         std::getline(*in, first);
         CHECK_EQ(first, want.substr(0, want.find('\n')));
     }
+    OdbFeatures packed;
+    CHECK(parseFeatures(dir + "/features", packed));
+    CHECK_EQ(packed.pads.size(), (size_t)2);
+    CHECK_EQ(packed.lines.size(), (size_t)2);
+    OdbComponents comps;
+    CHECK(parseComponents(dir + "/components", comps));
+    CHECK_EQ(comps.components.size(), (size_t)1);
+    if (!comps.components.empty()) CHECK_EQ(comps.components[0].terminals.size(), (size_t)2);
     writeFile(dir + "/features", "UNITS=MM\n$0 r100\nP 1 2 0 P 0 0\n");
     OdbFeatures plain;
     CHECK(parseFeatures(dir + "/features", plain));
     CHECK_EQ(plain.pads.size(), (size_t)1);
-
-    // the fixture itself: its bottom copper, components and eda/data are compressed
-    std::string here = __FILE__;
-    std::string demo = here.substr(0, here.find_last_of('/')) + "/../../../samples/demo-design";
-    OdbFeatures sigb;
-    if (!odbFileExists(demo + "/steps/rev_a/layers/sigb/features")) { std::cerr << "    (samples/demo-design not found; fixture checks skipped)\n"; return; }
-    CHECK(parseFeatures(demo + "/steps/rev_a/layers/sigb/features", sigb));
-    CHECK(sigb.pads.size() > 5000);
-    OdbComponents top;
-    CHECK(parseComponents(demo + "/steps/rev_a/layers/comp_+_top/components", top));
-    CHECK(top.components.size() > 100);
-    OdbEdaData eda;
-    CHECK(parseEdaData(demo + "/steps/rev_a/eda/data", eda));
-    CHECK(eda.nets.size() > 100);
-    CHECK(!eda.packages.empty());
 }
 
 // keyhole(): the grid search splices every hole where trying every pair does, point for point,

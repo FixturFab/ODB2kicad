@@ -1,7 +1,0 @@
-DISPLAY {
-    L0 = drill
-}
-DISPLAY {
-    L0 = drill
-    L1 = procmap_bot
-}

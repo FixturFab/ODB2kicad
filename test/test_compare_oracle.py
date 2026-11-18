@@ -1,6 +1,6 @@
 """Tests for compare_oracle.py's bounding_box and pin1_positions checks: they pass on the
 converter's boards and fail on boards broken on purpose. Uses the samples under samples/;
-the converter is only needed for the demo-design case (skipped when it is not built).
+the converter is only needed for the synthetic multilayer case (skipped when it is not built).
 
     python3 -m unittest discover -s test -p 'test_compare_oracle.py' -v
 """
@@ -85,17 +85,17 @@ class Checks(unittest.TestCase):
         self.assertIn("turned 90 deg", r.message)
 
     @unittest.skipUnless(BIN.exists(), "converter not built")
-    def test_demo_design_rotated_and_bottom_parts(self):
-        odb = ROOT / "samples" / "demo-design"
+    def test_multilayer_rotated_and_bottom_parts(self):
+        import synthetic_odb  # noqa: PLC0415
         with tempfile.TemporaryDirectory() as d:
-            out = Path(d) / "demo.kicad_pcb"
+            odb = synthetic_odb.write_multilayer_job(Path(d) / "synthetic-multilayer")
+            out = Path(d) / "multilayer.kicad_pcb"
             subprocess.run([str(BIN), str(odb), str(out)], check=True, capture_output=True, timeout=120)
             text = out.read_text(encoding="latin-1")
-        self.assertTrue(check(odb, text, "bounding_box").passed)
-        r = check(odb, text, "pin1_positions")
+            self.assertTrue(check(odb, text, "bounding_box").passed)
+            r = check(odb, text, "pin1_positions")
         self.assertTrue(r.passed, r.message)
-        self.assertIn("all 851 of 851", r.message)
-
+        self.assertIn("all 6 of 6", r.message)
 
 if __name__ == "__main__":
     unittest.main()

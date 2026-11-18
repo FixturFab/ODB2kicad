@@ -455,13 +455,13 @@ class Odb(unittest.TestCase):
             pcb = next((Path(d) / "out").rglob("*.kicad_pcb")).read_text()
             self.assertIn('(50 "User.1" user "NOTES")', pcb)
 
-    def test_spec_v2_font_and_arcs(self):
-        """Reader spec v2: a font's own UNITS, POLYGON glyphs and square line ends; V text runs
+    def test_mm_font_polygon_glyphs_and_arcs(self):
+        """A font's own UNITS, POLYGON glyphs and square line ends; V text runs
         up; an arc without its direction token runs counter-clockwise."""
         with tempfile.TemporaryDirectory() as d:
-            job = synthetic_odb.write_job(Path(d) / "synthetic-specv2", synthetic_odb.SPECV2, synthetic_odb.PROFILE_IN,
-                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_V2, font_name="v2font")
-            font = odb_render_text.parse_font(job / "fonts" / "v2font")
+            job = synthetic_odb.write_job(Path(d) / "synthetic-glyphs", synthetic_odb.GLYPHS, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_MM, font_name="mmfont")
+            font = odb_render_text.parse_font(job / "fonts" / "mmfont")
             self.assertEqual((font["units"], font["scale"], font["xsize"], font["ysize"], font["bad_lines"]), ("MM", 1.0, 4.0, 6.0, []))
             self.assertEqual(font["chars"]["I"]["lines"][0][5], False)          # S: square ends
             self.assertEqual([len(p) for p in font["chars"]["O"]["polys"]], [4])
@@ -489,13 +489,13 @@ class Odb(unittest.TestCase):
             self.assertEqual((ink(0.8, 0.3), ink(0.8, 0.1)), (0, 1))   # Y: clockwise
 
     @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
-    def test_spec_v2_converter_agrees_with_the_reference(self):
+    def test_mm_font_converter_agrees_with_the_reference(self):
         with tempfile.TemporaryDirectory() as d:
-            job = synthetic_odb.write_job(Path(d) / "in" / "synthetic-specv2", synthetic_odb.SPECV2, synthetic_odb.PROFILE_IN,
-                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_V2, font_name="v2font")
+            job = synthetic_odb.write_job(Path(d) / "in" / "synthetic-glyphs", synthetic_odb.GLYPHS, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_MM, font_name="mmfont")
             rc = roundup.main([str(job), "--out", str(Path(d) / "out"), "--no-siemens", "--no-images"])
             self.assertEqual(rc, 0)
-            rep = json.loads((Path(d) / "out" / "synthetic-specv2" / "report.json").read_text())
+            rep = json.loads((Path(d) / "out" / "synthetic-glyphs" / "report.json").read_text())
             by = {L["kicad"]: L for L in rep["layers"]}
             for name in ("F.SilkS", "User.1", "In1.Cu"):   # arcs + T + V on silk, turned / mirrored text, negative text in a plane
                 self.assertGreater(by[name]["ref_px"], 0, name)
@@ -503,12 +503,12 @@ class Odb(unittest.TestCase):
 
     @unittest.skipUnless(BIN.is_file(), "odb2kicad not built")
     def test_sheet_tool_compares_a_board_with_the_reference(self):
-        """tools/render_odb_sheet.py (reader spec v2, 5.5): PNGs per layer, and with --kicad the
+        """tools/render_odb_sheet.py: PNGs per layer, and with --kicad the
         converter's board against them on a view grown to the layer's content."""
         tool = HERE.parent / "tools" / "render_odb_sheet.py"
         with tempfile.TemporaryDirectory() as d:
-            job = synthetic_odb.write_job(Path(d) / "synthetic-specv2", synthetic_odb.SPECV2, synthetic_odb.PROFILE_IN,
-                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_V2, font_name="v2font")
+            job = synthetic_odb.write_job(Path(d) / "synthetic-glyphs", synthetic_odb.GLYPHS, synthetic_odb.PROFILE_IN,
+                                          synthetic_odb.USER_SYMBOL, font=synthetic_odb.FONT_MM, font_name="mmfont")
             pcb = Path(d) / "board.kicad_pcb"
             subprocess.run([str(BIN), str(job), str(pcb)], check=True, capture_output=True)
             def run(*extra):
@@ -523,7 +523,7 @@ class Odb(unittest.TestCase):
             for name, lay in by.items():
                 self.assertTrue(Path(lay["png"]).is_file() and Path(lay["diff_png"]).is_file())
                 self.assertLess(lay["converter"]["xor_ratio"], 0.03, name)
-            # the tool as shipped reads the version field as a mirror flag: every glyph flipped
+            # the simpler reading takes the version field for a mirror flag: every glyph flipped
             shipped = run("--shipped-text-grammar")
             self.assertGreater(shipped["User.1"]["converter"]["xor_ratio"], 0.1)
 

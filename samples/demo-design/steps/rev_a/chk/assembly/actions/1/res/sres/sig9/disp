@@ -1,8 +1,0 @@
-DISPLAY {
-    L0 = sig9
-}
-DISPLAY {
-    L0 = sig9
-    L1 = sigb
-    L2 = smb
-}
