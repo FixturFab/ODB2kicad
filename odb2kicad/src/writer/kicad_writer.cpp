@@ -90,8 +90,9 @@ static int kicadInnerLayerNumber(const std::string& odbName) {
     std::string u = toUpper(odbName);
     if (u.size() < 6 || u.compare(0, 2, "IN") != 0 || u.compare(u.size() - 3, 3, ".CU") != 0) return 0;
     std::string digits = u.substr(2, u.size() - 5);
-    if (digits.empty() || digits.find_first_not_of("0123456789") != std::string::npos) return 0;
-    return std::stoi(digits);
+    int n;
+    if (digits.empty() || digits.find_first_not_of("0123456789") != std::string::npos || !parseInt(digits, n)) return 0;
+    return n;
 }
 
 // Build layer name mapping from ODB++ matrix layer stack.
@@ -398,7 +399,7 @@ static DrillHit::Kind classifyDrill(const OdbFeatures& feats, const std::map<int
     std::string geom = featureAttr(feats, attrs, ".geometry");
     if (!geom.empty()) {
         int strIdx = -1;
-        try { strIdx = std::stoi(geom); } catch (...) {}
+        if (!parseInt(geom, strIdx)) strIdx = -1;
         auto it = feats.strings.find(strIdx);
         if (it != feats.strings.end() && it->second.find("VIA") != std::string::npos) return DrillHit::VIA;
     }

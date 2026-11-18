@@ -4,7 +4,7 @@ Convert ODB++ PCB designs to KiCad `.kicad_pcb` format.
 
 ## Try It
 
-**[Live Demo](https://henrybtroutman.gitlab.io/odb2kicad/)** — drag and drop an ODB++ archive and get a `.kicad_pcb` file instantly, right in your browser. No install, no upload — everything runs locally via WebAssembly.
+**[Live Demo](https://fixturfab.github.io/ODB2kicad/)** — drag and drop an ODB++ archive and get a `.kicad_pcb` file instantly, right in your browser. No install, no upload — everything runs locally via WebAssembly.
 
 ## Install
 
@@ -13,6 +13,8 @@ Changes per release: [CHANGELOG.md](CHANGELOG.md).
 ```bash
 npm install -g https://raw.githubusercontent.com/FixturFab/odb2kicad/main/wasm/odb2kicad-wasm.tgz
 ```
+
+The demo site serves the package of its own build too: `npm install -g https://fixturfab.github.io/ODB2kicad/odb2kicad-wasm.tgz`.
 
 Or, from a clone of this repository:
 
@@ -59,6 +61,8 @@ if (result.success) {
 ```
 
 A failed result carries a `code` (`bad-input`, `archive`, `not-odb`, `no-input`, `bad-matrix`, `no-step`, `no-layers`, `crash`, `internal`) and an `error` that says what to do about it. After a `crash` the WASM module is reset, so the next conversion starts clean.
+
+The WASM build uses WebAssembly exception handling, so a file the reader cannot handle comes back as an error (as it does from the native CLI) instead of stopping the module. That needs Node 18+ or a browser from 2022 on: Chrome / Edge 95+, Firefox 100+, Safari 15.2+.
 
 The API also exposes `convertOdb(files)` for pre-extracted file arrays — see the [type definitions](wasm/dist/index.d.ts) for details.
 

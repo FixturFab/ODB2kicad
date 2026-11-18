@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <map>
+#include <new>
 #include <cctype>
 #include <exception>
 #include <sstream>
@@ -172,7 +173,11 @@ ConvertResult convert(const std::string& odbDirPath, const ConvertOptions& optio
             result.kicad_pcb = writeBoard(builder.build(design), options);
             result.report = design.report;
         }
-    } catch (const std::exception& e) {  // native builds; the WASM build aborts instead (see wasm/src)
+    } catch (const std::bad_alloc&) {  // native and WASM alike (the WASM build has exceptions on)
+        result.error = "internal: out of memory: the job is too large to convert here (a browser tab has about "
+                       "4 GB at most); try the command-line converter";
+        return result;
+    } catch (const std::exception& e) {
         result.error = std::string("internal: the converter failed: ") + e.what();
         return result;
     }

@@ -1,0 +1,59 @@
+# Builds the WASM converter and the web demo from this commit and deploys them to GitHub Pages
+# (https://fixturfab.github.io/ODB2kicad/). Needs Settings > Pages > Source: GitHub Actions.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one deployment at a time; a newer push waits for the running one instead of cancelling it
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # the emsdk the committed wasm/dist is built with, so the two can be compared
+    container: emscripten/emsdk:3.1.50
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the WASM converter
+        run: |
+          emcmake cmake -S odb2kicad -B odb2kicad/build-wasm -DCMAKE_BUILD_TYPE=Release
+          emmake make -C odb2kicad/build-wasm -j"$(nproc)"
+
+      - name: Compare with the committed wasm/dist
+        run: |
+          if cmp -s odb2kicad/build-wasm/odb2kicad_wasm.wasm wasm/dist/odb2kicad_wasm.wasm; then
+            echo "wasm/dist matches this build"
+          else
+            echo "::warning::wasm/dist/odb2kicad_wasm.wasm differs from this build: rebuild and commit wasm/dist (the site uses this build)"
+          fi
+
+      - name: Assemble the site
+        run: |
+          node wasm/scripts/build.mjs
+          bash wasm/scripts/build-site.sh _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

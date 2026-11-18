@@ -40,19 +40,29 @@ if(EMSCRIPTEN)
     add_executable(odb2kicad_wasm src/wasm_bindings.cpp)
     target_link_libraries(odb2kicad_wasm PRIVATE odb2kicad_core)
 
-    # Size optimization: -Oz for smallest binary, -flto for link-time optimization
-    target_compile_options(odb2kicad_core PRIVATE -Oz -flto)
-    target_compile_options(odb2kicad_wasm PRIVATE -Oz -flto)
+    # Size optimization: -Oz for smallest binary, -flto for link-time optimization.
+    # -fwasm-exceptions: C++ exceptions work as they do natively. Without it Emscripten turns every
+    # throw (a std::stoi on an unexpected token, an out-of-range value, out of memory) into an
+    # abort() that kills the module ("Aborted()") instead of the error convert() reports.
+    # Needs WebAssembly exception handling: Chrome/Edge 95+, Firefox 100+, Safari 15.2+, Node 17+.
+    # Memory grows on demand up to MAXIMUM_MEMORY=4GB, the most a 32-bit WebAssembly module can
+    # address (Emscripten's default stops at 2 GB). An 11 MB rigid-flex archive peaks near 200 MB,
+    # 415 MB with every document layer drawn; past the cap convert() reports "out of memory".
+    # Single-threaded: no SharedArrayBuffer, so the page needs no COOP/COEP headers.
+    target_compile_options(odb2kicad_core PRIVATE -Oz -flto -fwasm-exceptions)
+    target_compile_options(odb2kicad_wasm PRIVATE -Oz -flto -fwasm-exceptions)
 
     set_target_properties(odb2kicad_wasm PROPERTIES
         SUFFIX ".mjs"
         LINK_FLAGS "\
             -Oz \
             -flto \
+            -fwasm-exceptions \
             -s MODULARIZE=1 \
             -s EXPORT_ES6=1 \
             -s EXPORTED_RUNTIME_METHODS=['FS'] \
             -s ALLOW_MEMORY_GROWTH=1 \
+            -s MAXIMUM_MEMORY=4GB \
             -s ENVIRONMENT='web,node' \
             -s FORCE_FILESYSTEM=1 \
             -lembind"

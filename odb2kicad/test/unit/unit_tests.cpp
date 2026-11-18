@@ -7,6 +7,7 @@
 #include "model/odb_design.h"
 #include "model/kicad_pcb.h"
 #include "odb_parser/components_parser.h"
+#include "util/string_utils.h"
 #include "odb_parser/eda_parser.h"
 #include "odb_parser/features_parser.h"
 #include "odb_parser/font_parser.h"
@@ -3464,6 +3465,51 @@ TEST(keyhole_fast_matches_reference) {
     KeyholeRing tri = {{0, 0}, {10, 0}, {0, 10}};
     CHECK(keyhole(tri, {{{1, 1}, {2, 1}}}) == tri);
     CHECK(keyhole(tri, {{{1, 1}, {2, 1}, {1, 2}}}) == keyholeReference(tri, {{{1, 1}, {2, 1}, {1, 2}}}));
+}
+
+// ---------------------------------------------------------------- records with unexpected keys
+
+TEST(parse_int_does_not_throw) {
+    int v = -7;
+    CHECK(parseInt("42", v)); CHECK_EQ(v, 42);
+    CHECK(parseInt(" -3x", v)); CHECK_EQ(v, -3);  // like std::stoi: blanks, sign, digits, rest ignored
+    CHECK(!parseInt("ID", v));
+    CHECK(!parseInt("", v));
+    CHECK(!parseInt("99999999999", v));            // does not fit an int
+    CHECK_EQ(v, -3);                               // untouched on failure
+}
+
+// Mentor-family exporters (Xpedition, PADS) write named keys among the numbered attributes, and a
+// damaged index must not stop the reader: these lines are read or skipped, never thrown on
+// (a throw is an abort in a build without exception support).
+TEST(named_attribute_keys_and_bad_indices_are_skipped) {
+    std::string dir = tempDir("named_attrs");
+    writeFile(dir + "/features",
+              "UNITS=MM\n@0 .smd\n@ID .bad\n&0 VIA\n&x text\n$0 r100\n$-1 r200\n$99999999999 r300\n"
+              "$9999999 r400\nP 1 2 0 P 0 0 ;0,ID=7,UID=8\nP 3 4 0 P 0 0 ;0=1,ID=9;ID=10\n");
+    OdbFeatures f;
+    CHECK(parseFeatures(dir + "/features", f));
+    CHECK_EQ(f.symbols.size(), (size_t)1);  // $-1, $99999999999 and $9999999 skipped
+    CHECK_EQ(f.attrDefs.size(), (size_t)1);
+    CHECK_EQ(f.strings.size(), (size_t)1);
+    CHECK_EQ(f.pads.size(), (size_t)2);
+    if (f.pads.size() == 2) {
+        CHECK_EQ(f.pads[0].attrs.size(), (size_t)1);
+        CHECK_EQ(f.pads[0].attrs[0], std::string("1"));
+        CHECK_EQ(f.pads[1].attrs.size(), (size_t)1);
+        CHECK_EQ(f.pads[1].attrs[0], std::string("1"));
+    }
+    writeFile(dir + "/components",
+              "UNITS=MM\n@0 .comp_mount_type\n@1 .no_pop\n@X .bad\n"
+              "CMP 0 1 2 0 N R1 RES ;0=1,1,ID=5,UID=6\nCMP 0 3 4 0 N R2 RES ;0=SMT,ID=7\n");
+    OdbComponents c;
+    CHECK(parseComponents(dir + "/components", c));
+    CHECK_EQ(c.components.size(), (size_t)2);
+    if (c.components.size() == 2) {
+        CHECK_EQ(c.components[0].mountType, 1);
+        CHECK(c.components[0].noPop);
+        CHECK(!c.components[1].noPop);
+    }
 }
 
 int main(int argc, char** argv) {

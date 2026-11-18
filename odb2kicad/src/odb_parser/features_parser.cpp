@@ -8,6 +8,9 @@
 
 namespace odb2kicad {
 
+// Symbol table indices are dense from 0 (a job uses hundreds, rarely thousands)
+static const int kMaxSymbolIndex = 1 << 20;
+
 static std::map<int, std::string> parseAttrs(std::string attrStr) {
     std::map<int, std::string> result;
     // ";0=1,25=2,26;ID=516688": the numbered attributes end at the next ';' (ID= follows)
@@ -20,18 +23,15 @@ static std::map<int, std::string> parseAttrs(std::string attrStr) {
         part = trim(part);
         auto eq = part.find('=');
         if (eq != std::string::npos) {
-            std::string key = part.substr(0, eq);
-            // Only parse numeric attribute keys; skip named attrs (e.g. "ID=472680")
-            try {
-                int idx = std::stoi(key);
-                result[idx] = part.substr(eq + 1);
-            } catch (const std::invalid_argument&) {
-                // Named attribute from non-KiCad ODB++ — skip
-            }
+            // Only numeric attribute keys; a named one ("ID=472680", written by some exporters
+            // after a comma rather than a ';') is skipped
+            int idx;
+            if (parseInt(part.substr(0, eq), idx)) result[idx] = part.substr(eq + 1);
         }
         else {
             // A bare index is a boolean attribute that is set (.smd, .test_point)
-            try { result[std::stoi(part)] = "1"; } catch (const std::exception&) {}
+            int idx;
+            if (parseInt(part, idx)) result[idx] = "1";
         }
     }
     return result;
@@ -61,8 +61,10 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
         // Symbol definition: $idx name
         if (line[0] == '$') {
             auto sp = line.find(' ');
-            if (sp != std::string::npos) {
-                int idx = std::stoi(line.substr(1, sp - 1));
+            int idx;
+            // an index that is not a number, negative, or absurdly large (it sizes the table) is
+            // a damaged line: skipped, and features naming it draw nothing
+            if (sp != std::string::npos && parseInt(line.substr(1, sp - 1), idx) && idx >= 0 && idx < kMaxSymbolIndex) {
                 std::string symName = trim(line.substr(sp + 1));
                 char unitOverride = 0;  // "$n name I|M"
                 if (symName.size() > 2 && symName[symName.size() - 2] == ' ' &&
@@ -82,8 +84,8 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
         // Attribute definition: @idx name
         if (line[0] == '@') {
             auto sp = line.find(' ');
-            if (sp != std::string::npos) {
-                int idx = std::stoi(line.substr(1, sp - 1));
+            int idx;
+            if (sp != std::string::npos && parseInt(line.substr(1, sp - 1), idx)) {
                 features.attrDefs[idx] = trim(line.substr(sp + 1));
             }
             continue;
@@ -92,8 +94,8 @@ bool parseFeatures(const std::string& path, OdbFeatures& features) {
         // String definition: &idx text
         if (line[0] == '&') {
             auto sp = line.find(' ');
-            if (sp != std::string::npos) {
-                int idx = std::stoi(line.substr(1, sp - 1));
+            int idx;
+            if (sp != std::string::npos && parseInt(line.substr(1, sp - 1), idx)) {
                 features.strings[idx] = trim(line.substr(sp + 1));
             }
             continue;
