@@ -112,8 +112,17 @@ void checkJob(OdbDesign& design) {
     }
     std::sort(rows.begin(), rows.end());
     std::string gaps;
-    for (size_t i = 1; i < rows.size(); i++)
-        for (int r = rows[i - 1] + 1; r < rows[i]; r++) gaps += (gaps.empty() ? "" : ", ") + std::to_string(r);
+    // a short gap is listed row by row, a longer one as a range: a matrix that numbers its rows
+    // 1, 2, 1000000 must not spell out a million row numbers (it ran a WASM module out of memory)
+    for (size_t i = 1; i < rows.size(); i++) {
+        long long from = (long long)rows[i - 1] + 1, to = (long long)rows[i] - 1;
+        if (from > to) continue;
+        if (to - from < 3) {
+            for (long long r = from; r <= to; r++) gaps += (gaps.empty() ? "" : ", ") + std::to_string(r);
+        } else {
+            gaps += (gaps.empty() ? "" : ", ") + std::to_string(from) + "-" + std::to_string(to);
+        }
+    }
     if (!rows.empty())
         design.report.push_back("info: matrix: " + std::to_string(design.steps.size()) + " step(s), " + std::to_string(rows.size()) +
                                 " layer rows (" + std::to_string(rows.front()) + " to " + std::to_string(rows.back()) +

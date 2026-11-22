@@ -3317,6 +3317,15 @@ TEST(version_and_matrix_checks_are_reported) {
         CHECK(r.kicad_pcb.find("(generator \"odb2kicad/" ODB2KICAD_VERSION "\")") != std::string::npos);
         CHECK(reportHas(r.report, "info: ODB++ version not given"));
     }
+    {   // a far row number: the gap is a range, not two billion numbers (ran WASM out of memory);
+        // a ROW past INT_MAX is not a number (atoi was undefined there) and keeps row 0
+        const std::string far = "LAYER {\n ROW=2000000000\n CONTEXT=MISC\n TYPE=DOCUMENT\n NAME=FAR\n POLARITY=POSITIVE\n}\n"
+                                "LAYER {\n ROW=99999999999\n CONTEXT=MISC\n TYPE=DOCUMENT\n NAME=HUGE\n POLARITY=POSITIVE\n}\n";
+        OdbDesign d;
+        CHECK(parseOdbDirectory(matrixJob("row_far", "UNITS=MM\n", far), d));
+        CHECK(reportHas(d.report, "info: matrix: 1 step(s), 5 layer rows (0 to 2000000000, no row 3, 4, 6-1999999999)"));
+        CHECK_EQ(d.layers.back().row, 0);
+    }
     {   // an unknown TYPE is a DOCUMENT layer (drawn on a free user layer), with a warning
         OdbDesign d;
         CHECK(parseOdbDirectory(matrixJob("type_unknown", "UNITS=MM\n", oddRow), d));
