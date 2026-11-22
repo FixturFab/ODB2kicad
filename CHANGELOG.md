@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.4.2 (2026-11-22)
+
+Fixes the converter running out of memory on a matrix whose row numbers lie far apart, and a false mismatch in the WASM parity test on compressed jobs.
+
 ### Converter
 - A matrix whose row numbers lie far apart (`ROW=2000000000`) no longer runs out of memory: the report listed every missing row number one by one (6 GB and 27 s natively; out of memory in WASM). A gap of four rows or more is now a range (`no row 6-1999999999`); shorter gaps read as before. `ROW` and `COL` values past the int range are no longer read with `atoi` (undefined there): such a value keeps 0.
 

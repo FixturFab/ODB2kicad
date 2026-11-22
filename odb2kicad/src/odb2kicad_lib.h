@@ -6,7 +6,7 @@
 namespace odb2kicad {
 
 // The converter's version, as written into every board's (generator ...)
-#define ODB2KICAD_VERSION "0.4.1"
+#define ODB2KICAD_VERSION "0.4.2"
 
 // One converted step of a multi-step job
 struct StepOutput {

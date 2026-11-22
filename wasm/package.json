@@ -1,6 +1,6 @@
 {
   "name": "odb2kicad-wasm",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "ODB++ to KiCad .kicad_pcb converter — WebAssembly build",
   "type": "module",
   "bin": {
