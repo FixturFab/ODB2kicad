@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.4.2 (2026-11-22)
+
+Fixes the converter running out of memory on a matrix whose row numbers lie far apart, and a false mismatch in the WASM parity test on compressed jobs.
+
+### Converter
+- A matrix whose row numbers lie far apart (`ROW=2000000000`) no longer runs out of memory: the report listed every missing row number one by one (6 GB and 27 s natively; out of memory in WASM). A gap of four rows or more is now a range (`no row 6-1999999999`); shorter gaps read as before. `ROW` and `COL` values past the int range are no longer read with `atoi` (undefined there): such a value keeps 0.
+
+### Tests
+- `test/fuzz_odb.py`: a mutation fuzzer (named attribute keys, bad index lines, odd numbers, truncated or reordered lines) that runs a sanitizer build of the CLI, or writes the cases to run through a WASM build. 1800 cases from the samples and synthetic jobs: 0.3.0's WASM aborts on 37 (`Aborted()`, every one a named attribute key or a bad index line), 0.4.1 aborts on none, and the sanitizer finds no memory errors.
+- The WASM parity helper (`odb2kicad/test/test-wasm-parity.mjs`) and `test-wasm.mjs` read every job file as bytes. Reading them as text corrupted compressed `.z` files, so the helper reported a false mismatch on jobs that have them.
+- `test-wasm-smoke.sh` also compares the synthetic multilayer job (compressed `.z` files) between the native CLI and WASM.
+- The WASM Node tests run on Windows: modules load through `file://` URLs (no more `ERR_UNSUPPORTED_ESM_URL_SCHEME`), job paths use `/`, and the tests no longer call `mkdir -p` or redirect to `/dev/null`. The native CLI is `odb2kicad.exe` there, and `PYTHON` picks the interpreter.
+
 ## 0.4.1 (2026-11-18)
 
 Fixes the web demo stopping with "Error: Aborted()" on jobs from some exporters (GitHub issue #7).

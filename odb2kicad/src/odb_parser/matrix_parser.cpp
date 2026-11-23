@@ -54,9 +54,9 @@ bool parseMatrix(const std::string& path, std::vector<OdbMatrixStep>& steps, std
 
         if (state == IN_STEP) {
             if (key == "NAME") currentStep.name = val;
-            else if (key == "COL") currentStep.col = std::atoi(val.c_str());
+            else if (key == "COL") parseInt(val, currentStep.col);  // atoi is undefined past INT_MAX; a bad number keeps 0
         } else if (state == IN_LAYER) {
-            if (key == "ROW") currentLayer.row = std::atoi(val.c_str());  // rows keep their numbers: gaps are legal
+            if (key == "ROW") parseInt(val, currentLayer.row);  // rows keep their numbers: gaps are legal
             else if (key == "CONTEXT") currentLayer.context = val;
             else if (key == "TYPE") currentLayer.type = val;
             else if (key == "NAME") currentLayer.name = val;

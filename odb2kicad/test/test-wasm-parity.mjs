@@ -1,17 +1,22 @@
 // Stage 3: Parity test — compare WASM output to native CLI output
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
-import { join, relative } from 'path';
+import { dirname, join, relative, sep } from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function loadDir(dir, base = dir) {
     let files = [];
     for (const entry of readdirSync(dir)) {
         const full = join(dir, entry);
-        const rel = relative(base, full);
+        // MEMFS paths always use '/', whatever the host separator is
+        const rel = relative(base, full).split(sep).join('/');
         const st = statSync(full);
         if (st.isDirectory()) {
             files = files.concat(loadDir(full, base));
         } else {
-            files.push({ path: rel, content: readFileSync(full, 'utf-8') });
+            // bytes, not text: compressed <name>.z files are binary, and text files go in unchanged
+            files.push({ path: rel, content: new Uint8Array(readFileSync(full)) });
         }
     }
     return files;
@@ -35,8 +40,9 @@ async function main() {
     }
 
     const files = loadDir(odbDir);
-    const wasmPath = join(import.meta.url.replace('file://', ''), '../../build-wasm/odb2kicad_wasm.mjs');
-    const initModule = (await import(wasmPath)).default;
+    // import() needs a file:// URL; a bare path such as C:\... is rejected on Windows
+    const wasmPath = join(__dirname, '..', 'build-wasm', 'odb2kicad_wasm.mjs');
+    const initModule = (await import(pathToFileURL(wasmPath).href)).default;
     const Module = await initModule();
     const FS = Module.FS;
 

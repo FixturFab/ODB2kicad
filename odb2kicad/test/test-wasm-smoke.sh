@@ -160,5 +160,17 @@ echo "PASS: odb-output byte-identical"
 diff /tmp/native-kitchen.kicad_pcb /tmp/wasm-kitchen.kicad_pcb || { echo "FAIL: kitchen-sink output differs between native and WASM"; exit 1; }
 echo "PASS: odb-kitchen-sink byte-identical"
 
+# A job with compressed <name>.z files: the parity helper must pass them through as bytes
+SYNTH_DIR=$(mktemp -d)
+trap 'rm -rf "${SYNTH_DIR}"' EXIT
+python3 -I "${SCRIPT_DIR}/../../test/synthetic_odb.py" "${SYNTH_DIR}" --variant multilayer > /dev/null
+ML_JOB="${SYNTH_DIR}/synthetic-multilayer"
+Z_COUNT=$(find "${ML_JOB}" -name '*.z' | wc -l)
+[ "$Z_COUNT" -gt 0 ] || { echo "FAIL: synthetic multilayer job has no compressed .z files"; exit 1; }
+"${NATIVE_BIN}" "${ML_JOB}" /tmp/native-multilayer.kicad_pcb
+node "${PARITY_SCRIPT}" "${ML_JOB}" /tmp/wasm-multilayer.kicad_pcb
+diff /tmp/native-multilayer.kicad_pcb /tmp/wasm-multilayer.kicad_pcb > /dev/null || { echo "FAIL: multilayer (.z) output differs between native and WASM"; exit 1; }
+echo "PASS: synthetic multilayer (${Z_COUNT} compressed files) byte-identical"
+
 echo ""
 echo "=== All WASM smoke tests passed ==="
